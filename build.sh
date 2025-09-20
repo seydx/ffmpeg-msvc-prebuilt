@@ -35,8 +35,9 @@ else
     # Check which dependencies are available in FFmpeg configure
     echo "Checking available dependencies in FFmpeg/configure..."
     for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d libmp3lame libfdk-aac; do
-        # For environment variable: convert - to _
-        env_var="ENABLE_${dep^^//-/_}"  # ENABLE_LIBFDK_AAC
+        # For environment variable: first replace - with _, then convert to uppercase
+        env_name="${dep//-/_}"  # libfdk-aac -> libfdk_aac
+        env_var="ENABLE_${env_name^^}"  # -> ENABLE_LIBFDK_AAC
 
         # For configure check: use original dep name
         echo -n "Checking $dep... "
