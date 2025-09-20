@@ -61,3 +61,9 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "fdk-aac"]
 	path = fdk-aac
 	url = https://github.com/mstorsjo/fdk-aac.git
+[submodule "libvpl"]
+	path = libvpl
+	url = https://github.com/intel/libvpl.git
+[submodule "AMF"]
+	path = AMF
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git

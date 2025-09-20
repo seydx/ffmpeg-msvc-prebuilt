@@ -42,6 +42,8 @@ c_args = ['-MT']
 cpp_args = ['-MT']
 EOF
 
-meson setup "$SRC_DIR" . --cross-file cross_file.txt --prefix "$INSTALL_PREFIX" --buildtype=release --default-library=static $@
+# Meson checks MSYSTEM and complains if it's MINGW* but we're using MSVC
+# Temporarily set it to MSYS to avoid the error
+MSYSTEM=MSYS meson setup "$SRC_DIR" . --cross-file cross_file.txt --prefix "$INSTALL_PREFIX" --buildtype=release --default-library=static $@
 meson compile -j$(nproc)
 meson install

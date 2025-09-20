@@ -31,10 +31,11 @@ if [ ! -f "FFmpeg/configure" ]; then
     export ENABLE_LIBDAV1D=1
     export ENABLE_LIBMP3LAME=1
     export ENABLE_LIBFDK_AAC=1
+    export ENABLE_LIBVPL=1
 else
     # Check which dependencies are available in FFmpeg configure
     echo "Checking available dependencies in FFmpeg/configure..."
-    for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d libmp3lame libfdk-aac; do
+    for dep in libdav1d libmp3lame libfdk-aac libvpl libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis; do
         # For environment variable: first replace - with _, then convert to uppercase
         env_name="${dep//-/_}"  # libfdk-aac -> libfdk_aac
         env_var="ENABLE_${env_name^^}"  # -> ENABLE_LIBFDK_AAC
@@ -74,6 +75,26 @@ apply-patch FFmpeg ffmpeg.patch
 apply-patch harfbuzz harfbuzz.patch
 
 ./build-make-dep.sh nv-codec-headers
+# NVIDIA hardware acceleration
+add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid --enable-nvdec --enable-nvenc"
+
+# AMD AMF SDK (headers only, no build needed)
+echo -e "\n[Install AMF headers]"
+if [ -d "AMF/amf/public/include" ]; then
+    mkdir -p "$INSTALL_PREFIX/include"
+    cp -r AMF/amf/public/include/* "$INSTALL_PREFIX/include/"
+    echo "AMD AMF headers installed"
+    add_ffargs "--enable-amf"
+fi
+
+# Intel libvpl for QuickSync
+if [ -n "$ENABLE_LIBVPL" ]; then
+    ./build-cmake-dep.sh libvpl -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TOOLS=OFF -DBUILD_PREVIEW=OFF
+    add_ffargs "--enable-libvpl"
+fi
+
+# Windows DirectX/D3D acceleration (always available on Windows)
+add_ffargs "--enable-dxva2 --enable-d3d11va --enable-d3d12va"
 
 ./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF
 add_ffargs "--enable-zlib"
