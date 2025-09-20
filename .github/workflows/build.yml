@@ -78,9 +78,16 @@ jobs:
             bison
             automake
             autoconf
-            meson
-            ninja
-            mingw-w64-x86_64-python
+
+      - name: Setup Python for Meson
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Meson and Ninja
+        shell: cmd
+        run: |
+          pip install meson ninja
 
       - name: Remove MSYS2 link
         shell: msys2 {0}
@@ -88,16 +95,32 @@ jobs:
           rm $(which link)
           rm -rf /usr/local
 
-      - name: Build dav1d (outside MSYS2)
+      - name: Build Meson dependencies
         if: ${{ success() }}
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-          cd dav1d
-          meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false
-          meson compile -C build
-          meson install -C build
-          cd ..
+
+          REM Build dav1d (AV1 decoder)
+          if exist dav1d (
+            echo Building dav1d...
+            cd dav1d
+            meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false
+            meson compile -C build
+            meson install -C build
+            cd ..
+          )
+
+          REM Add more Meson-based dependencies here in the future
+          REM Example:
+          REM if exist some-other-lib (
+          REM   echo Building some-other-lib...
+          REM   cd some-other-lib
+          REM   meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static
+          REM   meson compile -C build
+          REM   meson install -C build
+          REM   cd ..
+          REM )
 
       - name: Build
         shell: cmd
