@@ -158,15 +158,23 @@ jobs:
             REM Copy configMS.h to config.h
             copy configMS.h config.h
 
-            REM Set architecture-specific options
+            REM Set architecture-specific options and machine type
             if "${{matrix.arch}}" == "arm64" (
-              set ASM=NO
+              REM Patch Makefile.MSVC to use correct machine type for ARM64
+              powershell -Command "(Get-Content Makefile.MSVC) -replace 'MACHINE = /machine:I386', 'MACHINE = /machine:ARM64' | Set-Content Makefile.MSVC"
             ) else (
-              set ASM=NO
+              REM Patch Makefile.MSVC to use correct machine type for x64
+              powershell -Command "(Get-Content Makefile.MSVC) -replace 'MACHINE = /machine:I386', 'MACHINE = /machine:X64' | Set-Content Makefile.MSVC"
             )
 
-            REM Build static library only (no frontend)
-            nmake -f Makefile.MSVC ASM=%ASM% libmp3lame-static.lib
+            REM Also remove obsolete compiler flags that cause warnings
+            powershell -Command "(Get-Content Makefile.MSVC) -replace '/QIfdiv /QI0f /YX', '' | Set-Content Makefile.MSVC"
+
+            REM Build static library only (no frontend) using documented approach
+            REM comp=msvc ensures we use Microsoft compiler
+            REM asm=no disables assembly optimizations (safer for cross-compilation)
+            REM CFG=RH uses Robert's optimizations (default)
+            nmake -f Makefile.MSVC comp=msvc asm=no libmp3lame-static.lib
             if %errorlevel% neq 0 exit /b %errorlevel%
 
             REM Install headers and library
