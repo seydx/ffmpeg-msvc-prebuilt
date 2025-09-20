@@ -120,9 +120,9 @@ jobs:
               echo cpu = 'aarch64' >> cross.txt
               echo endian = 'little' >> cross.txt
               REM Disable assembly for ARM64 cross-compilation
-              meson setup build --cross-file cross.txt --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false -Denable_asm=false
+              meson setup build --cross-file cross.txt --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false -Denable_asm=false -Db_vscrt=mt
             ) else (
-              meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false
+              meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false -Db_vscrt=mt
             )
 
             if %errorlevel% neq 0 exit /b %errorlevel%
@@ -130,6 +130,16 @@ jobs:
             if %errorlevel% neq 0 exit /b %errorlevel%
             meson install -C build
             if %errorlevel% neq 0 exit /b %errorlevel%
+
+            REM Meson installs as libdav1d.a, but FFmpeg expects dav1d.lib
+            REM Copy the library with both naming conventions
+            if exist D:\a\_temp\msys64\usr\local\lib\libdav1d.a (
+              echo Copying libdav1d.a to dav1d.lib for FFmpeg
+              copy D:\a\_temp\msys64\usr\local\lib\libdav1d.a D:\a\_temp\msys64\usr\local\lib\dav1d.lib
+              REM Also keep libdav1d.lib for compatibility
+              copy D:\a\_temp\msys64\usr\local\lib\libdav1d.a D:\a\_temp\msys64\usr\local\lib\libdav1d.lib
+            )
+
             cd ..
           )
 
@@ -182,6 +192,9 @@ jobs:
             copy include\lame.h D:\a\_temp\msys64\usr\local\include\lame\
             if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
             copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\libmp3lame.lib
+
+            REM Also create mp3lame.lib in case FFmpeg looks for it without lib prefix
+            copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\mp3lame.lib
 
             REM Create pkg-config file
             if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
