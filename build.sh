@@ -95,7 +95,7 @@ if [ -n "$ENABLE_LIBVPL" ]; then
         -DBUILD_TOOLS=OFF \
         -DBUILD_PREVIEW=OFF \
         -DUSE_MSVC_STATIC_RUNTIME=ON \
-        -DMINGW_LIBS="-ladvapi32 -lole32 -lmsvcrt"
+        "-DMINGW_LIBS=-ladvapi32 -lole32 -lmsvcrt"
     add_ffargs "--enable-libvpl"
 fi
 
