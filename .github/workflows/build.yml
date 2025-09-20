@@ -88,6 +88,17 @@ jobs:
           rm $(which link)
           rm -rf /usr/local
 
+      - name: Build dav1d (outside MSYS2)
+        if: ${{ success() }}
+        shell: cmd
+        run: |
+          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
+          cd dav1d
+          meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false
+          meson compile -C build
+          meson install -C build
+          cd ..
+
       - name: Build
         shell: cmd
         run: |

@@ -92,7 +92,8 @@ if [ -d "AMF/amf/public/include" ]; then
 fi
 
 if [ -n "$ENABLE_LIBDAV1D" ]; then
-    ./build-meson-dep.sh dav1d -Denable_tools=false -Denable_tests=false
+    # Dav1d is built outside MSYS2 in the workflow, just add the flag
+    echo "[Dav1d already built outside MSYS2]"
     add_ffargs "--enable-libdav1d"
 fi
 
