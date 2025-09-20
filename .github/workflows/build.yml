@@ -197,7 +197,7 @@ jobs:
             REM Also create mp3lame.lib in case FFmpeg looks for it without lib prefix
             copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\mp3lame.lib
 
-            REM Create pkg-config file with absolute paths
+            REM Create pkg-config file with absolute library path for MSVC
             if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
             (
               echo prefix=D:/a/_temp/msys64/usr/local
@@ -208,7 +208,7 @@ jobs:
               echo Name: libmp3lame
               echo Description: LAME MP3 encoding library
               echo Version: 3.100
-              echo Libs: -L${libdir} -lmp3lame
+              echo Libs: D:/a/_temp/msys64/usr/local/lib/mp3lame.lib
               echo Cflags: -I${includedir}/lame
             ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\libmp3lame.pc
 

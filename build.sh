@@ -237,16 +237,6 @@ if [ -n "$ENABLE_LIBASS" ]; then
     add_ffargs "--enable-libass"
 fi
 
-# ========================================
-# MULTIMEDIA FRAMEWORKS
-# ========================================
-
-# SDL2
-if [ -n "$ENABLE_SDL" ]; then
-    ./build-cmake-dep.sh SDL
-    add_ffargs "--enable-sdl"
-fi
-
 # Build FFmpeg
 ./build-ffmpeg.sh FFmpeg $FF_ARGS
 ./reprefix.sh
