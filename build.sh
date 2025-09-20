@@ -52,6 +52,25 @@ apply-patch zlib zlib.patch
 apply-patch FFmpeg ffmpeg.patch
 apply-patch harfbuzz harfbuzz.patch
 
+# Apply all Jellyfin patches to FFmpeg
+if [ -d "patches/jellyfin" ]; then
+    echo "Applying Jellyfin patches to FFmpeg..."
+    for patch in patches/jellyfin/*.patch; do
+        if [ -f "$patch" ]; then
+            patch_name=$(basename "$patch")
+            # Check if patch can be applied
+            if git -C FFmpeg apply --check "../$patch" 2>/dev/null; then
+                echo "Applying $patch_name..."
+                git -C FFmpeg apply "../$patch" --ignore-whitespace || echo "Warning: Failed to apply $patch_name"
+            elif git -C FFmpeg apply -R --check "../$patch" 2>/dev/null; then
+                echo "Patch $patch_name already applied"
+            else
+                echo "Warning: Patch $patch_name cannot be applied (might conflict or be incompatible)"
+            fi
+        fi
+    done
+fi
+
 # zlib
 ./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF
 add_ffargs "--enable-zlib"
