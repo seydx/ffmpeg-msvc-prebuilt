@@ -35,7 +35,7 @@ if [ ! -f "FFmpeg/configure" ]; then
 else
     # Check which dependencies are available in FFmpeg configure
     echo "Checking available dependencies in FFmpeg/configure..."
-    for dep in libdav1d libmp3lame libfdk-aac libvpl libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis; do
+    for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d libmp3lame libfdk-aac libvpl; do
         # For environment variable: first replace - with _, then convert to uppercase
         env_name="${dep//-/_}"  # libfdk-aac -> libfdk_aac
         env_var="ENABLE_${env_name^^}"  # -> ENABLE_LIBFDK_AAC
@@ -74,11 +74,15 @@ apply-patch zlib zlib.patch
 apply-patch FFmpeg ffmpeg.patch
 apply-patch harfbuzz harfbuzz.patch
 
+# Windows DirectX/D3D acceleration (always available on Windows)
+add_ffargs "--enable-dxva2 --enable-d3d11va --enable-d3d12va"
+
 ./build-make-dep.sh nv-codec-headers
-# NVIDIA hardware acceleration
 add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid --enable-nvdec --enable-nvenc"
 
-# AMD AMF SDK (headers only, no build needed)
+./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF
+add_ffargs "--enable-zlib"
+
 echo -e "\n[Install AMF headers]"
 if [ -d "AMF/amf/public/include" ]; then
     mkdir -p "$INSTALL_PREFIX/include"
@@ -87,17 +91,20 @@ if [ -d "AMF/amf/public/include" ]; then
     add_ffargs "--enable-amf"
 fi
 
-# Intel libvpl for QuickSync
+if [ -n "$ENABLE_LIBDAV1D" ]; then
+    ./build-meson-dep.sh dav1d -Denable_tools=false -Denable_tests=false
+    add_ffargs "--enable-libdav1d"
+fi
+
+if [ -n "$ENABLE_LIBFDK_AAC" ]; then
+    ./build-cmake-dep.sh fdk-aac -DBUILD_PROGRAMS=OFF
+    add_ffargs "--enable-libfdk-aac --enable-nonfree"
+fi
+
 if [ -n "$ENABLE_LIBVPL" ]; then
     ./build-cmake-dep.sh libvpl -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TOOLS=OFF -DBUILD_PREVIEW=OFF
     add_ffargs "--enable-libvpl"
 fi
-
-# Windows DirectX/D3D acceleration (always available on Windows)
-add_ffargs "--enable-dxva2 --enable-d3d11va --enable-d3d12va"
-
-./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF
-add_ffargs "--enable-zlib"
 
 if [ -n "$ENABLE_LIBFREETYPE" ]; then
     ./build-cmake-dep.sh freetype
@@ -114,8 +121,6 @@ if [ -n "$ENABLE_LIBASS" ]; then
     ./build-libass.sh
     add_ffargs "--enable-libass"
 fi
-
-
 
 if [ -n "$ENABLE_SDL" ]; then
     ./build-cmake-dep.sh SDL
@@ -148,16 +153,6 @@ if [ -n "$ENABLE_LIBVORBIS" ]; then
     # Build libvorbis with libogg
     ./build-cmake-dep.sh libvorbis -DBUILD_TESTING=OFF
     add_ffargs "--enable-libvorbis"
-fi
-
-if [ -n "$ENABLE_LIBDAV1D" ]; then
-    ./build-meson-dep.sh dav1d -Denable_tools=false -Denable_tests=false
-    add_ffargs "--enable-libdav1d"
-fi
-
-if [ -n "$ENABLE_LIBFDK_AAC" ]; then
-    ./build-cmake-dep.sh fdk-aac -DBUILD_PROGRAMS=OFF
-    add_ffargs "--enable-libfdk-aac --enable-nonfree"
 fi
 
 if [ -n "$ENABLE_LIBVPX" ]; then
