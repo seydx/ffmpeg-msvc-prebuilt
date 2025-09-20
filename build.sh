@@ -88,7 +88,13 @@ fi
 
 # Intel QuickSync Video acceleration via oneVPL
 if [ -n "$ENABLE_LIBVPL" ]; then
-    ./build-cmake-dep.sh libvpl -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TOOLS=OFF -DBUILD_PREVIEW=OFF
+    # USE_MSVC_STATIC_RUNTIME=ON ensures static MSVC runtime linking (consistent with our /MT flag)
+    ./build-cmake-dep.sh libvpl \
+        -DBUILD_TESTS=OFF \
+        -DBUILD_EXAMPLES=OFF \
+        -DBUILD_TOOLS=OFF \
+        -DBUILD_PREVIEW=OFF \
+        -DUSE_MSVC_STATIC_RUNTIME=ON
 
     # Create libvpl.lib copy as FFmpeg might look for it with lib prefix
     if [ -f "$INSTALL_PREFIX/lib/vpl.lib" ]; then
@@ -96,6 +102,31 @@ if [ -n "$ENABLE_LIBVPL" ]; then
         cp "$INSTALL_PREFIX/lib/vpl.lib" "$INSTALL_PREFIX/lib/libvpl.lib"
     else
         echo "Warning: vpl.lib not found at $INSTALL_PREFIX/lib/vpl.lib"
+    fi
+
+    # Debug: Show installed libvpl files
+    echo "=== Checking libvpl installation ==="
+    echo "Libraries in $INSTALL_PREFIX/lib:"
+    ls -la "$INSTALL_PREFIX/lib/"*vpl* 2>/dev/null || echo "No vpl libraries found"
+
+    # Also copy pkg-config file with libvpl name and fix library reference
+    if [ -f "$INSTALL_PREFIX/lib/pkgconfig/vpl.pc" ]; then
+        echo "=== Original vpl.pc content ==="
+        cat "$INSTALL_PREFIX/lib/pkgconfig/vpl.pc"
+        echo "================================"
+
+        echo "Creating libvpl.pc from vpl.pc for FFmpeg compatibility"
+        cp "$INSTALL_PREFIX/lib/pkgconfig/vpl.pc" "$INSTALL_PREFIX/lib/pkgconfig/libvpl.pc"
+        # Update the Name field and library reference in libvpl.pc
+        # On Windows with MSVC, use -llibvpl instead of -lvpl
+        sed -i 's/^Name: vpl/Name: libvpl/' "$INSTALL_PREFIX/lib/pkgconfig/libvpl.pc"
+        sed -i 's/-lvpl/-llibvpl/g' "$INSTALL_PREFIX/lib/pkgconfig/libvpl.pc"
+
+        echo "=== Modified libvpl.pc content ==="
+        cat "$INSTALL_PREFIX/lib/pkgconfig/libvpl.pc"
+        echo "================================"
+    else
+        echo "Warning: vpl.pc not found at $INSTALL_PREFIX/lib/pkgconfig/vpl.pc"
     fi
 
     add_ffargs "--enable-libvpl"
