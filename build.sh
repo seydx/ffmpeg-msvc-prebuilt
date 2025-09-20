@@ -16,7 +16,7 @@ fi
 shift 3 || true
 FF_ARGS=$@
 
-for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass; do
+for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus; do
     if grep -q "enable-${dep}" FFmpeg/configure; then
         export ENABLE_${dep^^}=1
         # FF_ARGS="$FF_ARGS --enable-$dep"
@@ -87,6 +87,11 @@ if [ -n "$ENABLE_LIBJXL" ]; then
     ./build-cmake-dep.sh libjxl -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_BUNDLE_LIBPNG=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_STATIC=$JPEGXL_STATIC
     add_ffargs "--enable-libjxl"
 
+fi
+
+if [ -n "$ENABLE_LIBOPUS" ]; then
+    ./build-cmake-dep.sh opus -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF
+    add_ffargs "--enable-libopus"
 fi
 
 if [ -n "$ENABLE_LIBVPX" ]; then
