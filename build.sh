@@ -64,6 +64,11 @@ add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid -
 ./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF
 add_ffargs "--enable-zlib"
 
+if [ -n "$ENABLE_LIBMP3LAME" ]; then
+    ./build-lame.sh
+    add_ffargs "--enable-libmp3lame"
+fi
+
 # First build OpenCL headers
 ./build-cmake-dep.sh opencl-headers -DBUILD_TESTING=OFF
 
@@ -175,10 +180,10 @@ fi
 
 if [ "$BUILD_LICENSE" == "gpl" ]; then
 
-    if [ -n "$ENABLE_LIBMP3LAME" ]; then
-        ./build-lame.sh
-        add_ffargs "--enable-libmp3lame"
-    fi
+    # if [ -n "$ENABLE_LIBMP3LAME" ]; then
+    #     ./build-lame.sh
+    #     add_ffargs "--enable-libmp3lame"
+    # fi
 
     apply-patch x265_git x265_git-${BUILD_TYPE}.patch
 
