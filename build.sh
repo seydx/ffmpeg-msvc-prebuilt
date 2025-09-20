@@ -92,8 +92,6 @@ if [ -d "AMF/amf/public/include" ]; then
 fi
 
 if [ -n "$ENABLE_LIBDAV1D" ]; then
-    # Dav1d is built outside MSYS2 in the workflow, just add the flag
-    echo "[Dav1d already built outside MSYS2]"
     add_ffargs "--enable-libdav1d"
 fi
 
@@ -175,7 +173,6 @@ fi
 
 if [ "$BUILD_LICENSE" == "gpl" ]; then
 
-    # MP3 encoding via LAME (GPL)
     if [ -n "$ENABLE_LIBMP3LAME" ]; then
         ./build-lame.sh
         add_ffargs "--enable-libmp3lame"
