@@ -55,3 +55,6 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "dav1d"]
 	path = dav1d
 	url = https://code.videolan.org/videolan/dav1d.git
+[submodule "lame"]
+	path = lame
+	url = https://github.com/lameproject/lame.git

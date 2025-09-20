@@ -16,7 +16,7 @@ fi
 shift 3 || true
 FF_ARGS=$@
 
-for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d; do
+for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d libmp3lame; do
     if grep -q "enable-${dep}" FFmpeg/configure; then
         export ENABLE_${dep^^}=1
         # FF_ARGS="$FF_ARGS --enable-$dep"
@@ -125,6 +125,12 @@ if [ -n "$ENABLE_LIBWEBP" ]; then
 fi
 
 if [ "$BUILD_LICENSE" == "gpl" ]; then
+
+    # MP3 encoding via LAME (GPL)
+    if [ -n "$ENABLE_LIBMP3LAME" ]; then
+        ./build-lame.sh
+        add_ffargs "--enable-libmp3lame"
+    fi
 
     apply-patch x265_git x265_git-${BUILD_TYPE}.patch
 
