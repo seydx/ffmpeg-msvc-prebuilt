@@ -58,3 +58,6 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "lame"]
 	path = lame
 	url = https://github.com/lameproject/lame.git
+[submodule "fdk-aac"]
+	path = fdk-aac
+	url = https://github.com/mstorsjo/fdk-aac.git

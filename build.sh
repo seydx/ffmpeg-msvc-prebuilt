@@ -16,9 +16,9 @@ fi
 shift 3 || true
 FF_ARGS=$@
 
-for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d libmp3lame; do
-    if grep -q "enable-${dep}" FFmpeg/configure; then
-        export ENABLE_${dep^^}=1
+for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d libmp3lame libfdk-aac; do
+    if grep -q "enable-${dep//-/_}" FFmpeg/configure; then
+        export ENABLE_${dep^^//-/_}=1
         # FF_ARGS="$FF_ARGS --enable-$dep"
     fi
 done
@@ -105,6 +105,11 @@ fi
 if [ -n "$ENABLE_LIBDAV1D" ]; then
     ./build-meson-dep.sh dav1d -Denable_tools=false -Denable_tests=false
     add_ffargs "--enable-libdav1d"
+fi
+
+if [ -n "$ENABLE_LIBFDK_AAC" ]; then
+    ./build-cmake-dep.sh fdk-aac -DBUILD_PROGRAMS=OFF
+    add_ffargs "--enable-libfdk-aac --enable-nonfree"
 fi
 
 if [ -n "$ENABLE_LIBVPX" ]; then
