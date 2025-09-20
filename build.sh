@@ -65,7 +65,6 @@ add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid -
 add_ffargs "--enable-zlib"
 
 if [ -n "$ENABLE_LIBMP3LAME" ]; then
-    ./build-lame.sh
     add_ffargs "--enable-libmp3lame"
 fi
 
