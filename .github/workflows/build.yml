@@ -8,7 +8,8 @@ run-name: Build ${{inputs.ref_name||github.ref_name}}
 
 on:
   push:
-    tags: "*"
+    tags:
+      - "*"
   workflow_call:
     inputs:
       ref_name:
@@ -31,14 +32,11 @@ jobs:
     needs: prepare
     strategy:
       matrix:
-        arch: [x86, amd64, arm, arm64]
-        type: [static, shared]
-        license: [gpl, lgpl]
+        arch: [amd64, arm64]
       fail-fast: false
     runs-on: windows-2022
     env:
-      # amd64_arm,amd64_arm64,x86,amd64
-      name: ffmpeg-${{ inputs.ref_name||github.ref_name }}-${{matrix.license}}-${{matrix.arch}}-${{matrix.type}}
+      name: ffmpeg-${{ inputs.ref_name||github.ref_name }}-gpl-${{matrix.arch}}-static
       target: ${{contains(matrix.arch,'arm')&&format('amd64_{0}',matrix.arch)||matrix.arch}}
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +89,7 @@ jobs:
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-          msys2 -c "./build.sh ${{matrix.arch}} ${{matrix.type}} ${{matrix.license}}"
+          msys2 -c "./build.sh ${{matrix.arch}} static gpl"
 
       - name: Debug log
         if: ${{ failure() }}
@@ -116,7 +114,7 @@ jobs:
         if: ${{startsWith(github.ref, 'refs/tags/')}}
         uses: softprops/action-gh-release@v2
         with:
-          ref_name: ${{env.REF_NAME}}
+          tag_name: ${{env.REF_NAME}}
           body_path: changelog
           prerelease: ${{contains(env.REF_NAME,'dev')}}
           files: |

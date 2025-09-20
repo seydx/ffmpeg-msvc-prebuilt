@@ -13,11 +13,11 @@ mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
 case $BUILD_ARCH in
-x86)
-    BUILD_ARCH=Win32
-    ;;
 amd64)
     BUILD_ARCH=x64
+    ;;
+arm64)
+    BUILD_ARCH=ARM64
     ;;
 esac
 

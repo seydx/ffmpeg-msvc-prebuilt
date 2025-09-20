@@ -15,7 +15,7 @@ if [ $BUILD_TYPE == "static" ]; then
 else
     TYPE_ARGS="--enable-shared"
 fi
-if [[ $BUILD_ARCH =~ arm ]]; then
+if [ "$BUILD_ARCH" == "arm64" ]; then
     CROSS_ARGS="--enable-cross-compile --disable-asm"
 fi
 
