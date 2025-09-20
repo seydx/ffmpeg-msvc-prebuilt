@@ -108,7 +108,22 @@ jobs:
           if exist dav1d (
             echo Building dav1d...
             cd dav1d
-            meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false
+
+            REM Create cross-file for ARM64 builds
+            if "${{matrix.arch}}" == "arm64" (
+              echo [binaries] > cross.txt
+              echo c = 'cl' >> cross.txt
+              echo ar = 'lib' >> cross.txt
+              echo [host_machine] >> cross.txt
+              echo system = 'windows' >> cross.txt
+              echo cpu_family = 'aarch64' >> cross.txt
+              echo cpu = 'aarch64' >> cross.txt
+              echo endian = 'little' >> cross.txt
+              meson setup build --cross-file cross.txt --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false
+            ) else (
+              meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false
+            )
+
             if %errorlevel% neq 0 exit /b %errorlevel%
             meson compile -C build
             if %errorlevel% neq 0 exit /b %errorlevel%

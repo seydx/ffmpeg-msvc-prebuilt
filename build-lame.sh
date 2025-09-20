@@ -23,6 +23,7 @@ case $BUILD_ARCH in
 esac
 
 # Configure for static library only
+# Need to set AR properly for libtool with MSVC
 ./configure "--host=${HOST_TRIPLET}" \
     --prefix=$INSTALL_PREFIX \
     --disable-shared \
@@ -32,7 +33,8 @@ esac
     --disable-analyzer-hooks \
     --disable-dependency-tracking \
     CC=cl \
-    AR=lib \
+    AR="lib -nologo" \
+    ARFLAGS="" \
     CFLAGS="$CFLAGS"
 
 # Build
