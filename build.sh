@@ -89,6 +89,15 @@ fi
 # Intel QuickSync Video acceleration via oneVPL
 if [ -n "$ENABLE_LIBVPL" ]; then
     ./build-cmake-dep.sh libvpl -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TOOLS=OFF -DBUILD_PREVIEW=OFF
+
+    # Create libvpl.lib copy as FFmpeg might look for it with lib prefix
+    if [ -f "$INSTALL_PREFIX/lib/vpl.lib" ]; then
+        echo "Copying vpl.lib to libvpl.lib for FFmpeg compatibility"
+        cp "$INSTALL_PREFIX/lib/vpl.lib" "$INSTALL_PREFIX/lib/libvpl.lib"
+    else
+        echo "Warning: vpl.lib not found at $INSTALL_PREFIX/lib/vpl.lib"
+    fi
+
     add_ffargs "--enable-libvpl"
 fi
 
