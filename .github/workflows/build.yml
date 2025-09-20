@@ -101,13 +101,19 @@ jobs:
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
+          REM Add MSYS2 tools (nasm, yasm) to PATH
+          set PATH=D:\a\_temp\msys64\usr\bin;%PATH%
+
           REM Build dav1d (AV1 decoder)
           if exist dav1d (
             echo Building dav1d...
             cd dav1d
             meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false
+            if %errorlevel% neq 0 exit /b %errorlevel%
             meson compile -C build
+            if %errorlevel% neq 0 exit /b %errorlevel%
             meson install -C build
+            if %errorlevel% neq 0 exit /b %errorlevel%
             cd ..
           )
 
