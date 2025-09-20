@@ -23,6 +23,10 @@ arm64)
     ;;
 esac
 
+# Find the actual paths to MSVC tools
+CL_PATH=$(which cl.exe 2>/dev/null || echo "cl")
+LIB_PATH=$(which lib.exe 2>/dev/null || echo "lib")
+
 # Create cross file for Windows MSVC
 cat > cross_file.txt << EOF
 [host_machine]
@@ -32,12 +36,12 @@ cpu = '$MESON_CPU'
 endian = 'little'
 
 [binaries]
-c = 'cl'
-cpp = 'cl'
-ar = 'lib'
+c = '$CL_PATH'
+cpp = '$CL_PATH'
+ar = '$LIB_PATH'
 strip = 'echo'
 
-[properties]
+[built-in options]
 c_args = ['-MT']
 cpp_args = ['-MT']
 EOF
