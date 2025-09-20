@@ -78,6 +78,7 @@ jobs:
             bison
             automake
             autoconf
+            quilt
 
       - name: Setup Python for Meson
         uses: actions/setup-python@v5
