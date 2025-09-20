@@ -10,18 +10,12 @@ SRC_DIR=$(pwd)/$1
 shift 1
 cd $SRC_DIR
 
-if [ $BUILD_TYPE == "static" ]; then
-    TYPE_ARGS="--enable-static --pkg-config-flags=--static"
-else
-    TYPE_ARGS="--enable-shared"
-fi
+TYPE_ARGS="--enable-static --pkg-config-flags=--static"
 if [ "$BUILD_ARCH" == "arm64" ]; then
     CROSS_ARGS="--enable-cross-compile --disable-asm"
 fi
 
-if [ $BUILD_LICENSE == "gpl" ]; then
-    LICENSE_ARGS="--enable-gpl --enable-version3"
-fi
+LICENSE_ARGS="--enable-gpl --enable-version3"
 CFLAGS="$CFLAGS -I${SRC_DIR}/compat/stdbit"
 EX_BUILD_ARGS="$TYPE_ARGS $CROSS_ARGS $LICENSE_ARGS"
 

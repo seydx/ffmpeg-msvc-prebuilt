@@ -205,7 +205,7 @@ jobs:
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-          msys2 -c "./build.sh ${{matrix.arch}} static gpl"
+          msys2 -c "./build.sh ${{matrix.arch}}"
 
       - name: Debug log
         if: ${{ failure() }}
