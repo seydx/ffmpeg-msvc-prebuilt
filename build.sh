@@ -83,6 +83,18 @@ add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid -
 ./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF
 add_ffargs "--enable-zlib"
 
+# First build OpenCL headers
+./build-cmake-dep.sh opencl-headers -DBUILD_TESTING=OFF
+
+# Then build OpenCL ICD Loader
+./build-cmake-dep.sh opencl-icd-loader \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DOPENCL_ICD_LOADER_DISABLE_OPENCLON12=ON \
+    -DOPENCL_ICD_LOADER_HEADERS_DIR="$INSTALL_PREFIX/include" \
+    -DBUILD_TESTING=OFF
+
+add_ffargs "--enable-opencl"
+
 echo -e "\n[Install AMF headers]"
 if [ -d "AMF/amf/public/include" ]; then
     mkdir -p "$INSTALL_PREFIX/include"

@@ -67,3 +67,9 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "AMF"]
 	path = AMF
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git
+[submodule "opencl-headers"]
+	path = opencl-headers
+	url = https://github.com/KhronosGroup/OpenCL-Headers.git
+[submodule "opencl-icd-loader"]
+	path = opencl-icd-loader
+	url = https://github.com/KhronosGroup/OpenCL-ICD-Loader.git
