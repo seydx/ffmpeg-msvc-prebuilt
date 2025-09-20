@@ -88,14 +88,7 @@ fi
 
 # Intel QuickSync Video acceleration via oneVPL
 if [ -n "$ENABLE_LIBVPL" ]; then
-    # MINGW_LIBS sets the Windows system libraries needed for libvpl
-    ./build-cmake-dep.sh libvpl \
-        -DBUILD_TESTS=OFF \
-        -DBUILD_EXAMPLES=OFF \
-        -DBUILD_TOOLS=OFF \
-        -DBUILD_PREVIEW=OFF \
-        -DUSE_MSVC_STATIC_RUNTIME=ON \
-        "-DMINGW_LIBS=-ladvapi32 -lole32 -lmsvcrt"
+    ./build-vpl.sh
     add_ffargs "--enable-libvpl"
 fi
 
