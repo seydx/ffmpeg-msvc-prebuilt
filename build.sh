@@ -93,11 +93,18 @@ if [ -n "$ENABLE_LIBDAV1D" ]; then
 fi
 
 if [ -n "$ENABLE_LIBSVTAV1" ]; then
+    # Disable assembly for ARM64 due to CMake/ASM compiler issues
+    if [ "$BUILD_ARCH" == "arm64" ]; then
+        SVT_ASM_FLAGS="-DCOMPILE_C_ONLY=ON"
+    else
+        SVT_ASM_FLAGS="-DENABLE_NASM=ON"
+    fi
+
     ./build-cmake-dep.sh svt-av1 \
         -DBUILD_APPS=OFF \
         -DBUILD_DEC=OFF \
         -DBUILD_TESTING=OFF \
-        -DENABLE_NASM=ON
+        $SVT_ASM_FLAGS
     add_ffargs "--enable-libsvtav1"
 fi
 
