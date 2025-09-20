@@ -73,3 +73,6 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "opencl-icd-loader"]
 	path = opencl-icd-loader
 	url = https://github.com/KhronosGroup/OpenCL-ICD-Loader.git
+[submodule "svt-av1"]
+	path = svt-av1
+	url = https://gitlab.com/AOMediaCodec/SVT-AV1.git

@@ -16,40 +16,21 @@ fi
 shift 3 || true
 FF_ARGS=$@
 
-# Check if FFmpeg configure exists
-if [ ! -f "FFmpeg/configure" ]; then
-    echo "WARNING: FFmpeg/configure not found, enabling all dependencies by default"
-    export ENABLE_LIBHARFBUZZ=1
-    export ENABLE_LIBFREETYPE=1
-    export ENABLE_SDL=1
-    export ENABLE_LIBJXL=1
-    export ENABLE_LIBVPX=1
-    export ENABLE_LIBWEBP=1
-    export ENABLE_LIBASS=1
-    export ENABLE_LIBOPUS=1
-    export ENABLE_LIBVORBIS=1
-    export ENABLE_LIBDAV1D=1
-    export ENABLE_LIBMP3LAME=1
-    export ENABLE_LIBFDK_AAC=1
-    export ENABLE_LIBVPL=1
-else
-    # Check which dependencies are available in FFmpeg configure
-    echo "Checking available dependencies in FFmpeg/configure..."
-    for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d libmp3lame libfdk-aac libvpl; do
-        # For environment variable: first replace - with _, then convert to uppercase
-        env_name="${dep//-/_}"  # libfdk-aac -> libfdk_aac
-        env_var="ENABLE_${env_name^^}"  # -> ENABLE_LIBFDK_AAC
+echo "Checking available dependencies in FFmpeg/configure..."
+for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl; do
+    # For environment variable: first replace - with _, then convert to uppercase
+    env_name="${dep//-/_}"  # libfdk-aac -> libfdk_aac
+    env_var="ENABLE_${env_name^^}"  # -> ENABLE_LIBFDK_AAC
 
-        # For configure check: use original dep name
-        echo -n "Checking $dep... "
-        if grep -q "enable-${dep}" FFmpeg/configure; then
-            export ${env_var}=1
-            echo "ENABLED (${env_var}=1)"
-        else
-            echo "not found in configure"
-        fi
-    done
-fi
+    # For configure check: use original dep name
+    echo -n "Checking $dep... "
+    if grep -q "enable-${dep}" FFmpeg/configure; then
+        export ${env_var}=1
+        echo "ENABLED (${env_var}=1)"
+    else
+        echo "not found in configure"
+    fi
+done
 
 echo BUILD_ARCH=$BUILD_ARCH
 echo BUILD_TYPE=$BUILD_TYPE
@@ -105,6 +86,15 @@ fi
 
 if [ -n "$ENABLE_LIBDAV1D" ]; then
     add_ffargs "--enable-libdav1d"
+fi
+
+if [ -n "$ENABLE_LIBSVTAV1" ]; then
+    ./build-cmake-dep.sh svt-av1 \
+        -DBUILD_APPS=OFF \
+        -DBUILD_DEC=OFF \
+        -DBUILD_TESTING=OFF \
+        -DENABLE_NASM=ON
+    add_ffargs "--enable-libsvtav1"
 fi
 
 if [ -n "$ENABLE_LIBFDK_AAC" ]; then
