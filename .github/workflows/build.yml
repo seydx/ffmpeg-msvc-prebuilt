@@ -192,15 +192,16 @@ jobs:
             if not exist D:\a\_temp\msys64\usr\local\include\lame mkdir D:\a\_temp\msys64\usr\local\include\lame
             copy include\lame.h D:\a\_temp\msys64\usr\local\include\lame\
             if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
+
+            REM Copy library with both naming conventions for maximum compatibility
             copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\libmp3lame.lib
-
-            REM Also create mp3lame.lib in case FFmpeg looks for it without lib prefix
             copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\mp3lame.lib
+            copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\lame.lib
 
-            REM Create pkg-config file with absolute library path for MSVC
+            REM Create pkg-config file - use absolute path for MSVC compatibility
             if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
             (
-              echo prefix=D:/a/_temp/msys64/usr/local
+              echo prefix=/usr/local
               echo exec_prefix=${prefix}
               echo libdir=${exec_prefix}/lib
               echo includedir=${prefix}/include
@@ -208,7 +209,7 @@ jobs:
               echo Name: libmp3lame
               echo Description: LAME MP3 encoding library
               echo Version: 3.100
-              echo Libs: D:/a/_temp/msys64/usr/local/lib/mp3lame.lib
+              echo Libs: -LD:/a/_temp/msys64/usr/local/lib -lmp3lame
               echo Cflags: -I${includedir}/lame
             ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\libmp3lame.pc
 
