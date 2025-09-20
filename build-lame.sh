@@ -14,17 +14,16 @@ export RANLIB=win-ranlib
 export PATH=$TOOLCHAIN_SRCDIR:$PATH
 
 cd $SRC_DIR
-NOCONFIGURE=1 ./autogen.sh || true  # autogen might not exist, use configure directly if available
 
-if [ ! -f configure ]; then
-    echo "Error: configure script not found"
-    exit 1
-fi
+# Map our BUILD_ARCH to configure host triplet
+case $BUILD_ARCH in
+    amd64) HOST_TRIPLET="x86_64-w64-mingw32" ;;
+    arm64) HOST_TRIPLET="aarch64-w64-mingw32" ;;
+    *) HOST_TRIPLET="${BUILD_ARCH}-w64-mingw32" ;;
+esac
 
-# MSVC-specific CFLAGS
-LAME_CFLAGS="$CFLAGS -DHAVE_CONFIG_H"
-
-./configure "--host=${BUILD_ARCH}-windows" \
+# Configure for static library only
+./configure "--host=${HOST_TRIPLET}" \
     --prefix=$INSTALL_PREFIX \
     --disable-shared \
     --enable-static \
@@ -32,7 +31,12 @@ LAME_CFLAGS="$CFLAGS -DHAVE_CONFIG_H"
     --disable-decoder \
     --disable-analyzer-hooks \
     --disable-dependency-tracking \
-    CFLAGS="$LAME_CFLAGS"
+    CC=cl \
+    AR=lib \
+    CFLAGS="$CFLAGS"
 
-make -j$(nproc) CFLAGS="$LAME_CFLAGS"
+# Build
+make -j$(nproc)
+
+# Install
 make install
