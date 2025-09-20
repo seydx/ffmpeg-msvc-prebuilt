@@ -16,7 +16,7 @@ fi
 shift 3 || true
 FF_ARGS=$@
 
-for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis; do
+for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d; do
     if grep -q "enable-${dep}" FFmpeg/configure; then
         export ENABLE_${dep^^}=1
         # FF_ARGS="$FF_ARGS --enable-$dep"
@@ -100,6 +100,11 @@ if [ -n "$ENABLE_LIBVORBIS" ]; then
     # Build libvorbis with libogg
     ./build-cmake-dep.sh libvorbis -DBUILD_TESTING=OFF
     add_ffargs "--enable-libvorbis"
+fi
+
+if [ -n "$ENABLE_LIBDAV1D" ]; then
+    ./build-meson-dep.sh dav1d -Denable_tools=false -Denable_tests=false
+    add_ffargs "--enable-libdav1d"
 fi
 
 if [ -n "$ENABLE_LIBVPX" ]; then

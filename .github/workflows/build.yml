@@ -78,6 +78,8 @@ jobs:
             bison
             automake
             autoconf
+            meson
+            ninja
 
       - name: Remove MSYS2 link
         shell: msys2 {0}
