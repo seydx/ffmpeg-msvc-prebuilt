@@ -50,6 +50,7 @@ apply-patch() {
 
 apply-patch zlib zlib.patch
 apply-patch FFmpeg ffmpeg.patch
+apply-patch FFmpeg ffmpeg-glslang-msvc.patch
 apply-patch harfbuzz harfbuzz.patch
 
 # Apply all Jellyfin patches to FFmpeg using quilt
@@ -164,21 +165,30 @@ if [ -n "$ENABLE_LIBGLSLANG" ]; then
         # List all available .lib files for debugging
         echo "  Available libs: $(ls $VULKAN_SDK/Lib/*.lib 2>/dev/null | xargs -n1 basename | tr '\n' ' ')"
 
-        GLSLANG_LIBS="-lglslang -lMachineIndependent -lOSDependent -lGenericCodeGen -lSPVRemapper -lSPIRV"
-        echo "  Base libs: $GLSLANG_LIBS"
+        # FFmpeg tries first WITHOUT HLSL/OGLCompiler, then WITH them as fallback
+        # We'll match FFmpeg's preferred order (without HLSL/OGLCompiler first)
+        GLSLANG_LIBS="-lglslang -lMachineIndependent -lGenericCodeGen -lSPVRemapper -lSPIRV"
+        echo "  Base libs (FFmpeg's preferred set): $GLSLANG_LIBS"
 
-        # Add HLSL and OGLCompiler if they exist
+        # Add OSDependent if it exists (needed in the fallback path)
+        if [ -f "$VULKAN_SDK/Lib/OSDependent.lib" ]; then
+            GLSLANG_LIBS="$GLSLANG_LIBS -lOSDependent"
+            echo "  [OK] Added OSDependent.lib"
+        fi
+
+        # HLSL and OGLCompiler are optional - FFmpeg works without them
+        # But we add them if available for the fallback path
         if [ -f "$VULKAN_SDK/Lib/HLSL.lib" ]; then
             GLSLANG_LIBS="$GLSLANG_LIBS -lHLSL"
-            echo "  [OK] Added HLSL.lib"
+            echo "  [OK] Added HLSL.lib (optional)"
         else
-            echo "  [MISSING] HLSL.lib not found"
+            echo "  [INFO] HLSL.lib not found (optional, not required)"
         fi
         if [ -f "$VULKAN_SDK/Lib/OGLCompiler.lib" ]; then
             GLSLANG_LIBS="$GLSLANG_LIBS -lOGLCompiler"
-            echo "  [OK] Added OGLCompiler.lib"
+            echo "  [OK] Added OGLCompiler.lib (optional)"
         else
-            echo "  [MISSING] OGLCompiler.lib not found"
+            echo "  [INFO] OGLCompiler.lib not found (optional, not required)"
         fi
 
         # Add SPIRV-Tools libraries if they exist
@@ -186,13 +196,13 @@ if [ -n "$ENABLE_LIBGLSLANG" ]; then
             GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools-opt"
             echo "  [OK] Added SPIRV-Tools-opt.lib"
         else
-            echo "  [MISSING] SPIRV-Tools-opt.lib not found"
+            echo "  [WARNING] SPIRV-Tools-opt.lib not found"
         fi
         if [ -f "$VULKAN_SDK/Lib/SPIRV-Tools.lib" ]; then
             GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools"
             echo "  [OK] Added SPIRV-Tools.lib"
         else
-            echo "  [MISSING] SPIRV-Tools.lib not found"
+            echo "  [WARNING] SPIRV-Tools.lib not found"
         fi
 
         echo "  Final libs: $GLSLANG_LIBS"
@@ -209,7 +219,12 @@ Cflags: -I\${includedir}
 Libs: -L\${libdir} $GLSLANG_LIBS
 EOF
 
-        echo "Created glslang.pc with libraries: $GLSLANG_LIBS"
+        echo "Created glslang.pc at: $INSTALL_PREFIX/lib/pkgconfig/glslang.pc"
+
+        # Test if pkg-config can find it
+        echo "Testing pkg-config:"
+        pkg-config --exists glslang && echo "  [OK] pkg-config finds glslang" || echo "  [WARNING] pkg-config cannot find glslang"
+        pkg-config --libs glslang 2>/dev/null && echo "  pkg-config --libs glslang output shown above" || echo "  [WARNING] pkg-config --libs glslang failed"
 
         # Add SDK paths for FFmpeg configure to find headers and libraries
         export CFLAGS="$CFLAGS -I$VULKAN_SDK/Include"
