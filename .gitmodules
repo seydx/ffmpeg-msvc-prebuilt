@@ -79,3 +79,6 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "zimg"]
 	path = zimg
 	url = https://github.com/sekrit-twc/zimg.git
+[submodule "xz"]
+	path = xz
+	url = https://github.com/tukaani-project/xz.git
