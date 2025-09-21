@@ -159,25 +159,42 @@ if [ -n "$ENABLE_LIBGLSLANG" ]; then
 
         # Check which libraries are available
         echo "Building glslang.pc file..."
+        echo "  Checking Vulkan SDK libraries at: $VULKAN_SDK/Lib"
+
+        # List all available .lib files for debugging
+        echo "  Available libs: $(ls $VULKAN_SDK/Lib/*.lib 2>/dev/null | xargs -n1 basename | tr '\n' ' ')"
+
         GLSLANG_LIBS="-lglslang -lMachineIndependent -lOSDependent -lGenericCodeGen -lSPVRemapper -lSPIRV"
         echo "  Base libs: $GLSLANG_LIBS"
 
         # Add HLSL and OGLCompiler if they exist
         if [ -f "$VULKAN_SDK/Lib/HLSL.lib" ]; then
             GLSLANG_LIBS="$GLSLANG_LIBS -lHLSL"
-            echo "  Added HLSL.lib"
+            echo "  [OK] Added HLSL.lib"
         else
-            echo "  HLSL.lib not found - skipping"
+            echo "  [MISSING] HLSL.lib not found"
         fi
         if [ -f "$VULKAN_SDK/Lib/OGLCompiler.lib" ]; then
             GLSLANG_LIBS="$GLSLANG_LIBS -lOGLCompiler"
-            echo "  Added OGLCompiler.lib"
+            echo "  [OK] Added OGLCompiler.lib"
         else
-            echo "  OGLCompiler.lib not found - skipping"
+            echo "  [MISSING] OGLCompiler.lib not found"
         fi
 
-        # Add SPIRV-Tools libraries
-        GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools-opt -lSPIRV-Tools"
+        # Add SPIRV-Tools libraries if they exist
+        if [ -f "$VULKAN_SDK/Lib/SPIRV-Tools-opt.lib" ]; then
+            GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools-opt"
+            echo "  [OK] Added SPIRV-Tools-opt.lib"
+        else
+            echo "  [MISSING] SPIRV-Tools-opt.lib not found"
+        fi
+        if [ -f "$VULKAN_SDK/Lib/SPIRV-Tools.lib" ]; then
+            GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools"
+            echo "  [OK] Added SPIRV-Tools.lib"
+        else
+            echo "  [MISSING] SPIRV-Tools.lib not found"
+        fi
+
         echo "  Final libs: $GLSLANG_LIBS"
 
         cat > "$INSTALL_PREFIX/lib/pkgconfig/glslang.pc" << EOF
