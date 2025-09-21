@@ -40,9 +40,13 @@ jobs:
     needs: prepare
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            runner: windows-2022
+          - arch: arm64
+            runner: windows-11-arm
       fail-fast: false
-    runs-on: windows-2022
+    runs-on: ${{ matrix.runner }}
     env:
       name: ffmpeg-${{ inputs.ref_name||github.ref_name }}-gpl-${{matrix.arch}}-static
       target: ${{contains(matrix.arch,'arm')&&format('amd64_{0}',matrix.arch)||matrix.arch}}

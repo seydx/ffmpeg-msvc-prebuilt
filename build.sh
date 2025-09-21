@@ -150,13 +150,14 @@ fi
 # Vulkan/glslang support for Vulkan filters
 if [ -n "$ENABLE_LIBGLSLANG" ]; then
     echo "Checking for Vulkan/glslang support..."
-    # Check if Vulkan SDK is already installed (via GitHub Action or system)
+
     if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
         echo "Found Vulkan SDK at: $VULKAN_SDK"
         # Add SDK paths for FFmpeg configure to find headers and libraries
         export CFLAGS="$CFLAGS -I$VULKAN_SDK/include"
         export LDFLAGS="$LDFLAGS -LIBPATH:$VULKAN_SDK/lib"
         add_ffargs "--enable-libglslang"
+        echo "Vulkan filters enabled (scale_vulkan, overlay_vulkan, etc.)"
     else
         echo "Warning: Vulkan SDK not found. Vulkan support will be disabled."
         echo "         To enable: Install Vulkan SDK or use GitHub Action setup"
