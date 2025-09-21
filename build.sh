@@ -82,6 +82,17 @@ fi
 # win-iconv
 if [ -d "win-iconv" ]; then
     ./build-cmake-dep.sh win-iconv
+
+    # For static linking, we need to ensure FFmpeg uses libiconv.lib (static) not iconv.lib (DLL import)
+    # Remove the DLL import library to force static linking
+    echo "Ensuring static iconv linking..."
+    if [ -f "$INSTALL_PREFIX/lib/iconv.lib" ] && [ -f "$INSTALL_PREFIX/lib/libiconv.lib" ]; then
+        echo "Moving DLL import library out of the way to force static linking"
+        mv "$INSTALL_PREFIX/lib/iconv.lib" "$INSTALL_PREFIX/lib/iconv_dll.lib"
+        # Copy static library to iconv.lib for FFmpeg to find
+        cp "$INSTALL_PREFIX/lib/libiconv.lib" "$INSTALL_PREFIX/lib/iconv.lib"
+    fi
+
     add_ffargs "--enable-iconv"
 fi
 
