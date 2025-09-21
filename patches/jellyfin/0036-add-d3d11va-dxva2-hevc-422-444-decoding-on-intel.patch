@@ -285,8 +285,8 @@ Index: FFmpeg/libavcodec/dxva2_internal.h
 +    DXVA_PicParams_HEVC main;
 +
 +    // HEVC Range Extension. Fields are named the same as in HEVC spec.
-+    __C89_NAMELESS union {
-+        __C89_NAMELESS struct {
++    union {
++        struct {
 +            UINT32 transform_skip_rotation_enabled_flag : 1;
 +            UINT32 transform_skip_context_enabled_flag : 1;
 +            UINT32 implicit_rdpcm_enabled_flag : 1;
