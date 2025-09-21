@@ -40,15 +40,12 @@ jobs:
     needs: prepare
     strategy:
       matrix:
-        include:
-          - arch: amd64
-            runner: windows-2022
-          - arch: arm64
-            runner: windows-11-arm
+        arch: [amd64, arm64]
       fail-fast: false
-    runs-on: ${{ matrix.runner }}
+    runs-on: windows-2022
     env:
       name: ffmpeg-${{ inputs.ref_name||github.ref_name }}-gpl-${{matrix.arch}}-static
+      target: ${{contains(matrix.arch,'arm')&&format('amd64_{0}',matrix.arch)||matrix.arch}}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -119,7 +116,7 @@ jobs:
         if: ${{ success() }}
         shell: cmd
         run: |
-          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{matrix.arch}} ${{env.SDK_VER}}
+          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
           REM Add MSYS2 tools (nasm, yasm) to PATH
           set PATH=D:\a\_temp\msys64\usr\bin;%PATH%
@@ -129,8 +126,21 @@ jobs:
             echo Building dav1d...
             cd dav1d
 
-            REM Configure build for current architecture
-            meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false -Db_vscrt=mt
+            REM Create cross-file for ARM64 builds
+            if "${{matrix.arch}}" == "arm64" (
+              echo [binaries] > cross.txt
+              echo c = 'cl' >> cross.txt
+              echo ar = 'lib' >> cross.txt
+              echo [host_machine] >> cross.txt
+              echo system = 'windows' >> cross.txt
+              echo cpu_family = 'aarch64' >> cross.txt
+              echo cpu = 'aarch64' >> cross.txt
+              echo endian = 'little' >> cross.txt
+              REM Disable assembly for ARM64 cross-compilation
+              meson setup build --cross-file cross.txt --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false -Denable_asm=false -Db_vscrt=mt
+            ) else (
+              meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false -Db_vscrt=mt
+            )
 
             if %errorlevel% neq 0 exit /b %errorlevel%
             meson compile -C build
@@ -149,12 +159,11 @@ jobs:
             cd ..
           )
 
-
       - name: Build zimg with MSVC
         if: ${{ success() }}
         shell: cmd
         run: |
-          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{matrix.arch}} ${{env.SDK_VER}}
+          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
           REM Build zimg using MSBuild
           if exist zimg (
@@ -205,7 +214,7 @@ jobs:
         if: ${{ success() }}
         shell: cmd
         run: |
-          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{matrix.arch}} ${{env.SDK_VER}}
+          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
           REM Build LAME MP3 encoder
           if exist lame (
@@ -229,8 +238,9 @@ jobs:
 
             REM Build static library only (no frontend) using documented approach
             REM comp=msvc ensures we use Microsoft compiler
+            REM asm=no disables assembly optimizations (safer for cross-compilation)
             REM CFG=RH uses Robert's optimizations (default)
-            nmake -f Makefile.MSVC comp=msvc libmp3lame-static.lib
+            nmake -f Makefile.MSVC comp=msvc asm=no libmp3lame-static.lib
             if %errorlevel% neq 0 exit /b %errorlevel%
 
             REM Install headers and library
@@ -264,9 +274,7 @@ jobs:
       - name: Build
         shell: cmd
         run: |
-          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{matrix.arch}} ${{env.SDK_VER}}
-          WHERE rc.exe || echo RC not found in PATH
-          WHERE mt.exe || echo MT not found in PATH
+          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
           msys2 -c "./build.sh ${{matrix.arch}}"
 
       - name: Debug log
