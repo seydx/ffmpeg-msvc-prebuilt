@@ -223,13 +223,6 @@ fi
 
 # libzimg
 if [ -n "$ENABLE_LIBZIMG" ]; then
-    echo -e "\n[Build libzimg]"
-    cd zimg
-    if [ ! -f configure ]; then
-        ./autogen.sh
-    fi
-    cd ..
-    ./build-make-dep.sh zimg --enable-static --disable-shared --disable-testapp --disable-example --disable-unit-test
     add_ffargs "--enable-libzimg"
 fi
 

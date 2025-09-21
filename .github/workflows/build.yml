@@ -163,6 +163,58 @@ jobs:
           REM   cd ..
           REM )
 
+      - name: Build zimg with MSVC
+        if: ${{ success() }}
+        shell: cmd
+        run: |
+          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
+
+          REM Build zimg using MSBuild
+          if exist zimg (
+            echo Building zimg...
+            cd zimg\_msvc
+
+            REM Determine platform for MSBuild
+            if "${{matrix.arch}}" == "arm64" (
+              set PLATFORM=ARM64
+            ) else (
+              set PLATFORM=x64
+            )
+
+            MSBuild zimg.sln -p:Configuration=Release -p:Platform=%PLATFORM% -p:RuntimeLibrary=MT
+            if %errorlevel% neq 0 exit /b %errorlevel%
+
+            REM Install headers
+            if not exist D:\a\_temp\msys64\usr\local\include\zimg mkdir D:\a\_temp\msys64\usr\local\include\zimg
+            xcopy /E /I ..\src\zimg\*.h D:\a\_temp\msys64\usr\local\include\zimg\
+            xcopy /E /I ..\src\zimg\*.hpp D:\a\_temp\msys64\usr\local\include\zimg\
+
+            REM Find and install the library
+            if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
+            for /R %PLATFORM%\Release %%f in (*.lib) do (
+              echo Found library: %%f
+              copy "%%f" D:\a\_temp\msys64\usr\local\lib\zimg.lib
+              copy "%%f" D:\a\_temp\msys64\usr\local\lib\libzimg.lib
+            )
+
+            REM Create pkg-config file
+            if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
+            (
+              echo prefix=/usr/local
+              echo exec_prefix=${prefix}
+              echo libdir=${exec_prefix}/lib
+              echo includedir=${prefix}/include
+              echo.
+              echo Name: zimg
+              echo Description: Scaling, colorspace conversion, and dithering library
+              echo Version: 3.0
+              echo Libs: -L${libdir} -lzimg
+              echo Cflags: -I${includedir}
+            ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\zimg.pc
+
+            cd ..\..
+          )
+
       - name: Build LAME with MSVC
         if: ${{ success() }}
         shell: cmd
