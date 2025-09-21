@@ -19,9 +19,17 @@ LICENSE_ARGS="--enable-gpl --enable-version3"
 # Disable programs and features we don't need (same as Jellyfin)
 DISABLE_ARGS="--disable-ffplay --disable-debug --disable-doc --disable-sdl2"
 CFLAGS="$CFLAGS -I${SRC_DIR}/compat/stdbit"
+
+# Add library paths for MSVC
+EXTRA_LDFLAGS="-LIBPATH:D:/a/_temp/msys64/usr/local/lib"
+EXTRA_LIBS=""
+
 EX_BUILD_ARGS="$TYPE_ARGS $CROSS_ARGS $LICENSE_ARGS $DISABLE_ARGS"
 
-CFLAGS="$CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH $EX_BUILD_ARGS $@
+CFLAGS="$CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH \
+    --extra-ldflags="$EXTRA_LDFLAGS" \
+    --extra-libs="$EXTRA_LIBS" \
+    $EX_BUILD_ARGS $@
 # iconv -f gbk config.h >config.h.tmp && mv config.h.tmp config.h
 make -j$(nproc)
 make install prefix=$INSTALL_PREFIX

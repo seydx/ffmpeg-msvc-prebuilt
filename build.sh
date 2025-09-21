@@ -237,6 +237,13 @@ if [ -n "$ENABLE_LIBASS" ]; then
     add_ffargs "--enable-libass"
 fi
 
+# ========================================
+# Windows Native Features
+# ========================================
+
+add_ffargs "--enable-schannel"
+add_ffargs "--enable-iconv"
+
 # Build FFmpeg
 ./build-ffmpeg.sh FFmpeg $FF_ARGS
 ./reprefix.sh
