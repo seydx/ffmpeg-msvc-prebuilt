@@ -156,6 +156,30 @@ if [ -n "$ENABLE_LIBGLSLANG" ]; then
 
         # Create a pkg-config file for glslang that works with MSVC
         mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
+
+        # Check which libraries are available
+        echo "Building glslang.pc file..."
+        GLSLANG_LIBS="-lglslang -lMachineIndependent -lOSDependent -lGenericCodeGen -lSPVRemapper -lSPIRV"
+        echo "  Base libs: $GLSLANG_LIBS"
+
+        # Add HLSL and OGLCompiler if they exist
+        if [ -f "$VULKAN_SDK/Lib/HLSL.lib" ]; then
+            GLSLANG_LIBS="$GLSLANG_LIBS -lHLSL"
+            echo "  Added HLSL.lib"
+        else
+            echo "  HLSL.lib not found - skipping"
+        fi
+        if [ -f "$VULKAN_SDK/Lib/OGLCompiler.lib" ]; then
+            GLSLANG_LIBS="$GLSLANG_LIBS -lOGLCompiler"
+            echo "  Added OGLCompiler.lib"
+        else
+            echo "  OGLCompiler.lib not found - skipping"
+        fi
+
+        # Add SPIRV-Tools libraries
+        GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools-opt -lSPIRV-Tools"
+        echo "  Final libs: $GLSLANG_LIBS"
+
         cat > "$INSTALL_PREFIX/lib/pkgconfig/glslang.pc" << EOF
 prefix=$VULKAN_SDK
 includedir=\${prefix}/Include
@@ -165,8 +189,10 @@ Name: glslang
 Description: Khronos reference compiler and validator for GLSL, ESSL, and HLSL
 Version: 1.3.268
 Cflags: -I\${includedir}
-Libs: -L\${libdir} -lglslang -lMachineIndependent -lOSDependent -lHLSL -lOGLCompiler -lGenericCodeGen -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools
+Libs: -L\${libdir} $GLSLANG_LIBS
 EOF
+
+        echo "Created glslang.pc with libraries: $GLSLANG_LIBS"
 
         # Add SDK paths for FFmpeg configure to find headers and libraries
         export CFLAGS="$CFLAGS -I$VULKAN_SDK/Include"
