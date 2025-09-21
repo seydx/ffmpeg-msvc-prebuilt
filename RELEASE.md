@@ -26,6 +26,7 @@ This release contains FFmpeg builds with Jellyfin patches, compiled with MSVC (M
 - **NVIDIA**: CUDA/NVENC/NVDEC support via [nv-codec-headers](https://github.com/FFmpeg/nv-codec-headers.git) (x64 only)
 - **AMD**: AMF encoding via [AMF SDK](https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git) (x64 only)
 - **Intel**: QuickSync via [libvpl](https://github.com/intel/libvpl.git) (x64 only)
+- **Vulkan**: Cross-vendor compute and filtering with [glslang](https://github.com/KhronosGroup/glslang.git) shader compiler
 - **Windows**: DXVA2, D3D11VA, D3D12VA hardware decoding
 - **OpenCL**: Cross-vendor GPU acceleration
 

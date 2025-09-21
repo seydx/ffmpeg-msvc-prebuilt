@@ -67,6 +67,10 @@ The files are packaged into **.zip** archives for each configuration, making it 
 - [nv-codec-headers](https://github.com/FFmpeg/nv-codec-headers.git) - NVIDIA CUDA/NVENC (x64 only)
 - [AMF](https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git) - AMD AMF (x64 only)
 - [libvpl](https://github.com/intel/libvpl.git) - Intel QuickSync (x64 only)
+- [vulkan-headers](https://github.com/KhronosGroup/Vulkan-Headers.git) - Vulkan compute/encode
+- [glslang](https://github.com/KhronosGroup/glslang.git) - GLSL to SPIR-V compiler for Vulkan filters
+  - [spirv-tools](https://github.com/KhronosGroup/SPIRV-Tools.git)
+  - [spirv-headers](https://github.com/KhronosGroup/SPIRV-Headers.git)
 - [opencl-headers](https://github.com/KhronosGroup/OpenCL-Headers.git) - OpenCL
 - [opencl-icd-loader](https://github.com/KhronosGroup/OpenCL-ICD-Loader.git)
 

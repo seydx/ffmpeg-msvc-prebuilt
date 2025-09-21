@@ -85,3 +85,15 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "win-iconv"]
 	path = win-iconv
 	url = https://github.com/win-iconv/win-iconv
+[submodule "vulkan-headers"]
+	path = vulkan-headers
+	url = https://github.com/KhronosGroup/Vulkan-Headers.git
+[submodule "glslang"]
+	path = glslang
+	url = https://github.com/KhronosGroup/glslang.git
+[submodule "spirv-tools"]
+	path = spirv-tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools.git
+[submodule "spirv-headers"]
+	path = spirv-headers
+	url = https://github.com/KhronosGroup/SPIRV-Headers.git

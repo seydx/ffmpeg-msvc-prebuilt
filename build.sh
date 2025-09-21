@@ -151,6 +151,42 @@ if [ -n "$ENABLE_LIBVPL" ] && [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" !=
     add_ffargs "--enable-libvpl"
 fi
 
+# Vulkan support
+if [ -d "vulkan-headers" ]; then
+    echo "Building Vulkan support..."
+
+    # Install Vulkan headers
+    mkdir -p "$INSTALL_PREFIX/include"
+    cp -r vulkan-headers/include/* "$INSTALL_PREFIX/include/"
+
+    # Build SPIRV-Headers
+    if [ -d "spirv-headers" ]; then
+        mkdir -p "$INSTALL_PREFIX/include/spirv"
+        cp -r spirv-headers/include/spirv/* "$INSTALL_PREFIX/include/spirv/"
+    fi
+
+    # Build SPIRV-Tools
+    if [ -d "spirv-tools" ]; then
+        ./build-cmake-dep.sh spirv-tools \
+            -DSPIRV-Headers_SOURCE_DIR=$(pwd)/spirv-headers \
+            -DSPIRV_SKIP_TESTS=ON \
+            -DSPIRV_SKIP_EXECUTABLES=ON
+    fi
+
+    # Build glslang
+    if [ -d "glslang" ]; then
+        ./build-cmake-dep.sh glslang \
+            -DSPIRV-Tools_SOURCE_DIR=$(pwd)/spirv-tools \
+            -DBUILD_TESTING=OFF \
+            -DENABLE_GLSLANG_BINARIES=OFF \
+            -DENABLE_HLSL=OFF \
+            -DENABLE_CTEST=OFF
+        add_ffargs "--enable-libglslang"
+    fi
+
+    add_ffargs "--enable-vulkan"
+fi
+
 # ========================================
 # Video Decoder/Encoder
 # ========================================
