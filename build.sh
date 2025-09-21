@@ -72,9 +72,16 @@ add_ffargs "--enable-zlib"
 # Windows DirectX/D3D acceleration
 add_ffargs "--enable-dxva2 --enable-d3d11va --enable-d3d12va"
 
-# NVIDIA GPU acceleration
-./build-nvcodec.sh
-add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid --enable-nvdec --enable-nvenc"
+# MediaFoundation
+if [ "$BUILD_ARCH" == "arm64" ] || [ "$BUILD_ARCH" == "arm" ]; then
+    add_ffargs "--enable-mediafoundation"
+fi
+
+# NVIDIA
+./build-nvcodec.sh  # Install headers for all architectures
+if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
+    add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid --enable-nvdec --enable-nvenc"
+fi
 
 # OpenCL support for GPU-accelerated filters
 ./build-opencl.sh
@@ -236,7 +243,6 @@ fi
 # ========================================
 
 add_ffargs "--enable-schannel"
-add_ffargs "--enable-iconv"
 
 # Build FFmpeg
 ./build-ffmpeg.sh FFmpeg $FF_ARGS
