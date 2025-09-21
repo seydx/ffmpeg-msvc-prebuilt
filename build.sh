@@ -88,6 +88,16 @@ fi
 # libxml2
 if [ -d "libxml2" ]; then
     ./build-cmake-dep.sh libxml2 -DLIBXML2_WITH_ICONV=ON -DLIBXML2_WITH_LZMA=ON -DLIBXML2_WITH_ZLIB=ON -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
+
+    # FFmpeg's pkg-config file says "-lxml2" which means it looks for xml2.lib
+    # But CMake builds libxml2s.lib (s for static)
+    echo "Fixing libxml2 library naming..."
+    if [ -f "$INSTALL_PREFIX/lib/libxml2s.lib" ]; then
+        echo "Copying libxml2s.lib to xml2.lib for FFmpeg"
+        cp "$INSTALL_PREFIX/lib/libxml2s.lib" "$INSTALL_PREFIX/lib/xml2.lib"
+        cp "$INSTALL_PREFIX/lib/libxml2s.lib" "$INSTALL_PREFIX/lib/libxml2.lib"
+    fi
+
     add_ffargs "--enable-libxml2"
 fi
 
