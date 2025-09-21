@@ -98,8 +98,8 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     fi
 fi
 
-# Intel QuickSync Video acceleration via oneVPL
-if [ -n "$ENABLE_LIBVPL" ]; then
+# Intel QuickSync
+if [ -n "$ENABLE_LIBVPL" ] && [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     ./build-vpl.sh
     add_ffargs "--enable-libvpl"
 fi
