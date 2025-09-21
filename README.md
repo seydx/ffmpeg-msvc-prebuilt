@@ -85,6 +85,7 @@ The files are packaged into **.zip** archives for each configuration, making it 
 #### Other Libraries
 - [zlib](https://github.com/madler/zlib.git) - Compression
 - [xz](https://github.com/tukaani-project/xz.git) - LZMA/XZ compression
+- [libbluray](https://code.videolan.org/videolan/libbluray.git) - Blu-ray disc playback
 
 
 ### Windows-specific Features

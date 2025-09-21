@@ -17,7 +17,7 @@ shift 1 || true
 FF_ARGS=$@
 
 echo "Checking available dependencies in FFmpeg/configure..."
-for dep in libharfbuzz libfreetype libjxl libvpx libwebp libass libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl libzimg libx264 libx265; do
+for dep in libharfbuzz libfreetype libjxl libvpx libwebp libass libbluray libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl libzimg libx264 libx265; do
     env_name="${dep//-/_}"
     env_var="ENABLE_${env_name^^}"
 
@@ -273,6 +273,15 @@ if [ -n "$ENABLE_LIBASS" ]; then
     # apply-patch fribidi fribidi.patch
     ./build-libass.sh
     add_ffargs "--enable-libass"
+fi
+
+# ========================================
+# MEDIA FORMATS
+# ========================================
+
+# libbluray - Blu-ray support
+if [ -n "$ENABLE_LIBBLURAY" ]; then
+    add_ffargs "--enable-libbluray"
 fi
 
 # ========================================

@@ -85,3 +85,6 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "win-iconv"]
 	path = win-iconv
 	url = https://github.com/win-iconv/win-iconv
+[submodule "libbluray"]
+	path = libbluray
+	url = https://code.videolan.org/videolan/libbluray.git

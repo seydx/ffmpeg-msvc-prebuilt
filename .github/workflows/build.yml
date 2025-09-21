@@ -145,23 +145,42 @@ jobs:
             if exist D:\a\_temp\msys64\usr\local\lib\libdav1d.a (
               echo Copying libdav1d.a to dav1d.lib for FFmpeg
               copy D:\a\_temp\msys64\usr\local\lib\libdav1d.a D:\a\_temp\msys64\usr\local\lib\dav1d.lib
-              REM Also keep libdav1d.lib for compatibility
               copy D:\a\_temp\msys64\usr\local\lib\libdav1d.a D:\a\_temp\msys64\usr\local\lib\libdav1d.lib
             )
 
             cd ..
           )
 
-          REM Add more Meson-based dependencies here in the future
-          REM Example:
-          REM if exist some-other-lib (
-          REM   echo Building some-other-lib...
-          REM   cd some-other-lib
-          REM   meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static
-          REM   meson compile -C build
-          REM   meson install -C build
-          REM   cd ..
-          REM )
+          REM Build libbluray
+          if exist libbluray (
+            echo Building libbluray...
+            cd libbluray
+
+            REM Create cross-file for ARM64 builds
+            if "${{matrix.arch}}" == "arm64" (
+              echo [binaries] > cross.txt
+              echo c = 'cl' >> cross.txt
+              echo ar = 'lib' >> cross.txt
+              echo [host_machine] >> cross.txt
+              echo system = 'windows' >> cross.txt
+              echo cpu_family = 'aarch64' >> cross.txt
+              echo cpu = 'aarch64' >> cross.txt
+              echo endian = 'little' >> cross.txt
+              meson setup build --cross-file cross.txt --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_udf=false -Denable_examples=false -Denable_bdjava=false -Db_vscrt=mt
+            ) else (
+              meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_udf=false -Denable_examples=false -Denable_bdjava=false -Db_vscrt=mt
+            )
+            meson compile -C build
+            meson install -C build
+
+            REM Meson installs as libbluray.a, but FFmpeg expects bluray.lib
+            if exist D:\a\_temp\msys64\usr\local\lib\libbluray.a (
+              copy D:\a\_temp\msys64\usr\local\lib\libbluray.a D:\a\_temp\msys64\usr\local\lib\bluray.lib
+              copy D:\a\_temp\msys64\usr\local\lib\libbluray.a D:\a\_temp\msys64\usr\local\lib\libbluray.lib
+            )
+
+            cd ..
+          )
 
       - name: Build zimg with MSVC
         if: ${{ success() }}
