@@ -184,10 +184,9 @@ jobs:
             MSBuild zimg.sln -p:Configuration=Release -p:Platform=%PLATFORM% -p:RuntimeLibrary=MT
             if %errorlevel% neq 0 exit /b %errorlevel%
 
-            REM Install headers - API header needs to be accessible
+            REM Install headers - API header needs to be accessible directly
             if not exist D:\a\_temp\msys64\usr\local\include\zimg mkdir D:\a\_temp\msys64\usr\local\include\zimg
             copy ..\src\zimg\api\zimg.h D:\a\_temp\msys64\usr\local\include\zimg\
-            copy ..\src\zimg\api\zimg++.hpp D:\a\_temp\msys64\usr\local\include\zimg\
 
             REM Find and install the library
             if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
