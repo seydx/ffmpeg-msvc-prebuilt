@@ -153,9 +153,24 @@ if [ -n "$ENABLE_LIBGLSLANG" ]; then
 
     if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
         echo "Found Vulkan SDK at: $VULKAN_SDK"
+
+        # Create a pkg-config file for glslang that works with MSVC
+        mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
+        cat > "$INSTALL_PREFIX/lib/pkgconfig/glslang.pc" << EOF
+prefix=$VULKAN_SDK
+includedir=\${prefix}/Include
+libdir=\${prefix}/Lib
+
+Name: glslang
+Description: Khronos reference compiler and validator for GLSL, ESSL, and HLSL
+Version: 1.3.268
+Cflags: -I\${includedir}
+Libs: -L\${libdir} -lglslang -lMachineIndependent -lOSDependent -lHLSL -lOGLCompiler -lGenericCodeGen -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools
+EOF
+
         # Add SDK paths for FFmpeg configure to find headers and libraries
-        export CFLAGS="$CFLAGS -I$VULKAN_SDK/include"
-        export LDFLAGS="$LDFLAGS -LIBPATH:$VULKAN_SDK/lib"
+        export CFLAGS="$CFLAGS -I$VULKAN_SDK/Include"
+        export LDFLAGS="$LDFLAGS -LIBPATH:$VULKAN_SDK/Lib"
         add_ffargs "--enable-libglslang"
         echo "Vulkan filters enabled (scale_vulkan, overlay_vulkan, etc.)"
     else
