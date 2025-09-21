@@ -147,36 +147,20 @@ if [ -n "$ENABLE_LIBVPL" ] && [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" !=
     add_ffargs "--enable-libvpl"
 fi
 
+# Vulkan/glslang support for Vulkan filters
 if [ -n "$ENABLE_LIBGLSLANG" ]; then
-    # Vulkan support
-    echo "Building Vulkan support..."
-
-    # Install Vulkan headers
-    mkdir -p "$INSTALL_PREFIX/include"
-    cp -r vulkan-headers/include/* "$INSTALL_PREFIX/include/"
-
-    # Build SPIRV-Headers
-    mkdir -p "$INSTALL_PREFIX/include/spirv"
-    cp -r spirv-headers/include/spirv/* "$INSTALL_PREFIX/include/spirv/"
-
-    # Build SPIRV-Tools
-    ./build-cmake-dep.sh spirv-tools \
-        -DSPIRV-Headers_SOURCE_DIR=$(pwd)/spirv-headers \
-        -DSPIRV_SKIP_TESTS=ON \
-        -DSPIRV_SKIP_EXECUTABLES=ON
-
-    # Build glslang
-    ./build-cmake-dep.sh glslang \
-        -DALLOW_EXTERNAL_SPIRV_TOOLS=ON \
-        -DSPIRV-Tools-opt_DIR="$INSTALL_PREFIX/SPIRV-Tools-opt/cmake" \
-        -DSPIRV-Tools_DIR="$INSTALL_PREFIX/SPIRV-Tools/cmake" \
-        -DBUILD_TESTING=OFF \
-        -DENABLE_GLSLANG_BINARIES=OFF \
-        -DENABLE_HLSL=OFF \
-        -DENABLE_CTEST=OFF \
-        -DENABLE_OPT=ON
-
-    add_ffargs "--enable-libglslang"
+    echo "Checking for Vulkan/glslang support..."
+    # Check if Vulkan SDK is already installed (via GitHub Action or system)
+    if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
+        echo "Found Vulkan SDK at: $VULKAN_SDK"
+        # Add SDK paths for FFmpeg configure to find headers and libraries
+        export CFLAGS="$CFLAGS -I$VULKAN_SDK/include"
+        export LDFLAGS="$LDFLAGS -LIBPATH:$VULKAN_SDK/lib"
+        add_ffargs "--enable-libglslang"
+    else
+        echo "Warning: Vulkan SDK not found. Vulkan support will be disabled."
+        echo "         To enable: Install Vulkan SDK or use GitHub Action setup"
+    fi
 fi
 
 # ========================================
