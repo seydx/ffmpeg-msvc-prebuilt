@@ -270,6 +270,9 @@ fi
 add_ffargs "--enable-schannel"
 add_ffargs "--enable-lzma"
 
+# ========================================
 # Build FFmpeg
+# ========================================
+
 ./build-ffmpeg.sh FFmpeg $FF_ARGS
 ./reprefix.sh
