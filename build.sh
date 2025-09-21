@@ -72,6 +72,10 @@ add_ffargs "--enable-zlib"
 # XZ/LZMA
 if [ -d "xz" ]; then
     ./build-cmake-dep.sh xz -DENABLE_NLS=OFF -DBUILD_TESTING=OFF
+    if [ -f "$INSTALL_PREFIX/lib/lzma.lib" ] && [ ! -f "$INSTALL_PREFIX/lib/liblzma.lib" ]; then
+        echo "Copying lzma.lib to liblzma.lib for FFmpeg compatibility"
+        cp "$INSTALL_PREFIX/lib/lzma.lib" "$INSTALL_PREFIX/lib/liblzma.lib"
+    fi
     add_ffargs "--enable-lzma"
 fi
 

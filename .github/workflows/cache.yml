@@ -8,12 +8,12 @@ on:
   workflow_call:
     inputs:
       ref_name:
-        description: "Tag"
+        description: 'Tag'
         required: false
         type: string
     outputs:
       cache-key:
-        description: "Cache Key"
+        description: 'Cache Key'
         value: ${{jobs.cache.outputs.cache-key}}
 jobs:
   cache:

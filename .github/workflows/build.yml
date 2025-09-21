@@ -9,7 +9,7 @@ run-name: Build ${{inputs.ref_name||github.ref_name}}
 on:
   push:
     tags:
-      - "*"
+      - '*'
   #   branches:
   #     - main
   #     - master
@@ -20,16 +20,16 @@ on:
   workflow_call:
     inputs:
       ref_name:
-        description: "Tag"
+        description: 'Tag'
         required: false
         type: string
   workflow_dispatch:
     inputs:
       ref_name:
-        description: "Tag or Branch"
+        description: 'Tag or Branch'
         required: false
         type: string
-        default: "main"
+        default: 'main'
 
 jobs:
   prepare:
