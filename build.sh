@@ -17,7 +17,7 @@ shift 1 || true
 FF_ARGS=$@
 
 echo "Checking available dependencies in FFmpeg/configure..."
-for dep in libharfbuzz libfreetype sdl libjxl libvpx libwebp libass libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl; do
+for dep in libharfbuzz libfreetype libjxl libvpx libwebp libass libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl libzimg libx264 libx265; do
     env_name="${dep//-/_}"
     env_var="ENABLE_${env_name^^}"
 
@@ -131,22 +131,26 @@ if [ -n "$ENABLE_LIBSVTAV1" ]; then
 fi
 
 # x265 - HEVC encoder
-apply-patch x265_git x265_git-static.patch
+if [ -n "$ENABLE_LIBX265" ]; then
+    apply-patch x265_git x265_git-static.patch
 
-X265_ARGS="-DSTATIC_LINK_CRT=ON"
-ENABLE_SHARED=OFF
+    X265_ARGS="-DSTATIC_LINK_CRT=ON"
+    ENABLE_SHARED=OFF
 
-git -C x265_git fetch --tags
-./build-cmake-dep.sh x265_git/source -DCMAKE_SYSTEM_NAME=Windows -DENABLE_SHARED=OFF -DENABLE_CLI=OFF $X265_ARGS
-add_ffargs "--enable-libx265"
-
-# x264 - H.264 encoder
-if [ "$BUILD_ARCH" == "arm64" ]; then
-    X264_ARGS="--disable-asm"
+    git -C x265_git fetch --tags
+    ./build-cmake-dep.sh x265_git/source -DCMAKE_SYSTEM_NAME=Windows -DENABLE_SHARED=OFF -DENABLE_CLI=OFF $X265_ARGS
+    add_ffargs "--enable-libx265"
 fi
 
-INSTALL_TARGET=install-lib-static ./build-make-dep.sh x264 --enable-static $X264_ARGS
-add_ffargs "--enable-libx264"
+# x264 - H.264 encoder
+if [ -n "$ENABLE_LIBX264" ]; then
+    if [ "$BUILD_ARCH" == "arm64" ]; then
+        X264_ARGS="--disable-asm"
+    fi
+
+    INSTALL_TARGET=install-lib-static ./build-make-dep.sh x264 --enable-static $X264_ARGS
+    add_ffargs "--enable-libx264"
+fi
 
 # ========================================
 # Audio Decoder/Encoder
@@ -217,9 +221,17 @@ if [ -n "$ENABLE_LIBWEBP" ]; then
     add_ffargs "--enable-libwebp"
 fi
 
-# libzimg - high quality image scaling
-./build-make-dep.sh zimg --enable-static --disable-shared
-add_ffargs "--enable-libzimg"
+# libzimg
+if [ -n "$ENABLE_LIBZIMG" ]; then
+    echo -e "\n[Build libzimg]"
+    cd zimg
+    if [ ! -f configure ]; then
+        ./autogen.sh
+    fi
+    cd ..
+    ./build-make-dep.sh zimg --enable-static --disable-shared --disable-testapp --disable-example --disable-unit-test
+    add_ffargs "--enable-libzimg"
+fi
 
 # ========================================
 # TEXT/SUBTITLE RENDERING
