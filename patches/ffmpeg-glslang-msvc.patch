@@ -2,20 +2,19 @@ diff --git a/configure b/configure
 index 1111111..2222222 100755
 --- a/configure
 +++ b/configure
-@@ -7000,11 +7000,12 @@ enabled libharfbuzz       && require_pkg_config libharfbuzz harfbuzz hb.h hb_bu
--enabled libglslang && { check_lib spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
--                            -lglslang -lMachineIndependent -lGenericCodeGen \
--                            -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ||
--                        require spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
--                            -lglslang -lMachineIndependent -lOSDependent -lHLSL -lOGLCompiler -lGenericCodeGen \
--                            -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ; }
-+enabled libglslang && { check_lib spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
-+                            -lglslang -lMachineIndependent -lGenericCodeGen \
-+                            -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ||
+@@ -6920,11 +6920,12 @@ enabled libharfbuzz       && require_pkg_config libharfbuzz harfbuzz hb.h hb_bu
+ enabled libglslang && { check_lib spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
+                             -lglslang -lMachineIndependent -lGenericCodeGen \
+                             -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ||
 +                        check_pkg_config spirv_compiler glslang "glslang/Include/glslang_c_interface.h glslang/build_info.h" glslang_initialize_process ||
-+                        require spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
-+                            -lglslang -lMachineIndependent -lOSDependent -lHLSL -lOGLCompiler -lGenericCodeGen \
-+                            -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ; }
+                         require spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
+                             -lglslang -lMachineIndependent -lOSDependent -lHLSL -lOGLCompiler -lGenericCodeGen \
+                             -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ; }
+ enabled libgme            && { check_pkg_config libgme libgme gme/gme.h gme_new_emu ||
+                                require libgme gme/gme.h gme_new_emu -lgme -lstdc++; }
+ enabled libgsm            && { for gsm_hdr in "gsm.h" "gsm/gsm.h"; do
+                                    check_lib libgsm "${gsm_hdr}" gsm_create -lgsm && break;
+                                done || die "ERROR: libgsm not found"; }
 diff --git a/libavfilter/vulkan_glslang.c b/libavfilter/vulkan_glslang.c
 index 1111111..2222222 100644
 --- a/libavfilter/vulkan_glslang.c
