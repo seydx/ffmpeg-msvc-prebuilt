@@ -84,6 +84,7 @@ The files are packaged into **.zip** archives for each configuration, making it 
 
 #### Other Libraries
 - [zlib](https://github.com/madler/zlib.git) - Compression
+- [xz](https://github.com/tukaani-project/xz.git) - LZMA/XZ compression
 
 
 ### Windows-specific Features
@@ -91,7 +92,6 @@ The files are packaged into **.zip** archives for each configuration, making it 
 - **MediaFoundation** (ARM64 only)
 - **DXVA2, D3D11VA, D3D12VA** - DirectX hardware acceleration
 - **Schannel** - Windows native TLS/SSL
-- **LZMA** - Windows SDK compression
 
 ## License
 

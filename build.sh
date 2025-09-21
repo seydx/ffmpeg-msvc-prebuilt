@@ -61,6 +61,10 @@ if [ -d "patches/jellyfin" ]; then
     cd ..
 fi
 
+# ========================================
+# Compression
+# ========================================
+
 # zlib
 ./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF
 add_ffargs "--enable-zlib"
