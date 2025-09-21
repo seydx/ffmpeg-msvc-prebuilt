@@ -83,17 +83,19 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid --enable-nvdec --enable-nvenc"
 fi
 
-# OpenCL support for GPU-accelerated filters
+# OpenCL
 ./build-opencl.sh
 add_ffargs "--enable-opencl"
 
-# AMD AMF headers
-echo -e "\n[Install AMF headers]"
-if [ -d "AMF/amf/public/include" ]; then
-    mkdir -p "$INSTALL_PREFIX/include"
-    cp -r AMF/amf/public/include/* "$INSTALL_PREFIX/include/"
-    echo "AMD AMF headers installed"
-    add_ffargs "--enable-amf"
+# AMD AMF
+if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
+    echo -e "\n[Install AMF headers]"
+    if [ -d "AMF/amf/public/include" ]; then
+        mkdir -p "$INSTALL_PREFIX/include/AMF"
+        cp -r AMF/amf/public/include/* "$INSTALL_PREFIX/include/AMF/"
+        echo "AMD AMF headers installed"
+        add_ffargs "--enable-amf"
+    fi
 fi
 
 # Intel QuickSync Video acceleration via oneVPL
@@ -214,6 +216,10 @@ if [ -n "$ENABLE_LIBWEBP" ]; then
     ./build-cmake-dep.sh libwebp -DWEBP_BUILD_EXTRAS=OFF -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF
     add_ffargs "--enable-libwebp"
 fi
+
+# libzimg - high quality image scaling
+./build-make-dep.sh zimg --enable-static --disable-shared
+add_ffargs "--enable-libzimg"
 
 # ========================================
 # TEXT/SUBTITLE RENDERING
