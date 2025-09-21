@@ -20,6 +20,9 @@ LICENSE_ARGS="--enable-gpl --enable-version3"
 DISABLE_ARGS="--disable-ffplay --disable-debug --disable-doc --disable-sdl2"
 CFLAGS="$CFLAGS -I${SRC_DIR}/compat/stdbit"
 
+# Add LZMA_API_STATIC for static linking with liblzma
+CFLAGS="$CFLAGS -DLZMA_API_STATIC"
+
 # Add library paths for MSVC
 EXTRA_LDFLAGS="-LIBPATH:D:/a/_temp/msys64/usr/local/lib"
 EXTRA_LIBS=""
