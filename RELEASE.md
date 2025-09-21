@@ -1,25 +1,49 @@
-This release contains FFmpeg builds, compiled with MSVC (Microsoft Visual C++) via GitHub Actions, and organized as follows:
+This release contains FFmpeg builds with Jellyfin patches, compiled with MSVC (Microsoft Visual C++) via GitHub Actions.
 
-- **Variants**: Includes both **shared** and **static** builds.
-- **Architectures**: Each variant is available for **amd64**, **x86**, **arm**, and **arm64**.
-- **Licenses**:
-  - **GPL**: Includes GPL components such as the **x264** and **x265** encoders.
-  - **LGPL**: Excludes GPL-licensed components.
+### Build Configuration
 
-#### Included Dependencies
+- **Build Type**: Static libraries only
+- **Architectures**: amd64 (x64) and arm64
+- **License**: GPL v3 (includes all codecs and features)
+- **Patches**: Includes Jellyfin FFmpeg patches for enhanced media server functionality
 
-- [nv-codec-headers](https://github.com/FFmpeg/nv-codec-headers.git)
-- [zlib](https://github.com/madler/zlib.git)
-- [libjxl](https://github.com/libjxl/libjxl.git)
-  - [openexr](https://github.com/AcademySoftwareFoundation/openexr.git)
-- [freetype](https://gitlab.freedesktop.org/freetype/freetype.git)
-- [harfbuzz](https://github.com/harfbuzz/harfbuzz.git)
-- [libass](https://github.com/libass/libass.git)
-  - [fribidi](https://github.com/fribidi/fribidi.git)
-- [SDL2](https://github.com/libsdl-org/SDL.git)
-- [libvpx](https://github.com/webmproject/libvpx.git)
-- [libwebp](https://github.com/webmproject/libwebp.git)
-- [x264](https://code.videolan.org/videolan/x264.git) (GPL builds only)
-- [x265](https://bitbucket.org/multicoreware/x265_git.git) (GPL builds only)
+### Included Codecs & Libraries
+
+#### Video Codecs
+- [x264](https://code.videolan.org/videolan/x264.git) - H.264 encoder
+- [x265](https://bitbucket.org/multicoreware/x265_git.git) - HEVC/H.265 encoder
+- [libvpx](https://github.com/webmproject/libvpx.git) - VP8/VP9 encoder/decoder
+- [libdav1d](https://code.videolan.org/videolan/dav1d.git) - AV1 decoder
+- [libsvtav1](https://gitlab.com/AOMediaCodec/SVT-AV1.git) - AV1 encoder
+
+#### Audio Codecs
+- [libmp3lame](https://github.com/lame-mirror/lame.git) - MP3 encoder (MSVC native build)
+- [libfdk-aac](https://github.com/mstorsjo/fdk-aac.git) - AAC encoder
+- [libopus](https://github.com/xiph/opus.git) - Opus encoder/decoder
+- [libvorbis](https://github.com/xiph/vorbis.git) - Vorbis encoder/decoder
+
+#### Hardware Acceleration
+- **NVIDIA**: CUDA/NVENC/NVDEC support via [nv-codec-headers](https://github.com/FFmpeg/nv-codec-headers.git) (x64 only)
+- **AMD**: AMF encoding via [AMF SDK](https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git) (x64 only)
+- **Intel**: QuickSync via [libvpl](https://github.com/intel/libvpl.git) (x64 only)
+- **Windows**: DXVA2, D3D11VA, D3D12VA hardware decoding
+- **OpenCL**: Cross-vendor GPU acceleration
+
+#### Image Processing
+- [libjxl](https://github.com/libjxl/libjxl.git) - JPEG XL support
+- [libwebp](https://github.com/webmproject/libwebp.git) - WebP support
+- [libzimg](https://github.com/sekrit-twc/zimg.git) - High-quality scaling (MSVC native build)
+
+#### Text/Subtitle Rendering
+- [freetype](https://gitlab.freedesktop.org/freetype/freetype.git) - Font rendering
+- [harfbuzz](https://github.com/harfbuzz/harfbuzz.git) - Text shaping
+- [libass](https://github.com/libass/libass.git) - ASS/SSA subtitle rendering
+- [fribidi](https://github.com/fribidi/fribidi.git) - Bidirectional text support
+
+#### Other Libraries
+- [zlib](https://github.com/madler/zlib.git) - Compression
+- [xz](https://github.com/tukaani-project/xz.git) - LZMA/XZ compression
+- [win-iconv](https://github.com/win-iconv/win-iconv.git) - Character encoding conversion
+- [libxml2](https://github.com/GNOME/libxml2.git) - XML parsing
 
 #### Release Notes
