@@ -17,7 +17,7 @@ shift 1 || true
 FF_ARGS=$@
 
 echo "Checking available dependencies in FFmpeg/configure..."
-for dep in libharfbuzz libfreetype libjxl libvpx libwebp libass libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl libzimg libx264 libx265; do
+for dep in libharfbuzz libfreetype libjxl libvpx libwebp libass libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl libzimg libx264 libx265 libglslang; do
     env_name="${dep//-/_}"
     env_var="ENABLE_${env_name^^}"
 
@@ -70,47 +70,38 @@ fi
 add_ffargs "--enable-zlib"
 
 # XZ/LZMA
-if [ -d "xz" ]; then
-    ./build-cmake-dep.sh xz -DENABLE_NLS=OFF -DBUILD_TESTING=OFF
-    if [ -f "$INSTALL_PREFIX/lib/lzma.lib" ]; then
-        echo "Copying lzma.lib to liblzma.lib for FFmpeg compatibility"
-        cp "$INSTALL_PREFIX/lib/lzma.lib" "$INSTALL_PREFIX/lib/liblzma.lib"
-    fi
-    add_ffargs "--enable-lzma"
+./build-cmake-dep.sh xz -DENABLE_NLS=OFF -DBUILD_TESTING=OFF
+if [ -f "$INSTALL_PREFIX/lib/lzma.lib" ]; then
+    echo "Copying lzma.lib to liblzma.lib for FFmpeg compatibility"
+    cp "$INSTALL_PREFIX/lib/lzma.lib" "$INSTALL_PREFIX/lib/liblzma.lib"
 fi
+add_ffargs "--enable-lzma"
 
 # win-iconv
-if [ -d "win-iconv" ]; then
-    ./build-cmake-dep.sh win-iconv
-
-    # For static linking, we need to ensure FFmpeg uses libiconv.lib (static) not iconv.lib (DLL import)
-    # Remove the DLL import library to force static linking
-    echo "Ensuring static iconv linking..."
-    if [ -f "$INSTALL_PREFIX/lib/iconv.lib" ] && [ -f "$INSTALL_PREFIX/lib/libiconv.lib" ]; then
-        echo "Moving DLL import library out of the way to force static linking"
-        mv "$INSTALL_PREFIX/lib/iconv.lib" "$INSTALL_PREFIX/lib/iconv_dll.lib"
-        # Copy static library to iconv.lib for FFmpeg to find
-        cp "$INSTALL_PREFIX/lib/libiconv.lib" "$INSTALL_PREFIX/lib/iconv.lib"
-    fi
-
-    add_ffargs "--enable-iconv"
+./build-cmake-dep.sh win-iconv
+# For static linking, we need to ensure FFmpeg uses libiconv.lib (static) not iconv.lib (DLL import)
+# Remove the DLL import library to force static linking
+echo "Ensuring static iconv linking..."
+if [ -f "$INSTALL_PREFIX/lib/iconv.lib" ] && [ -f "$INSTALL_PREFIX/lib/libiconv.lib" ]; then
+    echo "Moving DLL import library out of the way to force static linking"
+    mv "$INSTALL_PREFIX/lib/iconv.lib" "$INSTALL_PREFIX/lib/iconv_dll.lib"
+    # Copy static library to iconv.lib for FFmpeg to find
+    cp "$INSTALL_PREFIX/lib/libiconv.lib" "$INSTALL_PREFIX/lib/iconv.lib"
 fi
+add_ffargs "--enable-iconv"
 
 # libxml2
-if [ -d "libxml2" ]; then
-    ./build-cmake-dep.sh libxml2 -DLIBXML2_WITH_ICONV=ON -DLIBXML2_WITH_LZMA=ON -DLIBXML2_WITH_ZLIB=ON -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
-
-    # FFmpeg's pkg-config file says "-lxml2" which means it looks for xml2.lib
-    # But CMake builds libxml2s.lib (s for static)
-    echo "Fixing libxml2 library naming..."
-    if [ -f "$INSTALL_PREFIX/lib/libxml2s.lib" ]; then
-        echo "Copying libxml2s.lib to xml2.lib for FFmpeg"
-        cp "$INSTALL_PREFIX/lib/libxml2s.lib" "$INSTALL_PREFIX/lib/xml2.lib"
-        cp "$INSTALL_PREFIX/lib/libxml2s.lib" "$INSTALL_PREFIX/lib/libxml2.lib"
-    fi
-
-    add_ffargs "--enable-libxml2"
+./build-cmake-dep.sh libxml2 -DLIBXML2_WITH_ICONV=ON -DLIBXML2_WITH_LZMA=ON -DLIBXML2_WITH_ZLIB=ON -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
+# FFmpeg's pkg-config file says "-lxml2" which means it looks for xml2.lib
+# But CMake builds libxml2s.lib (s for static)
+echo "Fixing libxml2 library naming..."
+if [ -f "$INSTALL_PREFIX/lib/libxml2s.lib" ]; then
+    echo "Copying libxml2s.lib to xml2.lib for FFmpeg"
+    cp "$INSTALL_PREFIX/lib/libxml2s.lib" "$INSTALL_PREFIX/lib/xml2.lib"
+    cp "$INSTALL_PREFIX/lib/libxml2s.lib" "$INSTALL_PREFIX/lib/libxml2.lib"
 fi
+
+add_ffargs "--enable-libxml2"
 
 # ========================================
 # Hardware
@@ -125,8 +116,8 @@ if [ "$BUILD_ARCH" == "arm64" ] || [ "$BUILD_ARCH" == "arm" ]; then
 fi
 
 # NVIDIA
-./build-nvcodec.sh  # Install headers for all architectures
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
+    ./build-nvcodec.sh
     add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc"
 
     if command -v clang >/dev/null 2>&1; then
@@ -156,8 +147,8 @@ if [ -n "$ENABLE_LIBVPL" ] && [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" !=
     add_ffargs "--enable-libvpl"
 fi
 
-# Vulkan support
-if [ -d "vulkan-headers" ]; then
+if [ -n "$ENABLE_LIBGLSLANG" ]; then
+    # Vulkan support
     echo "Building Vulkan support..."
 
     # Install Vulkan headers
@@ -165,34 +156,27 @@ if [ -d "vulkan-headers" ]; then
     cp -r vulkan-headers/include/* "$INSTALL_PREFIX/include/"
 
     # Build SPIRV-Headers
-    if [ -d "spirv-headers" ]; then
-        mkdir -p "$INSTALL_PREFIX/include/spirv"
-        cp -r spirv-headers/include/spirv/* "$INSTALL_PREFIX/include/spirv/"
-    fi
+    mkdir -p "$INSTALL_PREFIX/include/spirv"
+    cp -r spirv-headers/include/spirv/* "$INSTALL_PREFIX/include/spirv/"
 
     # Build SPIRV-Tools
-    if [ -d "spirv-tools" ]; then
-        ./build-cmake-dep.sh spirv-tools \
-            -DSPIRV-Headers_SOURCE_DIR=$(pwd)/spirv-headers \
-            -DSPIRV_SKIP_TESTS=ON \
-            -DSPIRV_SKIP_EXECUTABLES=ON
-    fi
+    ./build-cmake-dep.sh spirv-tools \
+        -DSPIRV-Headers_SOURCE_DIR=$(pwd)/spirv-headers \
+        -DSPIRV_SKIP_TESTS=ON \
+        -DSPIRV_SKIP_EXECUTABLES=ON
 
     # Build glslang
-    if [ -d "glslang" ]; then
-        ./build-cmake-dep.sh glslang \
-            -DALLOW_EXTERNAL_SPIRV_TOOLS=ON \
-            -DSPIRV-Tools-opt_DIR="$INSTALL_PREFIX/SPIRV-Tools-opt/cmake" \
-            -DSPIRV-Tools_DIR="$INSTALL_PREFIX/SPIRV-Tools/cmake" \
-            -DBUILD_TESTING=OFF \
-            -DENABLE_GLSLANG_BINARIES=OFF \
-            -DENABLE_HLSL=OFF \
-            -DENABLE_CTEST=OFF \
-            -DENABLE_OPT=ON
-        add_ffargs "--enable-libglslang"
-    fi
+    ./build-cmake-dep.sh glslang \
+        -DALLOW_EXTERNAL_SPIRV_TOOLS=ON \
+        -DSPIRV-Tools-opt_DIR="$INSTALL_PREFIX/SPIRV-Tools-opt/cmake" \
+        -DSPIRV-Tools_DIR="$INSTALL_PREFIX/SPIRV-Tools/cmake" \
+        -DBUILD_TESTING=OFF \
+        -DENABLE_GLSLANG_BINARIES=OFF \
+        -DENABLE_HLSL=OFF \
+        -DENABLE_CTEST=OFF \
+        -DENABLE_OPT=ON
 
-    add_ffargs "--enable-vulkan"
+    add_ffargs "--enable-libglslang"
 fi
 
 # ========================================
