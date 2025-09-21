@@ -87,6 +87,7 @@ jobs:
             automake
             autoconf
             quilt
+            clang
 
       - name: Setup Python for Meson
         uses: actions/setup-python@v5

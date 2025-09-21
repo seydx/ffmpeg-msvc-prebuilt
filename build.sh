@@ -128,6 +128,11 @@ fi
 ./build-nvcodec.sh  # Install headers for all architectures
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc"
+
+    if command -v clang >/dev/null 2>&1; then
+        echo "Clang detected, enabling CUDA filters via cuda-llvm"
+        add_ffargs "--enable-cuda-llvm"
+    fi
 fi
 
 # OpenCL
@@ -176,11 +181,14 @@ if [ -d "vulkan-headers" ]; then
     # Build glslang
     if [ -d "glslang" ]; then
         ./build-cmake-dep.sh glslang \
-            -DSPIRV-Tools_SOURCE_DIR=$(pwd)/spirv-tools \
+            -DALLOW_EXTERNAL_SPIRV_TOOLS=ON \
+            -DSPIRV-Tools-opt_DIR="$INSTALL_PREFIX/SPIRV-Tools-opt/cmake" \
+            -DSPIRV-Tools_DIR="$INSTALL_PREFIX/SPIRV-Tools/cmake" \
             -DBUILD_TESTING=OFF \
             -DENABLE_GLSLANG_BINARIES=OFF \
             -DENABLE_HLSL=OFF \
-            -DENABLE_CTEST=OFF
+            -DENABLE_CTEST=OFF \
+            -DENABLE_OPT=ON
         add_ffargs "--enable-libglslang"
     fi
 
