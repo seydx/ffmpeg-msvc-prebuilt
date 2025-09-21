@@ -73,7 +73,7 @@ add_ffargs "--enable-zlib"
 add_ffargs "--enable-dxva2 --enable-d3d11va --enable-d3d12va"
 
 # NVIDIA GPU acceleration
-./build-make-dep.sh nv-codec-headers
+./build-nvcodec.sh
 add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid --enable-nvdec --enable-nvenc"
 
 # OpenCL support for GPU-accelerated filters
