@@ -77,13 +77,7 @@ add_ffargs "--enable-dxva2 --enable-d3d11va --enable-d3d12va"
 add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid --enable-nvdec --enable-nvenc"
 
 # OpenCL support for GPU-accelerated filters
-./build-cmake-dep.sh opencl-headers -DBUILD_TESTING=OFF
-./build-cmake-dep.sh opencl-icd-loader \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DOPENCL_ICD_LOADER_DISABLE_OPENCLON12=ON \
-    -DOPENCL_ICD_LOADER_HEADERS_DIR="$INSTALL_PREFIX/include" \
-    -DBUILD_TESTING=OFF
-
+./build-opencl.sh
 add_ffargs "--enable-opencl"
 
 # AMD AMF headers
