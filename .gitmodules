@@ -79,3 +79,9 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "xz"]
 	path = xz
 	url = https://github.com/tukaani-project/xz.git
+[submodule "libxml2"]
+	path = libxml2
+	url = https://gitlab.gnome.org/GNOME/libxml2.git
+[submodule "win-iconv"]
+	path = win-iconv
+	url = https://github.com/win-iconv/win-iconv

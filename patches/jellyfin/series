@@ -29,7 +29,6 @@
 0029-remove-fdk-aac-from-nonfree.patch
 0030-pass-dovi-sidedata-to-hlsenc-and-mpegtsenc.patch
 0031-add-pause-support-for-ffmpeg-cli.patch
-0032-enable-gcc-vectorization-and-fix-cpuflags.patch
 0033-tune-dxva-align-for-intel-to-avoid-copy-on-qsv.patch
 0034-add-10bit-support-for-cuda-overlay.patch
 0035-add-hdr-metadata-for-nvenc-hevc-encoder.patch
@@ -47,14 +46,12 @@
 0047-add-format-option-to-vt-scale-filter.patch
 0048-add-vf-overlay-videotoolbox-filter.patch
 0049-add-coreimage-based-vf-transpose-vt-filter.patch
-0050-add-vf-tonemap-videotoolbox-filter.patch
 0051-add-mjpeg-videotoolbox-encoder.patch
 0052-add-vt-low-priority-keyframe-decoding.patch
 0053-add-dummy-device-derive-to-videotoolbox-hwcontext.patch
 0054-add-cuda-transpose-filter-impl.patch
 0055-add-flip-feat-to-opencl-transpose-filter.patch
 0056-opus-allow-5point1-side-inputs.patch
-0057-add-simd-optimized-tonemapx-filter.patch
 0058-add-ac4-decoder-for-atsc-3-0.patch
 0059-tune-the-default-inter-thread-queue-sizes.patch
 0060-backport-fixes-for-vulkan-from-upstream.patch

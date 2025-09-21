@@ -79,6 +79,18 @@ if [ -d "xz" ]; then
     add_ffargs "--enable-lzma"
 fi
 
+# # win-iconv
+# if [ -d "win-iconv" ]; then
+#     ./build-cmake-dep.sh win-iconv
+#     add_ffargs "--enable-iconv"
+# fi
+
+# # libxml2
+# if [ -d "libxml2" ]; then
+#     ./build-cmake-dep.sh libxml2 -DLIBXML2_WITH_ICONV=ON -DLIBXML2_WITH_LZMA=ON -DLIBXML2_WITH_ZLIB=ON -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
+#     add_ffargs "--enable-libxml2"
+# fi
+
 # ========================================
 # Hardware
 # ========================================
@@ -94,7 +106,7 @@ fi
 # NVIDIA
 ./build-nvcodec.sh  # Install headers for all architectures
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
-    add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuda-llvm --enable-cuvid --enable-nvdec --enable-nvenc"
+    add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc"
 fi
 
 # OpenCL
