@@ -71,7 +71,6 @@ add_ffargs "--enable-zlib"
 
 # XZ/LZMA
 if [ -d "xz" ]; then
-    echo -e "\n[Build XZ/LZMA]"
     ./build-cmake-dep.sh xz -DENABLE_NLS=OFF -DBUILD_TESTING=OFF
     add_ffargs "--enable-lzma"
 fi
