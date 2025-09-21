@@ -184,10 +184,10 @@ jobs:
             MSBuild zimg.sln -p:Configuration=Release -p:Platform=%PLATFORM% -p:RuntimeLibrary=MT
             if %errorlevel% neq 0 exit /b %errorlevel%
 
-            REM Install headers
+            REM Install headers - API header needs to be accessible
             if not exist D:\a\_temp\msys64\usr\local\include\zimg mkdir D:\a\_temp\msys64\usr\local\include\zimg
-            xcopy /E /I ..\src\zimg\*.h D:\a\_temp\msys64\usr\local\include\zimg\
-            xcopy /E /I ..\src\zimg\*.hpp D:\a\_temp\msys64\usr\local\include\zimg\
+            copy ..\src\zimg\api\zimg.h D:\a\_temp\msys64\usr\local\include\zimg\
+            copy ..\src\zimg\api\zimg++.hpp D:\a\_temp\msys64\usr\local\include\zimg\
 
             REM Find and install the library
             if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
@@ -197,7 +197,7 @@ jobs:
               copy "%%f" D:\a\_temp\msys64\usr\local\lib\libzimg.lib
             )
 
-            REM Create pkg-config file
+            REM Create pkg-config file with correct include path
             if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
             (
               echo prefix=/usr/local
@@ -209,7 +209,7 @@ jobs:
               echo Description: Scaling, colorspace conversion, and dithering library
               echo Version: 3.0
               echo Libs: -L${libdir} -lzimg
-              echo Cflags: -I${includedir}
+              echo Cflags: -I${includedir}/zimg
             ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\zimg.pc
 
             cd ..\..
