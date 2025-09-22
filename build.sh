@@ -121,9 +121,10 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     ./build-nvcodec.sh
     add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc"
 
-    if command -v clang >/dev/null 2>&1; then
-        echo "Clang detected, enabling CUDA filters via cuda-llvm"
-        add_ffargs "--enable-cuda-llvm"
+    # Check if CUDA SDK is available (installed via GitHub Action)
+    if [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
+        echo "CUDA SDK detected at $CUDA_PATH, enabling cuda-nvcc for CUDA filters"
+        add_ffargs "--enable-cuda-nvcc"
     fi
 fi
 

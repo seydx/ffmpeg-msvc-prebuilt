@@ -99,6 +99,38 @@ jobs:
         run: |
           pip install meson ninja
 
+      - name: Install CUDA Toolkit
+        if: matrix.arch == 'amd64'
+        uses: Jimver/cuda-toolkit@v0.2.24
+        id: cuda-toolkit
+        with:
+          cuda: '13.0.0'
+          sub-packages: '["nvcc", "visual_studio_integration"]'
+
+      - name: Test CUDA Installation
+        if: matrix.arch == 'amd64'
+        shell: cmd
+        run: |
+          echo CUDA_PATH: %CUDA_PATH%
+          echo.
+          echo Checking nvcc:
+          where nvcc.exe
+          nvcc --version
+          echo.
+          echo Directory contents:
+          dir "%CUDA_PATH%\bin" /B | findstr "nvcc"
+          echo.
+          echo Testing CUDA compilation:
+          echo __global__ void test() {} > test.cu
+          nvcc -c test.cu -o test.obj
+          if exist test.obj (
+            echo CUDA compilation test: SUCCESS
+            del test.obj test.cu
+          ) else (
+            echo CUDA compilation test: FAILED
+            exit 1
+          )
+
       - name: Remove MSYS2 link
         shell: msys2 {0}
         run: |
