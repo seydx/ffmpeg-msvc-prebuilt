@@ -101,28 +101,13 @@ jobs:
 
       - name: Install CUDA Toolkit
         if: matrix.arch == 'amd64'
-        uses: N-Storm/cuda-toolkit@master
+        uses: Jimver/cuda-toolkit@v0.2.24
         id: cuda-toolkit
         with:
-          cuda: '12.6.0'
+          cuda: '12.6.3'
           sub-packages: '["nvcc", "cudart", "nvrtc", "crt", "nvvm"]'
           use-local-cache: false
           use-github-cache: false
-          log-file-suffix: cuda-install.log
-        continue-on-error: true
-
-      - name: Check CUDA Installation Logs
-        if: matrix.arch == 'amd64' && always()
-        shell: bash
-        run: |
-          echo "=== Checking CUDA installation logs ==="
-          if [ -f "cuda-install.log" ]; then
-            echo "Found cuda-install.log:"
-            cat cuda-install.log
-          fi
-          find . -name "*cuda*.log" -type f -exec echo "=== {} ===" \; -exec cat {} \; 2>/dev/null || true
-          find . -name "*cuda*.txt" -type f -exec echo "=== {} ===" \; -exec cat {} \; 2>/dev/null || true
-          echo "=== End of logs ==="
 
       - name: Test CUDA Installation
         if: matrix.arch == 'amd64'
