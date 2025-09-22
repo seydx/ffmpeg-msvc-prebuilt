@@ -105,7 +105,7 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '13.0.0'
-          sub-packages: '["nvcc", "cudart", "nvrtc", "crt"]'
+          sub-packages: '["nvcc", "cudart", "nvrtc", "crt", "nvvm"]'
           use-local-cache: false
           use-github-cache: false
 
