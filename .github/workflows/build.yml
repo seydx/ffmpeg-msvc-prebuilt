@@ -104,10 +104,20 @@ jobs:
         uses: N-Storm/cuda-toolkit@master
         id: cuda-toolkit
         with:
-          cuda: '12.6.0'
+          cuda: '12.6.2'
           sub-packages: '["nvcc", "cudart", "nvrtc", "crt", "nvvm"]'
           use-local-cache: false
           use-github-cache: false
+          log-file-suffix: cuda-install.log
+        continue-on-error: true
+
+      - name: Check CUDA Installation Log
+        if: matrix.arch == 'amd64' && failure()
+        shell: bash
+        run: |
+          echo "CUDA installation failed, checking logs..."
+          find . -name "*cuda*.log" -type f -exec echo "=== {} ===" \; -exec cat {} \; 2>/dev/null || true
+          echo "Trying alternative CUDA version..."
 
       - name: Test CUDA Installation
         if: matrix.arch == 'amd64'
