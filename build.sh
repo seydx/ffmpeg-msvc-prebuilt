@@ -124,7 +124,13 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     # Check if CUDA SDK is available (installed via GitHub Action)
     if [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
         echo "CUDA SDK detected at $CUDA_PATH, enabling cuda-nvcc for CUDA filters"
-        add_ffargs "--enable-cuda-nvcc"
+        # CUDA 12.6 still supports Pascal and newer GPUs:
+        # - compute_61: GTX 10 series (Pascal)
+        # - compute_75: RTX 20 series (Turing)
+        # - compute_86: RTX 30 series (Ampere)
+        # - compute_89: RTX 40 series (Ada Lovelace)
+        # FFmpeg's auto-detection would fail, so we must specify architectures
+        add_ffargs "--enable-cuda-nvcc --nvccflags=\"-gencode arch=compute_61,code=sm_61 -gencode arch=compute_75,code=sm_75 -gencode arch=compute_86,code=sm_86 -gencode arch=compute_89,code=sm_89 -O2\""
     fi
 fi
 
