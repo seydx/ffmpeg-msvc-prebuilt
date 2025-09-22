@@ -104,15 +104,10 @@ jobs:
         if: matrix.arch == 'amd64'
         uses: N-Storm/cuda-toolkit@master
         id: cuda-toolkit
-        env:
-          ACTIONS_STEP_DEBUG: true
-          RUNNER_DEBUG: 1
         with:
-          method: 'network'
+          method: 'local'
           cuda: '12.6.3'
-          sub-packages: '["nvcc", "cudart", "nvrtc", "crt", "nvvm"]'
-          use-local-cache: false
-          use-github-cache: false
+          sub-packages: '["nvcc", "cudart", "crt", "nvvm"]'
 
       - name: Test CUDA Installation
         if: matrix.arch == 'amd64'
