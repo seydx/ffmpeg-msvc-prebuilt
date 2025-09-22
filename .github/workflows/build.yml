@@ -99,20 +99,6 @@ jobs:
         run: |
           pip install meson ninja
 
-      - name: Setup Vulkan SDK components
-        uses: humbletim/setup-vulkan-sdk@v1.2.1
-        with:
-          vulkan-query-version: 1.3.268.0
-          vulkan-components: Vulkan-Headers, Glslang, SPIRV-Tools, SPIRV-Headers
-          vulkan-use-cache: true
-
-      - name: Check Vulkan SDK installation
-        shell: bash
-        run: |
-          echo "VULKAN_SDK=$VULKAN_SDK"
-          ls -la "$VULKAN_SDK/Lib"/*.lib 2>/dev/null | awk '{print $NF}' | xargs -n1 basename | tr '\n' ' ' && echo
-          echo "Headers:" && ls -d "$VULKAN_SDK/Include"/*/ 2>/dev/null | xargs -n1 basename | tr '\n' ' ' && echo
-
       - name: Remove MSYS2 link
         shell: msys2 {0}
         run: |
@@ -282,8 +268,7 @@ jobs:
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-          echo VULKAN_SDK=%VULKAN_SDK%
-          msys2 -c "export VULKAN_SDK=\"$VULKAN_SDK\"; ./build.sh ${{matrix.arch}}"
+          msys2 -c "./build.sh ${{matrix.arch}}"
 
       - name: Debug log
         if: ${{ failure() }}

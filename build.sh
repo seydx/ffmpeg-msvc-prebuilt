@@ -148,93 +148,36 @@ if [ -n "$ENABLE_LIBVPL" ] && [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" !=
     add_ffargs "--enable-libvpl"
 fi
 
-# Vulkan/glslang support for Vulkan filters
+# Vulkan/glslang
 if [ -n "$ENABLE_LIBGLSLANG" ]; then
-    echo "Checking for Vulkan/glslang support..."
+    # Vulkan support
+    echo "Building Vulkan support..."
 
-    if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
-        echo "Found Vulkan SDK at: $VULKAN_SDK"
+    # Install Vulkan headers
+    mkdir -p "$INSTALL_PREFIX/include"
+    cp -r vulkan-headers/include/* "$INSTALL_PREFIX/include/"
 
-        # Create a pkg-config file for glslang that works with MSVC
-        mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
+    # Build SPIRV-Headers
+    mkdir -p "$INSTALL_PREFIX/include/spirv"
+    cp -r spirv-headers/include/spirv/* "$INSTALL_PREFIX/include/spirv/"
 
-        # Check which libraries are available
-        echo "Building glslang.pc file..."
-        echo "  Checking Vulkan SDK libraries at: $VULKAN_SDK/Lib"
+    # Build SPIRV-Tools
+    ./build-cmake-dep.sh spirv-tools \
+        -DSPIRV-Headers_SOURCE_DIR=$(pwd)/spirv-headers \
+        -DSPIRV_SKIP_TESTS=ON \
+        -DSPIRV_SKIP_EXECUTABLES=ON
 
-        # List all available .lib files for debugging
-        echo "  Available libs: $(ls $VULKAN_SDK/Lib/*.lib 2>/dev/null | xargs -n1 basename | tr '\n' ' ')"
+    # Build glslang
+    ./build-cmake-dep.sh glslang \
+        -DSPIRV-Tools_SOURCE_DIR=$(pwd)/spirv-tools \
+        -DBUILD_TESTING=OFF \
+        -DENABLE_GLSLANG_BINARIES=OFF \
+        -DENABLE_HLSL=ON \
+        -DENABLE_CTEST=OFF \
+        -DENABLE_OPT=ON \
+        -DBUILD_SHARED_LIBS=OFF
 
-        # FFmpeg tries first WITHOUT HLSL/OGLCompiler, then WITH them as fallback
-        # We'll match FFmpeg's preferred order (without HLSL/OGLCompiler first)
-        GLSLANG_LIBS="-lglslang -lMachineIndependent -lGenericCodeGen -lSPVRemapper -lSPIRV"
-        echo "  Base libs (FFmpeg's preferred set): $GLSLANG_LIBS"
-
-        # Add OSDependent if it exists (needed in the fallback path)
-        if [ -f "$VULKAN_SDK/Lib/OSDependent.lib" ]; then
-            GLSLANG_LIBS="$GLSLANG_LIBS -lOSDependent"
-            echo "  [OK] Added OSDependent.lib"
-        fi
-
-        # HLSL and OGLCompiler are optional - FFmpeg works without them
-        # But we add them if available for the fallback path
-        if [ -f "$VULKAN_SDK/Lib/HLSL.lib" ]; then
-            GLSLANG_LIBS="$GLSLANG_LIBS -lHLSL"
-            echo "  [OK] Added HLSL.lib (optional)"
-        else
-            echo "  [INFO] HLSL.lib not found (optional, not required)"
-        fi
-        if [ -f "$VULKAN_SDK/Lib/OGLCompiler.lib" ]; then
-            GLSLANG_LIBS="$GLSLANG_LIBS -lOGLCompiler"
-            echo "  [OK] Added OGLCompiler.lib (optional)"
-        else
-            echo "  [INFO] OGLCompiler.lib not found (optional, not required)"
-        fi
-
-        # Add SPIRV-Tools libraries if they exist
-        if [ -f "$VULKAN_SDK/Lib/SPIRV-Tools-opt.lib" ]; then
-            GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools-opt"
-            echo "  [OK] Added SPIRV-Tools-opt.lib"
-        else
-            echo "  [WARNING] SPIRV-Tools-opt.lib not found"
-        fi
-        if [ -f "$VULKAN_SDK/Lib/SPIRV-Tools.lib" ]; then
-            GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools"
-            echo "  [OK] Added SPIRV-Tools.lib"
-        else
-            echo "  [WARNING] SPIRV-Tools.lib not found"
-        fi
-
-        echo "  Final libs: $GLSLANG_LIBS"
-
-        cat > "$INSTALL_PREFIX/lib/pkgconfig/glslang.pc" << EOF
-prefix=$VULKAN_SDK
-includedir=\${prefix}/Include
-libdir=\${prefix}/Lib
-
-Name: glslang
-Description: Khronos reference compiler and validator for GLSL, ESSL, and HLSL
-Version: 1.3.268
-Cflags: -I\${includedir}
-Libs: -L\${libdir} $GLSLANG_LIBS
-EOF
-
-        echo "Created glslang.pc at: $INSTALL_PREFIX/lib/pkgconfig/glslang.pc"
-
-        # Test if pkg-config can find it
-        echo "Testing pkg-config:"
-        pkg-config --exists glslang && echo "  [OK] pkg-config finds glslang" || echo "  [WARNING] pkg-config cannot find glslang"
-        pkg-config --libs glslang 2>/dev/null && echo "  pkg-config --libs glslang output shown above" || echo "  [WARNING] pkg-config --libs glslang failed"
-
-        # Add SDK paths for FFmpeg configure to find headers and libraries
-        export CFLAGS="$CFLAGS -I$VULKAN_SDK/Include"
-        export LDFLAGS="$LDFLAGS -LIBPATH:$VULKAN_SDK/Lib"
-        add_ffargs "--enable-libglslang"
-        echo "Vulkan filters enabled (scale_vulkan, overlay_vulkan, etc.)"
-    else
-        echo "Warning: Vulkan SDK not found. Vulkan support will be disabled."
-        echo "         To enable: Install Vulkan SDK or use GitHub Action setup"
-    fi
+    add_ffargs "--enable-libglslang"
 fi
 
 # ========================================
