@@ -180,6 +180,35 @@ if [ -n "$ENABLE_LIBGLSLANG" ]; then
         -DENABLE_OPT=ON \
         -DBUILD_SHARED_LIBS=OFF
 
+    # Create pkg-config file for glslang so FFmpeg can find it with our patch
+    mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
+
+    # Build library list - order matters for FFmpeg's configure!
+    GLSLANG_LIBS="-lglslang -lMachineIndependent -lGenericCodeGen -lSPVRemapper -lSPIRV"
+
+    # Add OSDependent (always built)
+    GLSLANG_LIBS="$GLSLANG_LIBS -lOSDependent"
+
+    # Add HLSL and OGLCompiler (both built with our config)
+    GLSLANG_LIBS="$GLSLANG_LIBS -lHLSL -lOGLCompiler"
+
+    # Add SPIRV-Tools
+    GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools-opt -lSPIRV-Tools"
+
+    cat > "$INSTALL_PREFIX/lib/pkgconfig/glslang.pc" << EOF
+prefix=$INSTALL_PREFIX
+includedir=\${prefix}/include
+libdir=\${prefix}/lib
+
+Name: glslang
+Description: Khronos reference compiler and validator for GLSL, ESSL, and HLSL
+Version: 1.3.268
+Cflags: -I\${includedir}
+Libs: -L\${libdir} $GLSLANG_LIBS
+EOF
+
+    echo "Created glslang.pc with libs: $GLSLANG_LIBS"
+
     add_ffargs "--enable-libglslang"
 fi
 
