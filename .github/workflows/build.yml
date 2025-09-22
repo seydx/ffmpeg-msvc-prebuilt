@@ -113,38 +113,21 @@ jobs:
         if: matrix.arch == 'amd64'
         shell: cmd
         run: |
-          echo Setting up MSVC environment...
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
+          echo CUDA Installation Check:
+          echo ========================
           echo CUDA_PATH: %CUDA_PATH%
-          echo.
-          echo Checking nvcc:
-          where nvcc.exe
-          nvcc --version
-          echo.
-          echo Checking MSVC compiler:
-          where cl.exe
-          cl.exe 2>&1 | findstr /C:"Version"
-          echo.
-          echo Testing CUDA compilation:
+          nvcc --version | findstr "release"
+
           echo __global__ void test() {} > test.cu
-          echo Running: nvcc -c test.cu -o test.obj --verbose
-          nvcc -c test.cu -o test.obj --verbose
+          nvcc -c test.cu -o test.obj
           if exist test.obj (
-            echo CUDA compilation test: SUCCESS
+            echo CUDA compilation test: PASSED
             del test.obj test.cu
           ) else (
             echo CUDA compilation test: FAILED
-            echo.
-            echo Trying with explicit paths:
-            "%CUDA_PATH%\bin\nvcc.exe" -c test.cu -o test.obj --verbose
-            if exist test.obj (
-              echo Alternative test: SUCCESS
-              del test.obj test.cu
-            ) else (
-              echo Alternative test also failed
-              exit 1
-            )
+            exit 1
           )
 
       - name: Remove MSYS2 link
