@@ -128,13 +128,23 @@ jobs:
           echo.
           echo Testing CUDA compilation:
           echo __global__ void test() {} > test.cu
-          nvcc -c test.cu -o test.obj
+          echo Running: nvcc -c test.cu -o test.obj --verbose
+          nvcc -c test.cu -o test.obj --verbose
           if exist test.obj (
             echo CUDA compilation test: SUCCESS
             del test.obj test.cu
           ) else (
             echo CUDA compilation test: FAILED
-            exit 1
+            echo.
+            echo Trying with explicit paths:
+            "%CUDA_PATH%\bin\nvcc.exe" -c test.cu -o test.obj --verbose
+            if exist test.obj (
+              echo Alternative test: SUCCESS
+              del test.obj test.cu
+            ) else (
+              echo Alternative test also failed
+              exit 1
+            )
           )
 
       - name: Remove MSYS2 link
