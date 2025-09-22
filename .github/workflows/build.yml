@@ -101,7 +101,7 @@ jobs:
 
       - name: Install CUDA Toolkit
         if: matrix.arch == 'amd64'
-        uses: Jimver/cuda-toolkit@v0.2.24
+        uses: Jimver/cuda-toolkit@v0.2.27
         id: cuda-toolkit
         with:
           cuda: '13.0.0'
