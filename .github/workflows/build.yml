@@ -105,9 +105,8 @@ jobs:
         uses: N-Storm/cuda-toolkit@master
         id: cuda-toolkit
         with:
-          method: 'local'
           cuda: '12.6.3'
-          sub-packages: '["nvcc", "cudart", "crt", "nvvm"]'
+          sub-packages: '["nvcc"]'
 
       - name: Test CUDA Installation
         if: matrix.arch == 'amd64'
