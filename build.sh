@@ -169,7 +169,10 @@ if [ -n "$ENABLE_LIBGLSLANG" ]; then
 
     # Build glslang
     ./build-cmake-dep.sh glslang \
-        -DSPIRV-Tools_SOURCE_DIR=$(pwd)/spirv-tools \
+        -DBUILD_EXTERNAL=OFF \
+        -DALLOW_EXTERNAL_SPIRV_TOOLS=ON \
+        -DSPIRV-Tools-opt_DIR="$INSTALL_PREFIX/SPIRV-Tools-opt/cmake" \
+        -DSPIRV-Tools_DIR="$INSTALL_PREFIX/SPIRV-Tools/cmake" \
         -DBUILD_TESTING=OFF \
         -DENABLE_GLSLANG_BINARIES=OFF \
         -DENABLE_HLSL=ON \
