@@ -101,8 +101,11 @@ jobs:
 
       - name: Install CUDA Toolkit
         if: matrix.arch == 'amd64'
-        uses: Jimver/cuda-toolkit@v0.2.24
+        uses: N-Storm/cuda-toolkit@master
         id: cuda-toolkit
+        env:
+          ACTIONS_STEP_DEBUG: true
+          RUNNER_DEBUG: 1
         with:
           method: 'network'
           cuda: '12.6.3'
