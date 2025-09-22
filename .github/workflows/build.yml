@@ -32,12 +32,12 @@ on:
         default: 'main'
 
 jobs:
-  # prepare:
-  #   uses: ./.github/workflows/cache.yml
-  #   with:
-  #     ref_name: ${{inputs.ref_name||github.ref_name}}
+  prepare:
+    uses: ./.github/workflows/cache.yml
+    with:
+      ref_name: ${{inputs.ref_name||github.ref_name}}
   build:
-    # needs: prepare
+    needs: prepare
     strategy:
       matrix:
         # arch: [amd64, arm64]
