@@ -105,7 +105,7 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '12.6.3'
-          sub-packages: '["nvcc", "cudart", "npp"]'
+          sub-packages: '["nvcc", "cudart", "npp_dev"]'
 
       - name: Test CUDA Installation
         if: matrix.arch == 'amd64'
@@ -117,6 +117,27 @@ jobs:
           echo ========================
           echo CUDA_PATH: %CUDA_PATH%
           nvcc --version | findstr "release"
+
+          echo.
+          echo Directory Structure:
+          echo ===================
+          echo CUDA root subdirectories:
+          dir "%CUDA_PATH%" /b /ad
+
+          echo.
+          echo Checking for lib directory:
+          if exist "%CUDA_PATH%\lib" (
+            echo lib directory found, contents:
+            dir "%CUDA_PATH%\lib" /b /ad
+          )
+
+          echo.
+          echo Searching for .lib files:
+          dir "%CUDA_PATH%" /s /b 2>nul | findstr /i "\.lib$" | head -10
+
+          echo.
+          echo Searching for NPP headers:
+          dir "%CUDA_PATH%" /s /b 2>nul | findstr /i "npp.*\.h$" | head -10
 
           echo.
           echo NPP Libraries Check:
