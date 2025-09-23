@@ -105,7 +105,7 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '12.6.3'
-          sub-packages: '["nvcc", "cudart"]'
+          sub-packages: '["nvcc", "cudart", "npp"]'
 
       - name: Test CUDA Installation
         if: matrix.arch == 'amd64'
@@ -118,6 +118,21 @@ jobs:
           echo CUDA_PATH: %CUDA_PATH%
           nvcc --version | findstr "release"
 
+          echo.
+          echo NPP Libraries Check:
+          if exist "%CUDA_PATH%\lib\x64\nppc.lib" (
+            echo nppc.lib: FOUND
+          ) else (
+            echo nppc.lib: NOT FOUND
+          )
+          if exist "%CUDA_PATH%\include\npp.h" (
+            echo npp.h: FOUND
+          ) else (
+            echo npp.h: NOT FOUND
+          )
+
+          echo.
+          echo CUDA Compilation Test:
           echo __global__ void test() {} > test.cu
           nvcc -c test.cu -o test.obj
           if exist test.obj (
