@@ -133,11 +133,11 @@ jobs:
 
           echo.
           echo Searching for .lib files:
-          dir "%CUDA_PATH%" /s /b 2>nul | findstr /i "\.lib$" | head -10
+          dir "%CUDA_PATH%" /s /b 2>nul | findstr /i "\.lib$"
 
           echo.
           echo Searching for NPP headers:
-          dir "%CUDA_PATH%" /s /b 2>nul | findstr /i "npp.*\.h$" | head -10
+          dir "%CUDA_PATH%" /s /b 2>nul | findstr /i "npp.*\.h$"
 
           echo.
           echo NPP Libraries Check:
