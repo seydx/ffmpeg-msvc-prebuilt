@@ -40,8 +40,7 @@ jobs:
     needs: prepare
     strategy:
       matrix:
-        # arch: [amd64, arm64]
-        arch: [amd64]
+        arch: [amd64, arm64]
       fail-fast: false
     runs-on: windows-2022
     env:
