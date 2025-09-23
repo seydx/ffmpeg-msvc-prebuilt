@@ -179,6 +179,9 @@ jobs:
             )
 
             cd ..
+
+            REM Set environment variable for successful build
+            echo DEP_DAV1D=1 >> %GITHUB_ENV%
           )
 
       - name: Build zimg with MSVC
@@ -230,6 +233,9 @@ jobs:
             ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\zimg.pc
 
             cd ..\..
+
+            REM Set environment variable for successful build
+            echo DEP_ZIMG=1 >> %GITHUB_ENV%
           )
 
       - name: Build LAME with MSVC
@@ -291,6 +297,9 @@ jobs:
             ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\libmp3lame.pc
 
             cd ..
+
+            REM Set environment variable for successful build
+            echo DEP_LAME=1 >> %GITHUB_ENV%
           )
 
       - name: Build

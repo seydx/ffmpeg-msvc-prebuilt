@@ -1,4 +1,5 @@
 # Copyright (c) 2024 System233
+# Copyright (c) 2025 seydx
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT

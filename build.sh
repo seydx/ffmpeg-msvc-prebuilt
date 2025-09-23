@@ -1,5 +1,6 @@
 #!/bin/bash
 # Copyright (c) 2024 System233
+# Copyright (c) 2025 seydx
 #
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
@@ -214,7 +215,7 @@ fi
 # ========================================
 
 # dav1d - AV1 decoder
-if [ -n "$ENABLE_LIBDAV1D" ]; then
+if [ -n "$ENABLE_LIBDAV1D" ] && { [ "$DEP_DAV1D" = "1" ] || [ -z "$DEP_DAV1D" ]; }; then
     add_ffargs "--enable-libdav1d"
 fi
 
@@ -262,7 +263,7 @@ fi
 # ========================================
 
 # LAME MP3 encoder
-if [ -n "$ENABLE_LIBMP3LAME" ]; then
+if [ -n "$ENABLE_LIBMP3LAME" ] && { [ "$DEP_LAME" = "1" ] || [ -z "$DEP_LAME" ]; }; then
     add_ffargs "--enable-libmp3lame"
 fi
 
@@ -327,7 +328,7 @@ if [ -n "$ENABLE_LIBWEBP" ]; then
 fi
 
 # libzimg
-if [ -n "$ENABLE_LIBZIMG" ]; then
+if [ -n "$ENABLE_LIBZIMG" ] && { [ "$DEP_ZIMG" = "1" ] || [ -z "$DEP_ZIMG" ]; }; then
     add_ffargs "--enable-libzimg"
 fi
 
