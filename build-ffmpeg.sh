@@ -36,7 +36,7 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ] && [ -n "$CUDA_PAT
     # Add CUDA paths for headers and libraries
     CUDA_CFLAGS="-I$(cygpath -m "$CUDA_PATH/include")"
     CUDA_LDFLAGS="-LIBPATH:$(cygpath -m "$CUDA_PATH/lib/x64")"
-    NVCC_FLAGS="-gencode arch=compute_52,code=sm_52 -O2"
+    NVCC_FLAGS="-gencode arch=compute_61,code=sm_61 -O2"
     CFLAGS="$CFLAGS $CUDA_CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH \
         --extra-ldflags="$EXTRA_LDFLAGS $CUDA_LDFLAGS" \
         --extra-libs="$EXTRA_LIBS" \
