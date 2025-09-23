@@ -43,11 +43,6 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ] && [ -n "$CUDA_PAT
     # Add CUDA paths for headers and libraries
     CUDA_CFLAGS="-I${CUDA_PATH_FIXED}/include"
     CUDA_LDFLAGS="-LIBPATH:${CUDA_PATH_FIXED}/lib/x64"
-    # Use multiple gencode flags for broad GPU support:
-    # - sm_61: GTX 10 series (Pascal) - native SASS code
-    # - sm_75: RTX 20 series (Turing) - native SASS code
-    # - sm_86: RTX 30 series (Ampere) - native SASS code
-    # - compute_86: PTX for future GPUs (JIT compiled at runtime)
     NVCC_FLAGS="-gencode arch=compute_61,code=sm_61 -O2"
 
     echo "Configure command: ./configure --toolchain=msvc --arch=$BUILD_ARCH --extra-cflags=\"$CUDA_CFLAGS\" --extra-ldflags=\"$EXTRA_LDFLAGS $CUDA_LDFLAGS\" --extra-libs=\"$EXTRA_LIBS\" --nvccflags=\"$NVCC_FLAGS\" $EX_BUILD_ARGS $@"
