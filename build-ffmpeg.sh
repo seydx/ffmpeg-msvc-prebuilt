@@ -31,31 +31,13 @@ EXTRA_LIBS=""
 
 EX_BUILD_ARGS="$TYPE_ARGS $CROSS_ARGS $LICENSE_ARGS $DISABLE_ARGS"
 
-if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ] && [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
-    CUDA_PATH_SHORT=$(cygpath -sw "$CUDA_PATH")
-    CUDA_PATH_FIXED=$(cygpath -m "$CUDA_PATH_SHORT")
-    CUDA_CFLAGS="-I${CUDA_PATH_FIXED}/include"
-    CUDA_LDFLAGS="-LIBPATH:${CUDA_PATH_FIXED}/lib/x64"
-    NVCC_FLAGS="-gencode arch=compute_61,code=compute_61 -O2"
+echo "Configure command: ./configure --toolchain=msvc --arch=$BUILD_ARCH --extra-ldflags=\"$EXTRA_LDFLAGS\" --extra-libs=\"$EXTRA_LIBS\" $EX_BUILD_ARGS $@"
+echo "CFLAGS: $CFLAGS"
 
-    echo "Configure command: ./configure --toolchain=msvc --arch=$BUILD_ARCH --extra-cflags=\"$CUDA_CFLAGS\" --extra-ldflags=\"$EXTRA_LDFLAGS $CUDA_LDFLAGS\" --extra-libs=\"$EXTRA_LIBS\" --nvccflags=\"$NVCC_FLAGS\" $EX_BUILD_ARGS $@"
-    echo "CFLAGS: $CFLAGS"
-
-    CFLAGS="$CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH \
-        --extra-cflags="$CUDA_CFLAGS" \
-        --extra-ldflags="$EXTRA_LDFLAGS $CUDA_LDFLAGS" \
-        --extra-libs="$EXTRA_LIBS" \
-        --nvccflags="$NVCC_FLAGS" \
-        $EX_BUILD_ARGS $@
-else
-    echo "Configure command: ./configure --toolchain=msvc --arch=$BUILD_ARCH --extra-ldflags=\"$EXTRA_LDFLAGS\" --extra-libs=\"$EXTRA_LIBS\" $EX_BUILD_ARGS $@"
-    echo "CFLAGS: $CFLAGS"
-
-    CFLAGS="$CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH \
-        --extra-ldflags="$EXTRA_LDFLAGS" \
-        --extra-libs="$EXTRA_LIBS" \
-        $EX_BUILD_ARGS $@
-fi
+CFLAGS="$CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH \
+    --extra-ldflags="$EXTRA_LDFLAGS" \
+    --extra-libs="$EXTRA_LIBS" \
+    $EX_BUILD_ARGS $@
 
 make -j$(nproc)
 make install prefix=$INSTALL_PREFIX

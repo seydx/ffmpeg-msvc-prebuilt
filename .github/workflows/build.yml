@@ -99,71 +99,6 @@ jobs:
         run: |
           pip install meson ninja
 
-      - name: Install CUDA Toolkit
-        if: matrix.arch == 'amd64'
-        uses: N-Storm/cuda-toolkit@master
-        id: cuda-toolkit
-        with:
-          cuda: '12.6.3'
-          sub-packages: '["nvcc", "cudart", "npp_dev"]'
-
-      - name: Test CUDA Installation
-        if: matrix.arch == 'amd64'
-        shell: cmd
-        run: |
-          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-
-          echo CUDA Installation Check:
-          echo ========================
-          echo CUDA_PATH: %CUDA_PATH%
-          nvcc --version | findstr "release"
-
-          echo.
-          echo Directory Structure:
-          echo ===================
-          echo CUDA root subdirectories:
-          dir "%CUDA_PATH%" /b /ad
-
-          echo.
-          echo Checking for lib directory:
-          if exist "%CUDA_PATH%\lib" (
-            echo lib directory found, contents:
-            dir "%CUDA_PATH%\lib" /b /ad
-          )
-
-          echo.
-          echo Searching for .lib files:
-          dir "%CUDA_PATH%" /s /b 2>nul | findstr /i "\.lib$"
-
-          echo.
-          echo Searching for NPP headers:
-          dir "%CUDA_PATH%" /s /b 2>nul | findstr /i "npp.*\.h$"
-
-          echo.
-          echo NPP Libraries Check:
-          if exist "%CUDA_PATH%\lib\x64\nppc.lib" (
-            echo nppc.lib: FOUND
-          ) else (
-            echo nppc.lib: NOT FOUND
-          )
-          if exist "%CUDA_PATH%\include\npp.h" (
-            echo npp.h: FOUND
-          ) else (
-            echo npp.h: NOT FOUND
-          )
-
-          echo.
-          echo CUDA Compilation Test:
-          echo __global__ void test() {} > test.cu
-          nvcc -c test.cu -o test.obj
-          if exist test.obj (
-            echo CUDA compilation test: PASSED
-            del test.obj test.cu
-          ) else (
-            echo CUDA compilation test: FAILED
-            exit 1
-          )
-
       - name: Remove MSYS2 link
         shell: msys2 {0}
         run: |
@@ -333,7 +268,7 @@ jobs:
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-          msys2 -c "export CUDA_PATH=\"$CUDA_PATH\"; ./build.sh ${{matrix.arch}}"
+          msys2 -c "./build.sh ${{matrix.arch}}"
 
       - name: Debug log
         if: ${{ failure() }}

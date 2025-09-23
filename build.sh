@@ -114,13 +114,7 @@ fi
 # NVIDIA
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     ./build-nvcodec.sh
-    add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc"
-
-    # Check if CUDA SDK is available (installed via GitHub Action)
-    if [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
-        echo "CUDA SDK detected at $CUDA_PATH, enabling cuda-nvcc and scale_npp filter"
-        add_ffargs "--enable-cuda-nvcc --enable-libnpp --enable-nonfree"
-    fi
+    add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc --enable-cuda-llvm"
 fi
 
 # OpenCL
