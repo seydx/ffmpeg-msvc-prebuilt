@@ -2,7 +2,7 @@
 # Build script for OpenCL ICD Loader with proper Windows library dependencies
 
 set -e
-echo -e "\n[Build OpenCL ICD Loader]"
+echo -e "\n[Build opencl-headers]"
 
 # Build OpenCL headers first
 SRC_DIR=$(pwd)/opencl-headers

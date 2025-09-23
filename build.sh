@@ -35,6 +35,7 @@ echo BUILD_ARCH=$BUILD_ARCH
 echo FF_ARGS=$FF_ARGS
 
 add_ffargs() {
+    echo "Adding FFmpeg configure arg: $@"
     FF_ARGS="$FF_ARGS $@"
 }
 
@@ -48,19 +49,18 @@ apply-patch() {
     fi
 }
 
+# Apply patches
+echo "Applying patches..."
 apply-patch zlib zlib.patch
 apply-patch FFmpeg ffmpeg.patch
 apply-patch FFmpeg ffmpeg-glslang-msvc.patch
 apply-patch harfbuzz harfbuzz.patch
 
-# Apply all Jellyfin patches to FFmpeg using quilt
-if [ -d "patches/jellyfin" ]; then
-    echo "Applying Jellyfin patches to FFmpeg with quilt..."
-    export QUILT_PATCHES="../patches/jellyfin"
-    cd FFmpeg
-    quilt push -a -v || echo "Note: Some patches could not be applied"
-    cd ..
-fi
+# Apply all Jellyfin patches
+export QUILT_PATCHES="../patches/jellyfin"
+cd FFmpeg
+quilt push -a -v || echo "Note: Some patches could not be applied"
+cd ..
 
 # ========================================
 # Others
@@ -73,7 +73,6 @@ add_ffargs "--enable-zlib"
 # XZ/LZMA
 ./build-cmake-dep.sh xz -DENABLE_NLS=OFF -DBUILD_TESTING=OFF
 if [ -f "$INSTALL_PREFIX/lib/lzma.lib" ]; then
-    echo "Copying lzma.lib to liblzma.lib for FFmpeg compatibility"
     cp "$INSTALL_PREFIX/lib/lzma.lib" "$INSTALL_PREFIX/lib/liblzma.lib"
 fi
 add_ffargs "--enable-lzma"
@@ -82,11 +81,8 @@ add_ffargs "--enable-lzma"
 ./build-cmake-dep.sh win-iconv
 # For static linking, we need to ensure FFmpeg uses libiconv.lib (static) not iconv.lib (DLL import)
 # Remove the DLL import library to force static linking
-echo "Ensuring static iconv linking..."
 if [ -f "$INSTALL_PREFIX/lib/iconv.lib" ] && [ -f "$INSTALL_PREFIX/lib/libiconv.lib" ]; then
-    echo "Moving DLL import library out of the way to force static linking"
     mv "$INSTALL_PREFIX/lib/iconv.lib" "$INSTALL_PREFIX/lib/iconv_dll.lib"
-    # Copy static library to iconv.lib for FFmpeg to find
     cp "$INSTALL_PREFIX/lib/libiconv.lib" "$INSTALL_PREFIX/lib/iconv.lib"
 fi
 add_ffargs "--enable-iconv"
@@ -95,13 +91,10 @@ add_ffargs "--enable-iconv"
 ./build-cmake-dep.sh libxml2 -DLIBXML2_WITH_ICONV=ON -DLIBXML2_WITH_LZMA=ON -DLIBXML2_WITH_ZLIB=ON -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
 # FFmpeg's pkg-config file says "-lxml2" which means it looks for xml2.lib
 # But CMake builds libxml2s.lib (s for static)
-echo "Fixing libxml2 library naming..."
 if [ -f "$INSTALL_PREFIX/lib/libxml2s.lib" ]; then
-    echo "Copying libxml2s.lib to xml2.lib for FFmpeg"
     cp "$INSTALL_PREFIX/lib/libxml2s.lib" "$INSTALL_PREFIX/lib/xml2.lib"
     cp "$INSTALL_PREFIX/lib/libxml2s.lib" "$INSTALL_PREFIX/lib/libxml2.lib"
 fi
-
 add_ffargs "--enable-libxml2"
 
 # ========================================
@@ -113,6 +106,7 @@ add_ffargs "--enable-dxva2 --enable-d3d11va --enable-d3d12va"
 
 # MediaFoundation
 if [ "$BUILD_ARCH" == "arm64" ] || [ "$BUILD_ARCH" == "arm" ]; then
+    echo "Enabling MediaFoundation for ARM"
     add_ffargs "--enable-mediafoundation"
 fi
 
@@ -123,8 +117,7 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
 
     # Check if CUDA SDK is available (installed via GitHub Action)
     if [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
-        echo "CUDA SDK detected at $CUDA_PATH, enabling cuda-nvcc for CUDA filters"
-        # CUDA 12.6 still supports Pascal and newer GPUs:
+        # CUDA 12.6.X still supports Pascal and newer GPUs:
         # - compute_61: GTX 10 series (Pascal)
         # - compute_75: RTX 20 series (Turing)
         # - compute_86: RTX 30 series (Ampere)
@@ -140,11 +133,10 @@ add_ffargs "--enable-opencl"
 
 # AMD AMF
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
-    echo -e "\n[Install AMF headers]"
+    echo -e "\n[Build AMF headers]"
     if [ -d "AMF/amf/public/include" ]; then
         mkdir -p "$INSTALL_PREFIX/include/AMF"
         cp -r AMF/amf/public/include/* "$INSTALL_PREFIX/include/AMF/"
-        echo "AMD AMF headers installed"
         add_ffargs "--enable-amf"
     fi
 fi
@@ -158,7 +150,7 @@ fi
 # Vulkan/glslang
 if [ -n "$ENABLE_LIBGLSLANG" ]; then
     # Vulkan support
-    echo "Building Vulkan support..."
+    echo -e "\n[Build Vulkan]"
 
     # Install Vulkan headers
     mkdir -p "$INSTALL_PREFIX/include"
@@ -213,8 +205,6 @@ Version: 1.3.268
 Cflags: -I\${includedir}
 Libs: -L\${libdir} $GLSLANG_LIBS
 EOF
-
-    echo "Created glslang.pc with libs: $GLSLANG_LIBS"
 
     add_ffargs "--enable-libglslang"
 fi
