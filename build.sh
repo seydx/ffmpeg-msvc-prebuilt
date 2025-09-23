@@ -124,7 +124,8 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
         # - compute_86: RTX 30 series (Ampere)
         # - compute_89: RTX 40 series (Ada Lovelace)
         # FFmpeg's auto-detection would fail, so we must specify architectures
-        add_ffargs "--enable-cuda-nvcc --nvccflags=\"-gencode arch=compute_61,code=sm_61 -gencode arch=compute_75,code=sm_75 -gencode arch=compute_86,code=sm_86 -gencode arch=compute_89,code=sm_89 -O2\""
+        add_ffargs "--enable-cuda-nvcc"
+        add_ffargs "--nvccflags=-gencode arch=compute_61,code=sm_61 -gencode arch=compute_75,code=sm_75 -gencode arch=compute_86,code=sm_86 -gencode arch=compute_89,code=sm_89 -O2"
     fi
 fi
 
