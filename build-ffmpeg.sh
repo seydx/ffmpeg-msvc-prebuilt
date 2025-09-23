@@ -32,17 +32,24 @@ EXTRA_LIBS=""
 EX_BUILD_ARGS="$TYPE_ARGS $CROSS_ARGS $LICENSE_ARGS $DISABLE_ARGS"
 
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ] && [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
-    echo "CUDA detected at $CUDA_PATH, enabling CUDA support"
     # Add CUDA paths for headers and libraries
-    CUDA_CFLAGS="-I$(cygpath -m "$CUDA_PATH/include")"
-    CUDA_LDFLAGS="-LIBPATH:$(cygpath -m "$CUDA_PATH/lib/x64")"
+    CUDA_CFLAGS="-I\"$(cygpath -m "$CUDA_PATH/include")\""
+    CUDA_LDFLAGS="-LIBPATH:\"$(cygpath -m "$CUDA_PATH/lib/x64")\""
     NVCC_FLAGS="-gencode arch=compute_61,code=sm_61 -O2"
+    LDFLAGS_FINAL="$EXTRA_LDFLAGS $CUDA_LDFLAGS"
+
+    echo "Configure command: ./configure --toolchain=msvc --arch=$BUILD_ARCH --extra-ldflags=\"$LDFLAGS_FINAL\" --extra-libs=\"$EXTRA_LIBS\" --nvccflags=\"$NVCC_FLAGS\" $EX_BUILD_ARGS $@"
+    echo "CFLAGS: $CFLAGS $CUDA_CFLAGS"
+
     CFLAGS="$CFLAGS $CUDA_CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH \
-        --extra-ldflags="$EXTRA_LDFLAGS $CUDA_LDFLAGS" \
+        --extra-ldflags="$LDFLAGS_FINAL" \
         --extra-libs="$EXTRA_LIBS" \
         --nvccflags="$NVCC_FLAGS" \
         $EX_BUILD_ARGS $@
 else
+    echo "Configure command: ./configure --toolchain=msvc --arch=$BUILD_ARCH --extra-ldflags=\"$EXTRA_LDFLAGS\" --extra-libs=\"$EXTRA_LIBS\" $EX_BUILD_ARGS $@"
+    echo "CFLAGS: $CFLAGS"
+
     CFLAGS="$CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH \
         --extra-ldflags="$EXTRA_LDFLAGS" \
         --extra-libs="$EXTRA_LIBS" \
