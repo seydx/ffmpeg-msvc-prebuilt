@@ -342,7 +342,7 @@ jobs:
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-          msys2 -c "export CUDA_PATH=\"$CUDA_PATH\"; ./build.sh ${{matrix.arch}}"
+          msys2 -c "export CUDA_PATH=\"$CUDA_PATH\" DEP_DAV1D=\"$DEP_DAV1D\" DEP_ZIMG=\"$DEP_ZIMG\" DEP_LAME=\"$DEP_LAME\"; ./build.sh ${{matrix.arch}}"
 
       - name: Debug log
         if: ${{ failure() }}
