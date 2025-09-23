@@ -216,6 +216,7 @@ fi
 
 # dav1d - AV1 decoder
 if [ -n "$ENABLE_LIBDAV1D" ] && { [ "$DEP_DAV1D" = "1" ] || [ -z "$DEP_DAV1D" ]; }; then
+    echo -e "\n[Build dav1d]"
     add_ffargs "--enable-libdav1d"
 fi
 
@@ -264,6 +265,7 @@ fi
 
 # LAME MP3 encoder
 if [ -n "$ENABLE_LIBMP3LAME" ] && { [ "$DEP_LAME" = "1" ] || [ -z "$DEP_LAME" ]; }; then
+    echo -e "\n[Build LAME]"
     add_ffargs "--enable-libmp3lame"
 fi
 
@@ -329,6 +331,7 @@ fi
 
 # libzimg
 if [ -n "$ENABLE_LIBZIMG" ] && { [ "$DEP_ZIMG" = "1" ] || [ -z "$DEP_ZIMG" ]; }; then
+    echo -e "\n[Build zimg]"
     add_ffargs "--enable-libzimg"
 fi
 
@@ -360,7 +363,6 @@ fi
 # ========================================
 
 add_ffargs "--enable-schannel"
-add_ffargs "--enable-lzma"
 
 # ========================================
 # Build FFmpeg
