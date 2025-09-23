@@ -106,7 +106,7 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '12.6.3'
-          sub-packages: '["nvcc"]'
+          sub-packages: '["nvcc", "cudart"]'
 
       - name: Test CUDA Installation
         if: matrix.arch == 'amd64'
