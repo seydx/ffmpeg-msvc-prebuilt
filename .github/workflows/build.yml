@@ -294,14 +294,10 @@ jobs:
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
-          REM Apply zimg patch
-          git -C zimg apply -R --check "%CD%\patches\zimg.patch" --ignore-whitespace >nul 2>&1
-          if %errorlevel% neq 0 (
-            echo Apply zimg.patch for zimg
-            git -C zimg apply "%CD%\patches\zimg.patch" --ignore-whitespace
-          ) else (
-            echo Skip zimg.patch for zimg
-          )
+          REM Apply the combined patch for zimg.def and zimg.vcxproj
+          echo Applying combined zimg patch...
+          git -C zimg apply "%CD%\patches\zimg.patch" --ignore-whitespace
+          if %errorlevel% neq 0 exit /b %errorlevel%
 
           REM Build zimg using MSBuild
           if exist zimg (
@@ -315,21 +311,24 @@ jobs:
               set PLATFORM=x64
             )
 
-            MSBuild zimg\zimg.vcxproj -p:Configuration=Release -p:Platform=%PLATFORM% -p:RuntimeLibrary=MT
+            MSBuild zimg\zimg.vcxproj -p:Configuration=Release -p:Platform=%PLATFORM%
             if %errorlevel% neq 0 exit /b %errorlevel%
             
             REM Install headers
             if not exist D:\a\_temp\msys64\usr\local\include\zimg mkdir D:\a\_temp\msys64\usr\local\include\zimg
             copy ..\src\zimg\api\zimg.h D:\a\_temp\msys64\usr\local\include\zimg\
+
+            REM The path to the created library is relative to the vcxproj
+            set LIB_PATH=zimg\%PLATFORM%\Release\z.lib
             
-            REM Find and install the library
+            REM Install the library
             if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
-            if exist %PLATFORM%\Release\z.lib (
-              echo Found static library: %PLATFORM%\Release\z.lib
-              copy "%PLATFORM%\Release\z.lib" D:\a\_temp\msys64\usr\local\lib\zimg.lib
-              copy "%PLATFORM%\Release\z.lib" D:\a\_temp\msys64\usr\local\lib\libzimg.lib
+            if exist %LIB_PATH% (
+              echo Found static library: %LIB_PATH%
+              copy "%LIB_PATH%" D:\a\_temp\msys64\usr\local\lib\zimg.lib
+              copy "%LIB_PATH%" D:\a\_temp\msys64\usr\local\lib\libzimg.lib
             ) else (
-              echo ERROR: Static library z.lib not found!
+              echo ERROR: Static library z.lib not found at %LIB_PATH%!
               exit /b 1
             )
             
@@ -345,7 +344,7 @@ jobs:
               echo Description: Scaling, colorspace conversion, and dithering library
               echo Version: 3.0
               echo Libs: -L${libdir} -lzimg
-              echo Cflags: -I${includedir}/zimg
+              echo Cflags: -I${inclu dedir}/zimg
             ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\zimg.pc
             
             cd ..\..

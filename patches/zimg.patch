@@ -7,3 +7,31 @@ index c2f8f7c..9749b37 100644
  EXPORTS
  	zimg_get_version_info
  	zimg_get_api_version
+diff --git a/_msvc/zimg/zimg.vcxproj b/_msvc/zimg/zimg.vcxproj
+index 75b944e..f339a0e 100644
+--- a/_msvc/zimg/zimg.vcxproj
++++ b/_msvc/zimg/zimg.vcxproj
+@@ -176,6 +176,7 @@
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <FloatingPointModel>Strict</FloatingPointModel>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+     </ClCompile>
+     <Link>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+@@ -195,6 +196,7 @@
+       <BufferSecurityCheck>false</BufferSecurityCheck>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+     </ClCompile>
+     <Link>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+@@ -214,6 +216,7 @@
+       <BufferSecurityCheck>false</BufferSecurityCheck>
+       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+       <LanguageStandard>stdcpp17</LanguageStandard>
++      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+     </ClCompile>
+     <Link>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
