@@ -100,12 +100,11 @@ jobs:
           pip install meson ninja
 
       - name: Install Vulkan SDK
-        uses: seydx/install-vulkan-sdk-action@b6378ac06fc127c5b36808db200c7fa6e234acbd
+        uses: jakoch/install-vulkan-sdk-action@v1
         with:
-          platform: win32
-          arch: ${{ matrix.arch == 'arm64' && 'arm64' || 'x64' }}
           install_runtime: true
-          cache: false
+          cache: true
+          optional_components: com.lunarg.vulkan.x64,com.lunarg.vulkan.arm64
 
       - name: Test Vulkan Installation
         shell: cmd
