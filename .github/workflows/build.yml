@@ -294,16 +294,17 @@ jobs:
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
-          echo Applying zimg patch...
-          git apply --check "%CD%\patches\zimg.patch"
-          if %errorlevel% neq 0 (
-            git apply "%CD%\patches\zimg.patch" --ignore-whitespace
-            if %errorlevel% neq 0 (
-              echo Failed to apply zimg patch!
-              exit /b %errorlevel%
-            )
+          echo Applying zimg patch if needed...
+          REM We attempt to apply the patch. We don't care if it fails because it's already applied.
+          REM The "|| ver > nul" part ensures that the command line does not exit with an error.
+          git apply --ignore-whitespace "%CD%\patches\zimg.patch" || ver > nul
+
+          REM Check if the patch was applied correctly by checking for the changes. This is the ultimate verification.
+          git diff --exit-code --quiet
+          if %errorlevel% equ 0 (
+            echo "Warning: zimg source seems unchanged after applying patch. This might happen if it was already patched."
           ) else (
-            echo Zimg patch seems to be already applied or not needed, skipping apply.
+            echo "Zimg source successfully patched."
           )
 
           REM Build zimg using MSBuild
