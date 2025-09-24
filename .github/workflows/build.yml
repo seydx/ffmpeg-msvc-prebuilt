@@ -238,7 +238,7 @@ jobs:
           rm $(which link)
           rm -rf /usr/local
 
-      - name: Build dav1d with Meson
+      - name: Build dav1d
         if: ${{ success() }}
         shell: cmd
         run: |
@@ -286,7 +286,7 @@ jobs:
 
           cd ..
 
-      - name: Build zimg with MSVC
+      - name: Build zimg
         if: ${{ success() }}
         shell: cmd
         run: |
@@ -344,7 +344,7 @@ jobs:
 
           cd ..\..
 
-      - name: Build LAME with MSVC
+      - name: Build LAME
         if: ${{ success() }}
         shell: cmd
         run: |
