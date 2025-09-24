@@ -12,11 +12,9 @@ on:
       - '*'
   #   branches:
   #     - main
-  #     - master
   # pull_request:
   #   branches:
   #     - main
-  #     - master
   workflow_call:
     inputs:
       ref_name:
@@ -428,6 +426,35 @@ jobs:
         run: |
           CWD=$(pwd)
           cd /usr/local
+
+          # # Add SDK libraries to the package
+          # mkdir -p sdk
+
+          # # Add Vulkan SDK libraries (architecture-specific)
+          # if [[ -n "$VULKAN_SDK" && -d "$VULKAN_SDK" ]]; then
+          #   echo "Adding Vulkan SDK libraries..."
+          #   mkdir -p sdk/vulkan
+          #   cp -r "$VULKAN_SDK/Include" sdk/vulkan/ 2>/dev/null || true
+          #   if [[ "${{matrix.arch}}" == "arm64" ]]; then
+          #     cp -r "$VULKAN_SDK/Lib-ARM64" sdk/vulkan/Lib/ 2>/dev/null || true
+          #   else
+          #     cp -r "$VULKAN_SDK/Lib" sdk/vulkan/ 2>/dev/null || true
+          #   fi
+          #   # Add Vulkan runtime DLLs
+          #   cp -r "$VULKAN_SDK/runtime" sdk/vulkan/ 2>/dev/null || true
+          #   cp -r "$VULKAN_SDK/Bin" sdk/vulkan/ 2>/dev/null || true
+          # fi
+
+          # # Add CUDA SDK libraries (x64 only)
+          # if [[ "${{matrix.arch}}" == "amd64" && -n "$CUDA_PATH" && -d "$CUDA_PATH" ]]; then
+          #   echo "Adding CUDA SDK libraries..."
+          #   mkdir -p sdk/cuda
+          #   cp -r "$CUDA_PATH/include" sdk/cuda/ 2>/dev/null || true
+          #   cp -r "$CUDA_PATH/lib/x64" sdk/cuda/lib/ 2>/dev/null || true
+          #   # Add CUDA runtime DLLs
+          #   cp -r "$CUDA_PATH/bin" sdk/cuda/ 2>/dev/null || true
+          # fi
+
           zip -9 ${CWD}/${{env.name}}.zip -r .
           cd ${CWD}
           sha1sum ${{env.name}}.zip >${{env.name}}.sha1
