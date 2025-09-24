@@ -277,9 +277,12 @@ jobs:
             REM Meson installs as libdav1d.a, but FFmpeg expects dav1d.lib
             REM Copy the library with both naming conventions
             if exist D:\a\_temp\msys64\usr\local\lib\libdav1d.a (
-              echo Copying libdav1d.a to dav1d.lib for FFmpeg
+              echo Found static library: D:\a\_temp\msys64\usr\local\lib\libdav1d.a
               copy D:\a\_temp\msys64\usr\local\lib\libdav1d.a D:\a\_temp\msys64\usr\local\lib\dav1d.lib
               copy D:\a\_temp\msys64\usr\local\lib\libdav1d.a D:\a\_temp\msys64\usr\local\lib\libdav1d.lib
+            ) else (
+              echo ERROR: Static library libdav1d.a not found!
+              exit /b 1
             )
 
             cd ..
@@ -321,10 +324,13 @@ jobs:
 
             REM Find and install the library
             if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
-            for /R %PLATFORM%\Release %%f in (*.lib) do (
-              echo Found library: %%f
-              copy "%%f" D:\a\_temp\msys64\usr\local\lib\zimg.lib
-              copy "%%f" D:\a\_temp\msys64\usr\local\lib\libzimg.lib
+            if exist %PLATFORM%\Release\z.lib (
+              echo Found static library: %PLATFORM%\Release\z.lib
+              copy "%PLATFORM%\Release\z.lib" D:\a\_temp\msys64\usr\local\lib\zimg.lib
+              copy "%PLATFORM%\Release\z.lib" D:\a\_temp\msys64\usr\local\lib\libzimg.lib
+            ) else (
+              echo ERROR: Static library z.lib not found!
+              exit /b 1
             )
 
             REM Create pkg-config file with correct include path
@@ -384,9 +390,15 @@ jobs:
             if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
 
             REM Copy library with both naming conventions for maximum compatibility
-            copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\libmp3lame.lib
-            copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\mp3lame.lib
-            copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\lame.lib
+            if exist output\libmp3lame-static.lib (
+              echo Found static library: output\libmp3lame-static.lib
+              copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\libmp3lame.lib
+              copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\mp3lame.lib
+              copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\lame.lib
+            ) else (
+              echo ERROR: Static library libmp3lame-static.lib not found!
+              exit /b 1
+            )
 
             REM Create pkg-config file - use absolute path for MSVC compatibility
             if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
