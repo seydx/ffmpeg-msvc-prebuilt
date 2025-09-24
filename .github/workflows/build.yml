@@ -307,7 +307,7 @@ jobs:
           if exist zimg (
             echo Building zimg...
             cd zimg\_msvc
-
+            
             REM Determine platform for MSBuild
             if "${{matrix.arch}}" == "arm64" (
               set PLATFORM=ARM64
@@ -315,13 +315,13 @@ jobs:
               set PLATFORM=x64
             )
 
-            MSBuild zimg.sln -p:Configuration=Release -p:Platform=%PLATFORM% -p:RuntimeLibrary=MT
+            MSBuild zimg\zimg.vcxproj -p:Configuration=Release -p:Platform=%PLATFORM% -p:RuntimeLibrary=MT
             if %errorlevel% neq 0 exit /b %errorlevel%
-
-            REM Install headers - API header needs to be accessible directly
+            
+            REM Install headers
             if not exist D:\a\_temp\msys64\usr\local\include\zimg mkdir D:\a\_temp\msys64\usr\local\include\zimg
             copy ..\src\zimg\api\zimg.h D:\a\_temp\msys64\usr\local\include\zimg\
-
+            
             REM Find and install the library
             if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
             if exist %PLATFORM%\Release\z.lib (
@@ -332,8 +332,8 @@ jobs:
               echo ERROR: Static library z.lib not found!
               exit /b 1
             )
-
-            REM Create pkg-config file with correct include path
+            
+            REM Create pkg-config file
             if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
             (
               echo prefix=/usr/local
@@ -347,7 +347,7 @@ jobs:
               echo Libs: -L${libdir} -lzimg
               echo Cflags: -I${includedir}/zimg
             ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\zimg.pc
-
+            
             cd ..\..
           )
 
