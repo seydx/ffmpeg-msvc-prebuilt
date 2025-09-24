@@ -102,7 +102,7 @@ jobs:
       - name: Install Vulkan SDK
         uses: jakoch/install-vulkan-sdk-action@v1
         with:
-          install_runtime: true
+          install_runtime: false
           cache: false
           optional_components: com.lunarg.vulkan.x64,com.lunarg.vulkan.arm64
 
