@@ -1,16 +1,16 @@
-diff --git a/_msvc/zimg.def b/_msvc/zimg.def
+diff --git a/zimg/_msvc/zimg.def b/zimg/_msvc/zimg.def
 index c2f8f7c..9749b37 100644
---- a/_msvc/zimg.def
-+++ b/_msvc/zimg.def
+--- a/zimg/_msvc/zimg.def
++++ b/zimg/_msvc/zimg.def
 @@ -1,4 +1,3 @@
 -LIBRARY z
  EXPORTS
  	zimg_get_version_info
  	zimg_get_api_version
-diff --git a/_msvc/zimg/zimg.vcxproj b/_msvc/zimg/zimg.vcxproj
+diff --git a/zimg/_msvc/zimg/zimg.vcxproj b/zimg/_msvc/zimg/zimg.vcxproj
 index 75b944e..f339a0e 100644
---- a/_msvc/zimg/zimg.vcxproj
-+++ b/_msvc/zimg/zimg.vcxproj
+--- a/zimg/_msvc/zimg/zimg.vcxproj
++++ b/zimg/_msvc/zimg/zimg.vcxproj
 @@ -176,6 +176,7 @@
        <MultiProcessorCompilation>true</MultiProcessorCompilation>
        <FloatingPointModel>Strict</FloatingPointModel>
