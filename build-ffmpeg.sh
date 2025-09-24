@@ -26,18 +26,51 @@ CFLAGS="$CFLAGS -I${SRC_DIR}/compat/stdbit"
 CFLAGS="$CFLAGS -DLZMA_API_STATIC"
 
 # Add library paths for MSVC
+EXTRA_CFLAGS=""
 EXTRA_LDFLAGS="-LIBPATH:D:/a/_temp/msys64/usr/local/lib"
 EXTRA_LIBS=""
 
 EX_BUILD_ARGS="$TYPE_ARGS $CROSS_ARGS $LICENSE_ARGS $DISABLE_ARGS"
 
-echo "Configure command: ./configure --toolchain=msvc --arch=$BUILD_ARCH --extra-ldflags=\"$EXTRA_LDFLAGS\" --extra-libs=\"$EXTRA_LIBS\" $EX_BUILD_ARGS $@"
-echo "CFLAGS: $CFLAGS"
+if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
+    VULKAN_PATH_SHORT=$(cygpath -sw "$VULKAN_SDK")
+    VULKAN_PATH_FIXED=$(cygpath -m "$VULKAN_PATH_SHORT")
+    EXTRA_CFLAGS="$EXTRA_CFLAGS -I${VULKAN_PATH_FIXED}/Include"
 
-CFLAGS="$CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH \
-    --extra-ldflags="$EXTRA_LDFLAGS" \
-    --extra-libs="$EXTRA_LIBS" \
-    $EX_BUILD_ARGS $@
+    # Use architecture-specific lib directory
+    if [ "$BUILD_ARCH" == "arm64" ]; then
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -LIBPATH:${VULKAN_PATH_FIXED}/Lib-ARM64"
+    else
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -LIBPATH:${VULKAN_PATH_FIXED}/Lib"
+    fi
+fi
+
+if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ] && [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
+    CUDA_PATH_SHORT=$(cygpath -sw "$CUDA_PATH")
+    CUDA_PATH_FIXED=$(cygpath -m "$CUDA_PATH_SHORT")
+    EXTRA_CFLAGS="$EXTRA_CFLAGS -I${CUDA_PATH_FIXED}/include"
+    EXTRA_LDFLAGS="$EXTRA_LDFLAGS -LIBPATH:${CUDA_PATH_FIXED}/lib/x64"
+    NVCC_FLAGS="-gencode arch=compute_61,code=compute_61 -O2"
+
+    echo "Configure command: ./configure --toolchain=msvc --arch=$BUILD_ARCH --extra-cflags=\"$EXTRA_CFLAGS\" --extra-ldflags=\"$EXTRA_LDFLAGS\" --extra-libs=\"$EXTRA_LIBS\" --nvccflags=\"$NVCC_FLAGS\" $EX_BUILD_ARGS $@"
+    echo "CFLAGS: $CFLAGS"
+
+    CFLAGS="$CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH \
+        --extra-cflags="$EXTRA_CFLAGS" \
+        --extra-ldflags="$EXTRA_LDFLAGS" \
+        --extra-libs="$EXTRA_LIBS" \
+        --nvccflags="$NVCC_FLAGS" \
+        $EX_BUILD_ARGS $@
+else
+    echo "Configure command: ./configure --toolchain=msvc --arch=$BUILD_ARCH --extra-cflags=\"$EXTRA_CFLAGS\" --extra-ldflags=\"$EXTRA_LDFLAGS\" --extra-libs=\"$EXTRA_LIBS\" $EX_BUILD_ARGS $@"
+    echo "CFLAGS: $CFLAGS"
+
+    CFLAGS="$CFLAGS" ./configure --toolchain=msvc --arch=$BUILD_ARCH \
+        --extra-cflags="$EXTRA_CFLAGS" \
+        --extra-ldflags="$EXTRA_LDFLAGS" \
+        --extra-libs="$EXTRA_LIBS" \
+        $EX_BUILD_ARGS $@
+fi
 
 make -j$(nproc)
 make install prefix=$INSTALL_PREFIX

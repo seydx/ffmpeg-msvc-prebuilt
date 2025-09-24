@@ -114,7 +114,16 @@ fi
 # NVIDIA
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     ./build-nvcodec.sh
-    add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc --enable-cuda-llvm"
+    add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc"
+
+    # Check if CUDA SDK is available (installed via GitHub Action)
+    if [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
+        echo "CUDA SDK found, enabling CUDA NVCC support in FFmpeg"
+        add_ffargs "--enable-cuda-nvcc"
+
+        # Enable libnpp for CUDA-accelerated filters (not static?)
+        # add_ffargs "--enable-libnpp --enable-nonfree"
+    fi
 fi
 
 # OpenCL
@@ -197,6 +206,11 @@ Libs: -L\${libdir} $GLSLANG_LIBS
 EOF
 
     add_ffargs "--enable-libglslang"
+
+    if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
+        echo "VULKAN_SDK is set, enabling Vulkan support in FFmpeg"
+        add_ffargs "--enable-vulkan"
+    fi
 fi
 
 # ========================================
