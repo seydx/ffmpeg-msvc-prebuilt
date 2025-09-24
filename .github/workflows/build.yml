@@ -248,45 +248,43 @@ jobs:
           set PATH=D:\a\_temp\msys64\usr\bin;%PATH%
 
           REM Build dav1d (AV1 decoder)
-          if exist dav1d (
-            echo Building dav1d...
-            cd dav1d
+          echo Building dav1d...
+          cd dav1d
 
-            REM Create cross-file for ARM64 builds
-            if "${{matrix.arch}}" == "arm64" (
-              echo [binaries] > cross.txt
-              echo c = 'cl' >> cross.txt
-              echo ar = 'lib' >> cross.txt
-              echo [host_machine] >> cross.txt
-              echo system = 'windows' >> cross.txt
-              echo cpu_family = 'aarch64' >> cross.txt
-              echo cpu = 'aarch64' >> cross.txt
-              echo endian = 'little' >> cross.txt
-              REM Disable assembly for ARM64 cross-compilation
-              meson setup build --cross-file cross.txt --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false -Denable_asm=false -Db_vscrt=mt
-            ) else (
-              meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false -Db_vscrt=mt
-            )
-
-            if %errorlevel% neq 0 exit /b %errorlevel%
-            meson compile -C build
-            if %errorlevel% neq 0 exit /b %errorlevel%
-            meson install -C build
-            if %errorlevel% neq 0 exit /b %errorlevel%
-
-            REM Meson installs as libdav1d.a, but FFmpeg expects dav1d.lib
-            REM Copy the library with both naming conventions
-            if exist D:\a\_temp\msys64\usr\local\lib\libdav1d.a (
-              echo Found static library: D:\a\_temp\msys64\usr\local\lib\libdav1d.a
-              copy D:\a\_temp\msys64\usr\local\lib\libdav1d.a D:\a\_temp\msys64\usr\local\lib\dav1d.lib
-              copy D:\a\_temp\msys64\usr\local\lib\libdav1d.a D:\a\_temp\msys64\usr\local\lib\libdav1d.lib
-            ) else (
-              echo ERROR: Static library libdav1d.a not found!
-              exit /b 1
-            )
-
-            cd ..
+          REM Create cross-file for ARM64 builds
+          if "${{matrix.arch}}" == "arm64" (
+            echo [binaries] > cross.txt
+            echo c = 'cl' >> cross.txt
+            echo ar = 'lib' >> cross.txt
+            echo [host_machine] >> cross.txt
+            echo system = 'windows' >> cross.txt
+            echo cpu_family = 'aarch64' >> cross.txt
+            echo cpu = 'aarch64' >> cross.txt
+            echo endian = 'little' >> cross.txt
+            REM Disable assembly for ARM64 cross-compilation
+            meson setup build --cross-file cross.txt --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false -Denable_asm=false -Db_vscrt=mt
+          ) else (
+            meson setup build --prefix=D:\a\_temp\msys64\usr\local --buildtype=release --default-library=static -Denable_tools=false -Denable_tests=false -Db_vscrt=mt
           )
+
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          meson compile -C build
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          meson install -C build
+          if %errorlevel% neq 0 exit /b %errorlevel%
+
+          REM Meson installs as libdav1d.a, but FFmpeg expects dav1d.lib
+          REM Copy the library with both naming conventions
+          if exist D:\a\_temp\msys64\usr\local\lib\libdav1d.a (
+            echo Found static library: D:\a\_temp\msys64\usr\local\lib\libdav1d.a
+            copy D:\a\_temp\msys64\usr\local\lib\libdav1d.a D:\a\_temp\msys64\usr\local\lib\dav1d.lib
+            copy D:\a\_temp\msys64\usr\local\lib\libdav1d.a D:\a\_temp\msys64\usr\local\lib\libdav1d.lib
+          ) else (
+            echo ERROR: Static library libdav1d.a not found!
+            exit /b 1
+          )
+
+          cd ..
 
       - name: Build zimg with MSVC
         if: ${{ success() }}
@@ -294,69 +292,57 @@ jobs:
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
-          echo Applying zimg patch if needed...
-          REM We attempt to apply the patch. We don't care if it fails because it's already applied.
-          REM The "|| ver > nul" part ensures that the command line does not exit with an error.
+          echo Applying zimg patch (ignoring errors if already applied)...
           git apply --ignore-whitespace "%CD%\patches\zimg.patch" || ver > nul
 
-          REM Check if the patch was applied correctly by checking for the changes. This is the ultimate verification.
-          git diff --exit-code --quiet
-          if %errorlevel% equ 0 (
-            echo "Warning: zimg source seems unchanged after applying patch. This might happen if it was already patched."
-          ) else (
-            echo "Zimg source successfully patched."
-          )
-
           REM Build zimg using MSBuild
-          if exist zimg (
-            echo Building zimg...
-            cd zimg\_msvc
-            
-            REM Determine platform for MSBuild
-            if "${{matrix.arch}}" == "arm64" (
-              set PLATFORM=ARM64
-            ) else (
-              set PLATFORM=x64
-            )
+          echo Building zimg...
+          cd zimg\_msvc
 
-            MSBuild zimg\zimg.vcxproj -p:Configuration=Release -p:Platform=%PLATFORM%
-            if %errorlevel% neq 0 exit /b %errorlevel%
-            
-            REM Install headers
-            if not exist D:\a\_temp\msys64\usr\local\include\zimg mkdir D:\a\_temp\msys64\usr\local\include\zimg
-            copy ..\src\zimg\api\zimg.h D:\a\_temp\msys64\usr\local\include\zimg\
-
-            REM The path to the created library is relative to the vcxproj
-            set LIB_PATH=zimg\%PLATFORM%\Release\z.lib
-            
-            REM Install the library
-            if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
-            if exist %LIB_PATH% (
-              echo Found static library: %LIB_PATH%
-              copy "%LIB_PATH%" D:\a\_temp\msys64\usr\local\lib\zimg.lib
-              copy "%LIB_PATH%" D:\a\_temp\msys64\usr\local\lib\libzimg.lib
-            ) else (
-              echo ERROR: Static library z.lib not found at %LIB_PATH%!
-              exit /b 1
-            )
-            
-            REM Create pkg-config file
-            if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
-            (
-              echo prefix=/usr/local
-              echo exec_prefix=${prefix}
-              echo libdir=${exec_prefix}/lib
-              echo includedir=${prefix}/include
-              echo.
-              echo Name: zimg
-              echo Description: Scaling, colorspace conversion, and dithering library
-              echo Version: 3.0
-              echo Libs: -L${libdir} -lzimg
-              echo Cflags: -I${inclu dedir}/zimg
-            ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\zimg.pc
-            
-            cd ..\..
+          REM Determine platform for MSBuild
+          if "${{matrix.arch}}" == "arm64" (
+            set PLATFORM=ARM64
+          ) else (
+            set PLATFORM=x64
           )
+
+          MSBuild zimg\zimg.vcxproj -p:Configuration=Release -p:Platform=%PLATFORM%
+          if %errorlevel% neq 0 exit /b %errorlevel%
+
+          REM Install headers
+          if not exist D:\a\_temp\msys64\usr\local\include\zimg mkdir D:\a\_temp\msys64\usr\local\include\zimg
+          copy ..\src\zimg\api\zimg.h D:\a\_temp\msys64\usr\local\include\zimg\
+
+          REM The path to the created library is relative to the vcxproj
+          set LIB_PATH=zimg\%PLATFORM%\Release\z.lib
+
+          REM Install the library
+          if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
+          if exist %LIB_PATH% (
+            echo Found static library: %LIB_PATH%
+            copy "%LIB_PATH%" D:\a\_temp\msys64\usr\local\lib\zimg.lib
+            copy "%LIB_PATH%" D:\a\_temp\msys64\usr\local\lib\libzimg.lib
+          ) else (
+            echo ERROR: Static library z.lib not found at %LIB_PATH%!
+            exit /b 1
+          )
+
+          REM Create pkg-config file
+          if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
+          (
+            echo prefix=/usr/local
+            echo exec_prefix=${prefix}
+            echo libdir=${exec_prefix}/lib
+            echo includedir=${prefix}/include
+            echo.
+            echo Name: zimg
+            echo Description: Scaling, colorspace conversion, and dithering library
+            echo Version: 3.0
+            echo Libs: -L${libdir} -lzimg
+            echo Cflags: -I${inclu dedir}/zimg
+          ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\zimg.pc
+
+          cd ..\..
 
       - name: Build LAME with MSVC
         if: ${{ success() }}
@@ -365,65 +351,63 @@ jobs:
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
           REM Build LAME MP3 encoder
-          if exist lame (
-            echo Building LAME...
-            cd lame
+          echo Building LAME...
+          cd lame
 
-            REM Copy configMS.h to config.h
-            copy configMS.h config.h
+          REM Copy configMS.h to config.h
+          copy configMS.h config.h
 
-            REM Set architecture-specific options and machine type
-            if "${{matrix.arch}}" == "arm64" (
-              REM Patch Makefile.MSVC to use correct machine type for ARM64
-              powershell -Command "(Get-Content Makefile.MSVC) -replace 'MACHINE = /machine:I386', 'MACHINE = /machine:ARM64' | Set-Content Makefile.MSVC"
-            ) else (
-              REM Patch Makefile.MSVC to use correct machine type for x64
-              powershell -Command "(Get-Content Makefile.MSVC) -replace 'MACHINE = /machine:I386', 'MACHINE = /machine:X64' | Set-Content Makefile.MSVC"
-            )
-
-            REM Also remove obsolete compiler flags that cause warnings
-            powershell -Command "(Get-Content Makefile.MSVC) -replace '/QIfdiv /QI0f /YX', '' | Set-Content Makefile.MSVC"
-
-            REM Build static library only (no frontend) using documented approach
-            REM comp=msvc ensures we use Microsoft compiler
-            REM asm=no disables assembly optimizations (safer for cross-compilation)
-            REM CFG=RH uses Robert's optimizations (default)
-            nmake -f Makefile.MSVC comp=msvc asm=no libmp3lame-static.lib
-            if %errorlevel% neq 0 exit /b %errorlevel%
-
-            REM Install headers and library
-            if not exist D:\a\_temp\msys64\usr\local\include\lame mkdir D:\a\_temp\msys64\usr\local\include\lame
-            copy include\lame.h D:\a\_temp\msys64\usr\local\include\lame\
-            if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
-
-            REM Copy library with both naming conventions for maximum compatibility
-            if exist output\libmp3lame-static.lib (
-              echo Found static library: output\libmp3lame-static.lib
-              copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\libmp3lame.lib
-              copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\mp3lame.lib
-              copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\lame.lib
-            ) else (
-              echo ERROR: Static library libmp3lame-static.lib not found!
-              exit /b 1
-            )
-
-            REM Create pkg-config file - use absolute path for MSVC compatibility
-            if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
-            (
-              echo prefix=/usr/local
-              echo exec_prefix=${prefix}
-              echo libdir=${exec_prefix}/lib
-              echo includedir=${prefix}/include
-              echo.
-              echo Name: libmp3lame
-              echo Description: LAME MP3 encoding library
-              echo Version: 3.100
-              echo Libs: -LD:/a/_temp/msys64/usr/local/lib -lmp3lame
-              echo Cflags: -I${includedir}/lame
-            ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\libmp3lame.pc
-
-            cd ..
+          REM Set architecture-specific options and machine type
+          if "${{matrix.arch}}" == "arm64" (
+            REM Patch Makefile.MSVC to use correct machine type for ARM64
+            powershell -Command "(Get-Content Makefile.MSVC) -replace 'MACHINE = /machine:I386', 'MACHINE = /machine:ARM64' | Set-Content Makefile.MSVC"
+          ) else (
+            REM Patch Makefile.MSVC to use correct machine type for x64
+            powershell -Command "(Get-Content Makefile.MSVC) -replace 'MACHINE = /machine:I386', 'MACHINE = /machine:X64' | Set-Content Makefile.MSVC"
           )
+
+          REM Also remove obsolete compiler flags that cause warnings
+          powershell -Command "(Get-Content Makefile.MSVC) -replace '/QIfdiv /QI0f /YX', '' | Set-Content Makefile.MSVC"
+
+          REM Build static library only (no frontend) using documented approach
+          REM comp=msvc ensures we use Microsoft compiler
+          REM asm=no disables assembly optimizations (safer for cross-compilation)
+          REM CFG=RH uses Robert's optimizations (default)
+          nmake -f Makefile.MSVC comp=msvc asm=no libmp3lame-static.lib
+          if %errorlevel% neq 0 exit /b %errorlevel%
+
+          REM Install headers and library
+          if not exist D:\a\_temp\msys64\usr\local\include\lame mkdir D:\a\_temp\msys64\usr\local\include\lame
+          copy include\lame.h D:\a\_temp\msys64\usr\local\include\lame\
+          if not exist D:\a\_temp\msys64\usr\local\lib mkdir D:\a\_temp\msys64\usr\local\lib
+
+          REM Copy library with both naming conventions for maximum compatibility
+          if exist output\libmp3lame-static.lib (
+            echo Found static library: output\libmp3lame-static.lib
+            copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\libmp3lame.lib
+            copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\mp3lame.lib
+            copy output\libmp3lame-static.lib D:\a\_temp\msys64\usr\local\lib\lame.lib
+          ) else (
+            echo ERROR: Static library libmp3lame-static.lib not found!
+            exit /b 1
+          )
+
+          REM Create pkg-config file - use absolute path for MSVC compatibility
+          if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
+          (
+            echo prefix=/usr/local
+            echo exec_prefix=${prefix}
+            echo libdir=${exec_prefix}/lib
+            echo includedir=${prefix}/include
+            echo.
+            echo Name: libmp3lame
+            echo Description: LAME MP3 encoding library
+            echo Version: 3.100
+            echo Libs: -LD:/a/_temp/msys64/usr/local/lib -lmp3lame
+            echo Cflags: -I${includedir}/lame
+          ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\libmp3lame.pc
+
+          cd ..
 
       - name: Build
         shell: cmd
