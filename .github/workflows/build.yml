@@ -100,7 +100,7 @@ jobs:
           pip install meson ninja
 
       - name: Install Vulkan SDK
-        uses: seydx/install-vulkan-sdk-action@main
+        uses: seydx/install-vulkan-sdk-action@5a5639b4ea0b751c9b1dfb27a010487e9b1802e6
         with:
           install_runtime: true
           cache: false
