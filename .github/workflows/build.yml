@@ -103,8 +103,7 @@ jobs:
         uses: seydx/install-vulkan-sdk-action@main
         with:
           install_runtime: true
-          cache: true
-          stripdown: true
+          cache: false
         env:
           USE_WARM: ${{ matrix.arch == 'arm64' }}
 
