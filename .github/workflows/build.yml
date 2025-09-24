@@ -294,13 +294,16 @@ jobs:
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
-          REM Apply zimg patch
-          git -C zimg apply -R --check "%CD%\patches\zimg.patch" --ignore-whitespace >nul 2>&1
+          echo Applying zimg patch...
+          git apply --check "%CD%\patches\zimg.patch"
           if %errorlevel% neq 0 (
-            echo Apply zimg.patch for zimg
-            git -C zimg apply "%CD%\patches\zimg.patch" --ignore-whitespace
+            git apply "%CD%\patches\zimg.patch" --ignore-whitespace
+            if %errorlevel% neq 0 (
+              echo Failed to apply zimg patch!
+              exit /b %errorlevel%
+            )
           ) else (
-            echo Skip zimg.patch for zimg
+            echo Zimg patch seems to be already applied or not needed, skipping apply.
           )
 
           REM Build zimg using MSBuild
