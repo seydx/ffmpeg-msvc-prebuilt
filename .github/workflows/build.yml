@@ -339,7 +339,7 @@ jobs:
             echo Description: Scaling, colorspace conversion, and dithering library
             echo Version: 3.0
             echo Libs: -L${libdir} -lzimg
-            echo Cflags: -I${inclu dedir}/zimg
+            echo Cflags: -I${includedir}/zimg
           ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\zimg.pc
 
           cd ..\..
