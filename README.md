@@ -50,6 +50,7 @@ The files are packaged into **.zip** archives for each configuration, making it 
 ### Included Dependencies
 
 #### Video Codecs
+
 - [x264](https://code.videolan.org/videolan/x264.git) - H.264 encoder
 - [x265](https://bitbucket.org/multicoreware/x265_git.git) - HEVC/H.265 encoder
 - [libvpx](https://github.com/webmproject/libvpx.git) - VP8/VP9 encoder/decoder
@@ -57,6 +58,7 @@ The files are packaged into **.zip** archives for each configuration, making it 
 - [libsvtav1](https://gitlab.com/AOMediaCodec/SVT-AV1.git) - AV1 encoder
 
 #### Audio Codecs
+
 - [libmp3lame](https://github.com/lame-mirror/lame.git) - MP3 encoder
 - [libfdk-aac](https://github.com/mstorsjo/fdk-aac.git) - AAC encoder
 - [libopus](https://github.com/xiph/opus.git) - Opus encoder/decoder
@@ -64,32 +66,35 @@ The files are packaged into **.zip** archives for each configuration, making it 
   - [libogg](https://github.com/xiph/ogg.git)
 
 #### Hardware Acceleration
+
 - [nv-codec-headers](https://github.com/FFmpeg/nv-codec-headers.git) - NVIDIA CUDA/NVENC (x64 only)
 - [AMF](https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git) - AMD AMF (x64 only)
 - [libvpl](https://github.com/intel/libvpl.git) - Intel QuickSync (x64 only)
-- [vulkan-headers](https://github.com/KhronosGroup/Vulkan-Headers.git) - Vulkan compute/encode
-- [glslang](https://github.com/KhronosGroup/glslang.git) - GLSL to SPIR-V compiler for Vulkan filters
+- **Vulkan SDK** - Cross-platform GPU compute and filtering
+  - [glslang](https://github.com/KhronosGroup/glslang.git) - GLSL to SPIR-V compiler for Vulkan filters
   - [spirv-tools](https://github.com/KhronosGroup/SPIRV-Tools.git)
   - [spirv-headers](https://github.com/KhronosGroup/SPIRV-Headers.git)
 - [opencl-headers](https://github.com/KhronosGroup/OpenCL-Headers.git) - OpenCL
 - [opencl-icd-loader](https://github.com/KhronosGroup/OpenCL-ICD-Loader.git)
 
 #### Image Processing
+
 - [libjxl](https://github.com/libjxl/libjxl.git) - JPEG XL support
   - [openexr](https://github.com/AcademySoftwareFoundation/openexr.git)
 - [libwebp](https://github.com/webmproject/libwebp.git) - WebP support
 - [libzimg](https://github.com/sekrit-twc/zimg.git) - High-quality image scaling
 
 #### Text/Subtitle Rendering
+
 - [freetype](https://gitlab.freedesktop.org/freetype/freetype.git) - Font rendering
 - [harfbuzz](https://github.com/harfbuzz/harfbuzz.git) - Text shaping
 - [libass](https://github.com/libass/libass.git) - ASS/SSA subtitle rendering
   - [fribidi](https://github.com/fribidi/fribidi.git) - Bidirectional text
 
 #### Other Libraries
+
 - [zlib](https://github.com/madler/zlib.git) - Compression
 - [xz](https://github.com/tukaani-project/xz.git) - LZMA/XZ compression
-
 
 ### Windows-specific Features
 

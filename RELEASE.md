@@ -10,6 +10,7 @@ This release contains FFmpeg builds with Jellyfin patches, compiled with MSVC (M
 ### Included Codecs & Libraries
 
 #### Video Codecs
+
 - [x264](https://code.videolan.org/videolan/x264.git) - H.264 encoder
 - [x265](https://bitbucket.org/multicoreware/x265_git.git) - HEVC/H.265 encoder
 - [libvpx](https://github.com/webmproject/libvpx.git) - VP8/VP9 encoder/decoder
@@ -17,31 +18,37 @@ This release contains FFmpeg builds with Jellyfin patches, compiled with MSVC (M
 - [libsvtav1](https://gitlab.com/AOMediaCodec/SVT-AV1.git) - AV1 encoder
 
 #### Audio Codecs
+
 - [libmp3lame](https://github.com/lame-mirror/lame.git) - MP3 encoder (MSVC native build)
 - [libfdk-aac](https://github.com/mstorsjo/fdk-aac.git) - AAC encoder
 - [libopus](https://github.com/xiph/opus.git) - Opus encoder/decoder
 - [libvorbis](https://github.com/xiph/vorbis.git) - Vorbis encoder/decoder
 
 #### Hardware Acceleration
+
 - **NVIDIA**: CUDA/NVENC/NVDEC support via [nv-codec-headers](https://github.com/FFmpeg/nv-codec-headers.git) (x64 only)
 - **AMD**: AMF encoding via [AMF SDK](https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git) (x64 only)
 - **Intel**: QuickSync via [libvpl](https://github.com/intel/libvpl.git) (x64 only)
-- **Vulkan**: Cross-vendor compute and filtering with [glslang](https://github.com/KhronosGroup/glslang.git) shader compiler
+- **Vulkan SDK**: Cross-platform GPU compute and filtering (both x64 and ARM64)
+  - [glslang](https://github.com/KhronosGroup/glslang.git) shader compiler for Vulkan filters
 - **Windows**: DXVA2, D3D11VA, D3D12VA hardware decoding
 - **OpenCL**: Cross-vendor GPU acceleration
 
 #### Image Processing
+
 - [libjxl](https://github.com/libjxl/libjxl.git) - JPEG XL support
 - [libwebp](https://github.com/webmproject/libwebp.git) - WebP support
 - [libzimg](https://github.com/sekrit-twc/zimg.git) - High-quality scaling (MSVC native build)
 
 #### Text/Subtitle Rendering
+
 - [freetype](https://gitlab.freedesktop.org/freetype/freetype.git) - Font rendering
 - [harfbuzz](https://github.com/harfbuzz/harfbuzz.git) - Text shaping
 - [libass](https://github.com/libass/libass.git) - ASS/SSA subtitle rendering
 - [fribidi](https://github.com/fribidi/fribidi.git) - Bidirectional text support
 
 #### Other Libraries
+
 - [zlib](https://github.com/madler/zlib.git) - Compression
 - [xz](https://github.com/tukaani-project/xz.git) - LZMA/XZ compression
 - [win-iconv](https://github.com/win-iconv/win-iconv.git) - Character encoding conversion
