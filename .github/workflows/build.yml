@@ -46,7 +46,6 @@ jobs:
     env:
       name: ffmpeg-${{ inputs.ref_name||github.ref_name }}-gpl-${{matrix.arch}}-static
       target: ${{contains(matrix.arch,'arm')&&format('amd64_{0}',matrix.arch)||matrix.arch}}
-      USE_WARM: ${{ matrix.arch == 'arm64' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -101,12 +100,12 @@ jobs:
           pip install meson ninja
 
       - name: Install Vulkan SDK
-        uses: seydx/install-vulkan-sdk-action@5a5639b4ea0b751c9b1dfb27a010487e9b1802e6
+        uses: seydx/install-vulkan-sdk-action@b6378ac06fc127c5b36808db200c7fa6e234acbd
         with:
+          platform: win32
+          arch: ${{ matrix.arch == 'arm64' && 'arm64' || 'x64' }}
           install_runtime: true
           cache: false
-        env:
-          USE_WARM: ${{ matrix.arch == 'arm64' }}
 
       - name: Test Vulkan Installation
         shell: cmd
