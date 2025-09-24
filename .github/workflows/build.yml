@@ -294,10 +294,14 @@ jobs:
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
-          REM Apply the combined patch for zimg.def and zimg.vcxproj
-          echo Applying combined zimg patch...
-          git -C zimg apply "%CD%\patches\zimg.patch" --ignore-whitespace
-          if %errorlevel% neq 0 exit /b %errorlevel%
+          REM Apply zimg patch
+          git -C zimg apply -R --check "%CD%\patches\zimg.patch" --ignore-whitespace >nul 2>&1
+          if %errorlevel% neq 0 (
+            echo Apply zimg.patch for zimg
+            git -C zimg apply "%CD%\patches\zimg.patch" --ignore-whitespace
+          ) else (
+            echo Skip zimg.patch for zimg
+          )
 
           REM Build zimg using MSBuild
           if exist zimg (
