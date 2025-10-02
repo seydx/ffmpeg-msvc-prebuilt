@@ -87,3 +87,6 @@
 0090-dont-return-ext-error-for-invalid-vt-frame.patch
 0091-backport-a-fix-for-setting-values-in-lavc-decode.patch
 0092-backport-a-fix-for-stripping-fps-from-setpts-outlink.patch
+1093-add-crop-support-to-scale_vt-filter.patch
+1094-add-crop-support-to-scale_cuda-filter.patch
+1095-add-avframe-crop-support-to-qsv-vpp.patch
