@@ -91,3 +91,4 @@
 1001-add-avframe-crop-support-to-videotoolbox-scale.patch
 1002-add-avframe-crop-support-to-cuda-scale.patch
 1003-add-avframe-crop-support-to-qsv-scale.patch
+1004-add-avframe-crop-support-to-opencl-scale.patch
