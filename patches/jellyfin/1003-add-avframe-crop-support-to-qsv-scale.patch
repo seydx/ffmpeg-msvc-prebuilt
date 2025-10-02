@@ -1,0 +1,26 @@
+diff --git a/libavfilter/qsvvpp.c b/libavfilter/qsvvpp.c
+index b013f06f..b1270653 100644
+--- a/libavfilter/qsvvpp.c
++++ b/libavfilter/qsvvpp.c
+@@ -487,6 +487,21 @@ static QSVFrame *submit_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *p
+     qsv_frame->surface.Data.TimeStamp = av_rescale_q(qsv_frame->frame->pts,
+                                                       inlink->time_base, default_tb);
+ 
++    // Apply crop from AVFrame crop fields if present (fallback if not set via QSVVPPCrop)
++    if (qsv_frame->frame->crop_left || qsv_frame->frame->crop_top ||
++        qsv_frame->frame->crop_right || qsv_frame->frame->crop_bottom) {
++        if (qsv_frame->surface.Info.CropX == 0 && qsv_frame->surface.Info.CropY == 0 &&
++            qsv_frame->surface.Info.CropW == qsv_frame->surface.Info.Width &&
++            qsv_frame->surface.Info.CropH == qsv_frame->surface.Info.Height) {
++            qsv_frame->surface.Info.CropX = qsv_frame->frame->crop_left;
++            qsv_frame->surface.Info.CropY = qsv_frame->frame->crop_top;
++            qsv_frame->surface.Info.CropW = qsv_frame->surface.Info.Width -
++                                            qsv_frame->frame->crop_left - qsv_frame->frame->crop_right;
++            qsv_frame->surface.Info.CropH = qsv_frame->surface.Info.Height -
++                                            qsv_frame->frame->crop_top - qsv_frame->frame->crop_bottom;
++        }
++    }
++
+     qsv_frame->surface.Info.PicStruct =
+             !(qsv_frame->frame->flags & AV_FRAME_FLAG_INTERLACED) ? MFX_PICSTRUCT_PROGRESSIVE :
+             ((qsv_frame->frame->flags & AV_FRAME_FLAG_TOP_FIELD_FIRST) ? MFX_PICSTRUCT_FIELD_TFF :

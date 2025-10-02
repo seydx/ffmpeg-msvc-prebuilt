@@ -1,0 +1,42 @@
+diff --git a/libavfilter/vf_scale_vt.c b/libavfilter/vf_scale_vt.c
+index a788facb..da2a50f9 100644
+--- a/libavfilter/vf_scale_vt.c
++++ b/libavfilter/vf_scale_vt.c
+@@ -170,6 +170,37 @@ static int scale_vt_filter_frame(AVFilterLink *link, AVFrame *in)
+ 
+     src = (CVPixelBufferRef)in->data[3];
+     dst = (CVPixelBufferRef)out->data[3];
++
++    // Apply crop from AVFrame crop fields if present
++    if (in->crop_left || in->crop_top || in->crop_right || in->crop_bottom) {
++        size_t width = CVPixelBufferGetWidth(src);
++        size_t height = CVPixelBufferGetHeight(src);
++        size_t crop_width = width - in->crop_left - in->crop_right;
++        size_t crop_height = height - in->crop_top - in->crop_bottom;
++
++        CFMutableDictionaryRef clean_aperture = CFDictionaryCreateMutable(
++            kCFAllocatorDefault, 4, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
++
++        CFNumberRef crop_width_num = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt64Type, &crop_width);
++        CFNumberRef crop_height_num = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt64Type, &crop_height);
++        CFNumberRef crop_x_num = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt64Type, &in->crop_left);
++        CFNumberRef crop_y_num = CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt64Type, &in->crop_top);
++
++        CFDictionarySetValue(clean_aperture, kCVImageBufferCleanApertureWidthKey, crop_width_num);
++        CFDictionarySetValue(clean_aperture, kCVImageBufferCleanApertureHeightKey, crop_height_num);
++        CFDictionarySetValue(clean_aperture, kCVImageBufferCleanApertureHorizontalOffsetKey, crop_x_num);
++        CFDictionarySetValue(clean_aperture, kCVImageBufferCleanApertureVerticalOffsetKey, crop_y_num);
++
++        CVBufferSetAttachment(src, kCVImageBufferCleanApertureKey, clean_aperture, kCVAttachmentMode_ShouldPropagate);
++        VTSessionSetProperty(s->transfer, kVTPixelTransferPropertyKey_ScalingMode, kVTScalingMode_CropSourceToCleanAperture);
++
++        CFRelease(crop_width_num);
++        CFRelease(crop_height_num);
++        CFRelease(crop_x_num);
++        CFRelease(crop_y_num);
++        CFRelease(clean_aperture);
++    }
++
+     ret = VTPixelTransferSessionTransferImage(s->transfer, src, dst);
+     if (ret != noErr) {
+         av_log(ctx, AV_LOG_ERROR, "transfer image failed, %d\n", ret);

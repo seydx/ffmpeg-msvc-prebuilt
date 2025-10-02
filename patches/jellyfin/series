@@ -46,6 +46,7 @@
 0047-add-format-option-to-vt-scale-filter.patch
 0048-add-vf-overlay-videotoolbox-filter.patch
 0049-add-coreimage-based-vf-transpose-vt-filter.patch
+0050-add-vf-tonemap-videotoolbox-filter.patch
 0051-add-mjpeg-videotoolbox-encoder.patch
 0052-add-vt-low-priority-keyframe-decoding.patch
 0053-add-dummy-device-derive-to-videotoolbox-hwcontext.patch
@@ -87,6 +88,6 @@
 0090-dont-return-ext-error-for-invalid-vt-frame.patch
 0091-backport-a-fix-for-setting-values-in-lavc-decode.patch
 0092-backport-a-fix-for-stripping-fps-from-setpts-outlink.patch
-1093-add-crop-support-to-scale_vt-filter.patch
-1094-add-crop-support-to-scale_cuda-filter.patch
-1095-add-avframe-crop-support-to-qsv-vpp.patch
+1001-add-avframe-crop-support-to-videotoolbox-scale.patch
+1002-add-avframe-crop-support-to-cuda-scale.patch
+1003-add-avframe-crop-support-to-qsv-scale.patch

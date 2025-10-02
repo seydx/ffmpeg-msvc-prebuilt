@@ -1,8 +1,8 @@
 diff --git a/libavfilter/vf_scale_cuda.c b/libavfilter/vf_scale_cuda.c
-index 54a34094..d7574287 100644
+index 571e019e..5b178bf1 100644
 --- a/libavfilter/vf_scale_cuda.c
 +++ b/libavfilter/vf_scale_cuda.c
-@@ -408,7 +408,8 @@ fail:
+@@ -490,7 +490,8 @@ fail:
  
  static int call_resize_kernel(AVFilterContext *ctx, CUfunction func,
                                CUtexObject src_tex[4], int src_width, int src_height,
@@ -12,41 +12,48 @@ index 54a34094..d7574287 100644
  {
      CUDAScaleContext *s = ctx->priv;
      CudaFunctions *cu = s->hwctx->internal->cuda_dl;
-@@ -422,7 +423,8 @@ static int call_resize_kernel(AVFilterContext *ctx, CUfunction func,
-         &src_tex[0], &src_tex[1], &src_tex[2], &src_tex[3],
+@@ -508,7 +509,8 @@ static int call_resize_kernel(AVFilterContext *ctx, CUfunction func,
          &dst_devptr[0], &dst_devptr[1], &dst_devptr[2], &dst_devptr[3],
          &dst_width, &dst_height, &dst_pitch,
--        &src_width, &src_height, &s->param
-+        &src_width, &src_height, &s->param,
+         &src_width, &src_height, &s->param,
+-        &s->dither_tex, &dither_size, &dither_quantization
++        &s->dither_tex, &dither_size, &dither_quantization,
 +        &src_left, &src_top
      };
  
      return CHECK_CU(cu->cuLaunchKernel(func,
-@@ -440,6 +442,15 @@ static int scalecuda_resize(AVFilterContext *ctx,
+@@ -523,9 +525,22 @@ static int scalecuda_resize(AVFilterContext *ctx,
+     CudaFunctions *cu = s->hwctx->internal->cuda_dl;
+     CUcontext dummy, cuda_ctx = s->hwctx->cuda_ctx;
+     int i, ret;
++    int src_left = 0, src_top = 0;
++    int src_width, src_height;
  
      CUtexObject tex[4] = { 0, 0, 0, 0 };
  
-+    // Apply crop using AVFrame crop fields
-+    int crop_left = in->crop_left;
-+    int crop_top = in->crop_top;
-+    int crop_right = in->crop_right;
-+    int crop_bottom = in->crop_bottom;
-+
-+    int cropped_width = in->width - crop_left - crop_right;
-+    int cropped_height = in->height - crop_top - crop_bottom;
++    // Apply crop from AVFrame crop fields if present
++    if (in->crop_left || in->crop_top || in->crop_right || in->crop_bottom) {
++        src_left = in->crop_left;
++        src_top = in->crop_top;
++        src_width = in->width - in->crop_left - in->crop_right;
++        src_height = in->height - in->crop_top - in->crop_bottom;
++    } else {
++        src_width = in->width;
++        src_height = in->height;
++    }
 +
      ret = CHECK_CU(cu->cuCtxPushCurrent(cuda_ctx));
      if (ret < 0)
          return ret;
-@@ -477,20 +488,23 @@ static int scalecuda_resize(AVFilterContext *ctx,
+@@ -564,20 +579,23 @@ static int scalecuda_resize(AVFilterContext *ctx,
  
      // scale primary plane(s). Usually Y (and A), or single plane of RGB frames.
      ret = call_resize_kernel(ctx, s->cu_func,
 -                             tex, in->width, in->height,
 -                             out, out->width, out->height, out->linesize[0]);
-+                             tex, cropped_width, cropped_height,
++                             tex, src_width, src_height,
 +                             out, out->width, out->height, out->linesize[0],
-+                             crop_left, crop_top);
++                             src_left, src_top);
      if (ret < 0)
          goto exit;
  
@@ -55,20 +62,20 @@ index 54a34094..d7574287 100644
          ret = call_resize_kernel(ctx, s->cu_func_uv, tex,
 -                                 AV_CEIL_RSHIFT(in->width, s->in_desc->log2_chroma_w),
 -                                 AV_CEIL_RSHIFT(in->height, s->in_desc->log2_chroma_h),
-+                                 AV_CEIL_RSHIFT(cropped_width, s->in_desc->log2_chroma_w),
-+                                 AV_CEIL_RSHIFT(cropped_height, s->in_desc->log2_chroma_h),
++                                 AV_CEIL_RSHIFT(src_width, s->in_desc->log2_chroma_w),
++                                 AV_CEIL_RSHIFT(src_height, s->in_desc->log2_chroma_h),
                                   out,
                                   AV_CEIL_RSHIFT(out->width, s->out_desc->log2_chroma_w),
                                   AV_CEIL_RSHIFT(out->height, s->out_desc->log2_chroma_h),
 -                                 out->linesize[1]);
 +                                 out->linesize[1],
-+                                 AV_CEIL_RSHIFT(crop_left, s->in_desc->log2_chroma_w),
-+                                 AV_CEIL_RSHIFT(crop_top, s->in_desc->log2_chroma_h));
++                                 AV_CEIL_RSHIFT(src_left, s->in_desc->log2_chroma_w),
++                                 AV_CEIL_RSHIFT(src_top, s->in_desc->log2_chroma_h));
          if (ret < 0)
              goto exit;
      }
 diff --git a/libavfilter/vf_scale_cuda.cu b/libavfilter/vf_scale_cuda.cu
-index de06ba94..f3172ee7 100644
+index ca2ae5fd..a4de7367 100644
 --- a/libavfilter/vf_scale_cuda.cu
 +++ b/libavfilter/vf_scale_cuda.cu
 @@ -27,7 +27,8 @@ template<typename T>
@@ -79,14 +86,14 @@ index de06ba94..f3172ee7 100644
 +                                   int bit_depth, float param,
 +                                   int src_left, int src_top);
  
- // --- CONVERSION LOGIC ---
+ // --- DITHERING ---
  
-@@ -64,13 +65,15 @@ static inline __device__ ushort conv_16to10(ushort in)
-              subsample_function_t<in_T_uv> subsample_func_uv>                                  \
-     __device__ static inline void N(cudaTextureObject_t src_tex[4], T *dst[4], int xo, int yo, \
+@@ -79,13 +80,15 @@ static inline __device__ ushort conv_16to10(ushort in)
                                      int dst_width, int dst_height, int dst_pitch,              \
--                                    int src_width, int src_height, float param)
-+                                    int src_width, int src_height, float param,                \
+                                     int src_width, int src_height, float param,                \
+                                     cudaTextureObject_t dither_tex,                            \
+-                                    float dither_size, float dither_quantization)
++                                    float dither_size, float dither_quantization,              \
 +                                    int src_left, int src_top)
  
  #define SUB_F(m, plane) \
@@ -99,7 +106,7 @@ index de06ba94..f3172ee7 100644
  
  // FFmpeg passes pitch in bytes, CUDA uses potentially larger types
  #define FIXED_PITCH \
-@@ -1064,12 +1067,13 @@ __device__ static inline T Subsample_Nearest(cudaTextureObject_t tex,
+@@ -1112,12 +1115,13 @@ __device__ static inline T Subsample_Nearest(cudaTextureObject_t tex,
                                               int xo, int yo,
                                               int dst_width, int dst_height,
                                               int src_width, int src_height,
@@ -116,7 +123,7 @@ index de06ba94..f3172ee7 100644
  
      return tex2D<T>(tex, xi, yi);
  }
-@@ -1079,12 +1083,13 @@ __device__ static inline T Subsample_Bilinear(cudaTextureObject_t tex,
+@@ -1127,12 +1131,13 @@ __device__ static inline T Subsample_Bilinear(cudaTextureObject_t tex,
                                                int xo, int yo,
                                                int dst_width, int dst_height,
                                                int src_width, int src_height,
@@ -133,7 +140,7 @@ index de06ba94..f3172ee7 100644
      // 3-tap filter weights are {wh,1.0,wh} and {wv,1.0,wv}
      float wh = min(max(0.5f * (hscale - 1.0f), 0.0f), 1.0f);
      float wv = min(max(0.5f * (vscale - 1.0f), 0.0f), 1.0f);
-@@ -1110,12 +1115,13 @@ __device__ static inline T Subsample_Bicubic(cudaTextureObject_t tex,
+@@ -1158,12 +1163,13 @@ __device__ static inline T Subsample_Bicubic(cudaTextureObject_t tex,
                                               int xo, int yo,
                                               int dst_width, int dst_height,
                                               int src_width, int src_height,
@@ -143,29 +150,29 @@ index de06ba94..f3172ee7 100644
  {
      float hscale = (float)src_width / (float)dst_width;
      float vscale = (float)src_height / (float)dst_height;
--    float xi = (xo + 0.5f) * hscale - 0.5f;
--    float yi = (yo + 0.5f) * vscale - 0.5f;
-+    float xi = (xo + 0.5f) * hscale - 0.5f + src_left;
-+    float yi = (yo + 0.5f) * vscale - 0.5f + src_top;
+-    float xi = xo * hscale + 0.5f * hscale - 0.5f; // avoid (x - v + v = x)
+-    float yi = yo * hscale + 0.5f * vscale - 0.5f;
++    float xi = xo * hscale + 0.5f * hscale - 0.5f + src_left; // avoid (x - v + v = x)
++    float yi = yo * hscale + 0.5f * vscale - 0.5f + src_top;
      float px = floor(xi);
      float py = floor(yi);
      float fx = xi - px;
-@@ -1147,7 +1153,8 @@ __device__ static inline T Subsample_Bicubic(cudaTextureObject_t tex,
-     cudaTextureObject_t src_tex_2, cudaTextureObject_t src_tex_3, \
-     T *dst_0, T *dst_1, T *dst_2, T *dst_3,                       \
+@@ -1197,7 +1203,8 @@ __device__ static inline T Subsample_Bicubic(cudaTextureObject_t tex,
      int dst_width, int dst_height, int dst_pitch,                 \
--    int src_width, int src_height, float param
-+    int src_width, int src_height, float param,                   \
+     int src_width, int src_height, float param,                   \
+     cudaTextureObject_t dither_tex,                               \
+-    float dither_size, float dither_quantization
++    float dither_size, float dither_quantization,                 \
 +    int src_left, int src_top
  
  #define SUBSAMPLE(Convert, T) \
      cudaTextureObject_t src_tex[4] =                    \
-@@ -1159,7 +1166,8 @@ __device__ static inline T Subsample_Bicubic(cudaTextureObject_t tex,
-     Convert(                                            \
-         src_tex, dst, xo, yo,                           \
+@@ -1211,7 +1218,8 @@ __device__ static inline T Subsample_Bicubic(cudaTextureObject_t tex,
          dst_width, dst_height, dst_pitch,               \
--        src_width, src_height, param);
-+        src_width, src_height, param,                   \
+         src_width, src_height, param,                   \
+         dither_tex,                                     \
+-        dither_size, dither_quantization);
++        dither_size, dither_quantization,               \
 +        src_left, src_top);
  
  extern "C" {
