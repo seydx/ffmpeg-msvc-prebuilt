@@ -1,0 +1,21 @@
+Index: FFmpeg/libavfilter/vf_vpp_rkrga.c
+===================================================================
+--- FFmpeg.orig/libavfilter/vf_vpp_rkrga.c
++++ FFmpeg/libavfilter/vf_vpp_rkrga.c
+@@ -413,6 +413,16 @@ static int rgavpp_activate(AVFilterCont
+     }
+
+     if (in) {
++        // Apply crop from AVFrame crop fields if present
++        if (in->crop_left || in->crop_top || in->crop_right || in->crop_bottom) {
++            RKRGAParam *param = &r->rga.param;
++            param->in_crop = 1;
++            param->in_crop_x = in->crop_left;
++            param->in_crop_y = in->crop_top;
++            param->in_crop_w = in->width - in->crop_left - in->crop_right;
++            param->in_crop_h = in->height - in->crop_top - in->crop_bottom;
++        }
++
+         ret = ff_rkrga_filter_frame(&r->rga, inlink, in, NULL, NULL);
+         av_frame_free(&in);
+         if (ret < 0)
