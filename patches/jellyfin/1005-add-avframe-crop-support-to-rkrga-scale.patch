@@ -8,12 +8,11 @@ Index: FFmpeg/libavfilter/vf_vpp_rkrga.c
      if (in) {
 +        // Apply crop from AVFrame crop fields if present
 +        if (in->crop_left || in->crop_top || in->crop_right || in->crop_bottom) {
-+            RKRGAParam *param = &r->rga.param;
-+            param->in_crop = 1;
-+            param->in_crop_x = in->crop_left;
-+            param->in_crop_y = in->crop_top;
-+            param->in_crop_w = in->width - in->crop_left - in->crop_right;
-+            param->in_crop_h = in->height - in->crop_top - in->crop_bottom;
++            r->rga.in_rga_frame_infos[0].crop = 1;
++            r->rga.in_rga_frame_infos[0].act_x = in->crop_left;
++            r->rga.in_rga_frame_infos[0].act_y = in->crop_top;
++            r->rga.in_rga_frame_infos[0].act_w = in->width - in->crop_left - in->crop_right;
++            r->rga.in_rga_frame_infos[0].act_h = in->height - in->crop_top - in->crop_bottom;
 +        }
 +
          ret = ff_rkrga_filter_frame(&r->rga, inlink, in, NULL, NULL);
