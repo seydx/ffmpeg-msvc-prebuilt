@@ -12,10 +12,10 @@ index 5b178bf1..4fc0f369 100644
  
  #define DIV_UP(a, b) ( ((a) + (b) - 1) / (b) )
 diff --git a/libavfilter/vf_scale_cuda.cu b/libavfilter/vf_scale_cuda.cu
-index a4de7367..2bca47e7 100644
+index a4de7367..9edec8e5 100644
 --- a/libavfilter/vf_scale_cuda.cu
 +++ b/libavfilter/vf_scale_cuda.cu
-@@ -964,6 +964,290 @@ DEF_CONVERT_IDENTITY(bgra, bgr0)
+@@ -964,6 +964,294 @@ DEF_CONVERT_IDENTITY(bgra, bgr0)
  DEF_CONVERT_REORDER(rgba, bgr0)
  DEF_CONVERT_REORDER(bgra, rgb0)
  
@@ -149,9 +149,13 @@ index a4de7367..2bca47e7 100644
 +    float g = fy - 0.1873f * fu - 0.4681f * fv;
 +    float b = fy + 1.8556f * fu;
 +
-+    r = fminf(fmaxf(r * 255.0f, 0.0f), 255.0f);
-+    g = fminf(fmaxf(g * 255.0f, 0.0f), 255.0f);
-+    b = fminf(fmaxf(b * 255.0f, 0.0f), 255.0f);
++    // Clamp to [0, 255] using ternary operators
++    r = r * 255.0f;
++    g = g * 255.0f;
++    b = b * 255.0f;
++    r = (r < 0.0f) ? 0.0f : ((r > 255.0f) ? 255.0f : r);
++    g = (g < 0.0f) ? 0.0f : ((g > 255.0f) ? 255.0f : g);
++    b = (b < 0.0f) ? 0.0f : ((b > 255.0f) ? 255.0f : b);
 +
 +    return make_uchar4((uchar)r, (uchar)g, (uchar)b, 255);
 +}
@@ -306,7 +310,7 @@ index a4de7367..2bca47e7 100644
  struct Convert_bgr0_bgra
  {
      static const int in_bit_depth = 8;
-@@ -1263,6 +1547,9 @@ NEAREST_KERNELS_RGB(bgr0)
+@@ -1263,6 +1551,9 @@ NEAREST_KERNELS_RGB(bgr0)
  NEAREST_KERNELS_RGB(rgba)
  NEAREST_KERNELS_RGB(bgra)
  
@@ -316,7 +320,7 @@ index a4de7367..2bca47e7 100644
  #define BILINEAR_KERNEL(C, S) \
      __global__ void Subsample_Bilinear_##C##S(                      \
          KERNEL_ARGS(Convert_##C::out_T##S))                         \
-@@ -1303,6 +1590,9 @@ BILINEAR_KERNELS_RGB(bgr0)
+@@ -1303,6 +1594,9 @@ BILINEAR_KERNELS_RGB(bgr0)
  BILINEAR_KERNELS_RGB(rgba)
  BILINEAR_KERNELS_RGB(bgra)
  
@@ -326,7 +330,7 @@ index a4de7367..2bca47e7 100644
  #define BICUBIC_KERNEL(C, S) \
      __global__ void Subsample_Bicubic_##C##S(                                        \
          KERNEL_ARGS(Convert_##C::out_T##S))                                          \
-@@ -1343,6 +1633,9 @@ BICUBIC_KERNELS_RGB(bgr0)
+@@ -1343,6 +1637,9 @@ BICUBIC_KERNELS_RGB(bgr0)
  BICUBIC_KERNELS_RGB(rgba)
  BICUBIC_KERNELS_RGB(bgra)
  
@@ -336,7 +340,7 @@ index a4de7367..2bca47e7 100644
  #define LANCZOS_KERNEL(C, S) \
      __global__ void Subsample_Lanczos_##C##S(                                        \
          KERNEL_ARGS(Convert_##C::out_T##S))                                          \
-@@ -1382,4 +1675,7 @@ LANCZOS_KERNELS_RGB(rgb0)
+@@ -1382,4 +1679,7 @@ LANCZOS_KERNELS_RGB(rgb0)
  LANCZOS_KERNELS_RGB(bgr0)
  LANCZOS_KERNELS_RGB(rgba)
  LANCZOS_KERNELS_RGB(bgra)
