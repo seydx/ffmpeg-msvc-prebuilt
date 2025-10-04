@@ -93,3 +93,6 @@
 1003-add-avframe-crop-support-to-qsv-scale.patch
 1004-add-avframe-crop-support-to-opencl-scale.patch
 1005-add-avframe-crop-support-to-rkrga-scale.patch
+1006-add-videotoolbox-rgb-gray-formats.patch
+1007-add-opencl-rgb-gray-formats.patch
+1008-add-cuda-gray-rgba-formats.patch

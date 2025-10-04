@@ -1,0 +1,346 @@
+diff --git a/libavfilter/vf_scale_cuda.c b/libavfilter/vf_scale_cuda.c
+index 5b178bf1..4fc0f369 100644
+--- a/libavfilter/vf_scale_cuda.c
++++ b/libavfilter/vf_scale_cuda.c
+@@ -52,6 +52,8 @@ static const enum AVPixelFormat supported_formats[] = {
+     AV_PIX_FMT_0BGR32,
+     AV_PIX_FMT_RGB32,
+     AV_PIX_FMT_BGR32,
++    AV_PIX_FMT_GRAY8,
++    AV_PIX_FMT_RGBA,
+ };
+ 
+ #define DIV_UP(a, b) ( ((a) + (b) - 1) / (b) )
+diff --git a/libavfilter/vf_scale_cuda.cu b/libavfilter/vf_scale_cuda.cu
+index a4de7367..2bca47e7 100644
+--- a/libavfilter/vf_scale_cuda.cu
++++ b/libavfilter/vf_scale_cuda.cu
+@@ -964,6 +964,290 @@ DEF_CONVERT_IDENTITY(bgra, bgr0)
+ DEF_CONVERT_REORDER(rgba, bgr0)
+ DEF_CONVERT_REORDER(bgra, rgb0)
+ 
++// YUV to GRAY8 conversion (extract Y channel only)
++struct Convert_yuv420p_gray8
++{
++    static const int in_bit_depth = 8;
++    typedef uchar in_T;
++    typedef uchar in_T_uv;
++    typedef uchar out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        DEFAULT_DST(0) = SUB_F(y, 0);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++struct Convert_nv12_gray8
++{
++    static const int in_bit_depth = 8;
++    typedef uchar in_T;
++    typedef uchar2 in_T_uv;
++    typedef uchar out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        DEFAULT_DST(0) = SUB_F(y, 0);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++struct Convert_yuv444p_gray8
++{
++    static const int in_bit_depth = 8;
++    typedef uchar in_T;
++    typedef uchar in_T_uv;
++    typedef uchar out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        DEFAULT_DST(0) = SUB_F(y, 0);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++struct Convert_p010le_gray8
++{
++    static const int in_bit_depth = 10;
++    typedef ushort in_T;
++    typedef ushort2 in_T_uv;
++    typedef uchar out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        in_T res = SUB_F(y, 0);
++        res = (in_T)get_dithered_y((float)res, read_dither(dither_tex, dither_size, xo, yo),
++                                   dither_size, dither_quantization, (float)mask_10bit);
++        DEFAULT_DST(0) = conv_10to8(res);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++struct Convert_p016le_gray8
++{
++    static const int in_bit_depth = 16;
++    typedef ushort in_T;
++    typedef ushort2 in_T_uv;
++    typedef uchar out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        in_T res = SUB_F(y, 0);
++        res = (in_T)get_dithered_y((float)res, read_dither(dither_tex, dither_size, xo, yo),
++                                   dither_size, dither_quantization, (float)mask_16bit);
++        DEFAULT_DST(0) = conv_16to8(res);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++struct Convert_yuv444p16le_gray8
++{
++    static const int in_bit_depth = 16;
++    typedef ushort in_T;
++    typedef ushort in_T_uv;
++    typedef uchar out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        in_T res = SUB_F(y, 0);
++        res = (in_T)get_dithered_y((float)res, read_dither(dither_tex, dither_size, xo, yo),
++                                   dither_size, dither_quantization, (float)mask_16bit);
++        DEFAULT_DST(0) = conv_16to8(res);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++// YUV to RGBA conversion (BT.709 color space)
++static inline __device__ uchar4 yuv_to_rgba(float y, float u, float v)
++{
++    // BT.709 coefficients for limited range (16-235)
++    float fy = (y - 16.0f) / 219.0f;
++    float fu = (u - 128.0f) / 224.0f;
++    float fv = (v - 128.0f) / 224.0f;
++
++    float r = fy + 1.5748f * fv;
++    float g = fy - 0.1873f * fu - 0.4681f * fv;
++    float b = fy + 1.8556f * fu;
++
++    r = fminf(fmaxf(r * 255.0f, 0.0f), 255.0f);
++    g = fminf(fmaxf(g * 255.0f, 0.0f), 255.0f);
++    b = fminf(fmaxf(b * 255.0f, 0.0f), 255.0f);
++
++    return make_uchar4((uchar)r, (uchar)g, (uchar)b, 255);
++}
++
++struct Convert_yuv420p_rgba
++{
++    static const int in_bit_depth = 8;
++    typedef uchar in_T;
++    typedef uchar in_T_uv;
++    typedef uchar4 out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        float y = (float)SUB_F(y, 0);
++
++        // Sample UV at subsampled position
++        int uv_x = xo / 2;
++        int uv_y = yo / 2;
++        float u = (float)tex2D<uchar>(src_tex[1], uv_x, uv_y);
++        float v = (float)tex2D<uchar>(src_tex[2], uv_x, uv_y);
++
++        DEFAULT_DST(0) = yuv_to_rgba(y, u, v);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++struct Convert_nv12_rgba
++{
++    static const int in_bit_depth = 8;
++    typedef uchar in_T;
++    typedef uchar2 in_T_uv;
++    typedef uchar4 out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        float y = (float)SUB_F(y, 0);
++
++        // Sample UV at subsampled position
++        int uv_x = xo / 2;
++        int uv_y = yo / 2;
++        uchar2 uv = tex2D<uchar2>(src_tex[1], uv_x, uv_y);
++
++        DEFAULT_DST(0) = yuv_to_rgba(y, (float)uv.x, (float)uv.y);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++struct Convert_yuv444p_rgba
++{
++    static const int in_bit_depth = 8;
++    typedef uchar in_T;
++    typedef uchar in_T_uv;
++    typedef uchar4 out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        float y = (float)SUB_F(y, 0);
++        float u = (float)tex2D<uchar>(src_tex[1], xo, yo);
++        float v = (float)tex2D<uchar>(src_tex[2], xo, yo);
++
++        DEFAULT_DST(0) = yuv_to_rgba(y, u, v);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++struct Convert_p010le_rgba
++{
++    static const int in_bit_depth = 10;
++    typedef ushort in_T;
++    typedef ushort2 in_T_uv;
++    typedef uchar4 out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        float y = (float)SUB_F(y, 0) / 4.0f;  // 10-bit to 8-bit range
++
++        int uv_x = xo / 2;
++        int uv_y = yo / 2;
++        ushort2 uv = tex2D<ushort2>(src_tex[1], uv_x, uv_y);
++        float u = (float)uv.x / 4.0f;
++        float v = (float)uv.y / 4.0f;
++
++        DEFAULT_DST(0) = yuv_to_rgba(y, u, v);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++struct Convert_p016le_rgba
++{
++    static const int in_bit_depth = 16;
++    typedef ushort in_T;
++    typedef ushort2 in_T_uv;
++    typedef uchar4 out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        float y = (float)SUB_F(y, 0) / 256.0f;  // 16-bit to 8-bit range
++
++        int uv_x = xo / 2;
++        int uv_y = yo / 2;
++        ushort2 uv = tex2D<ushort2>(src_tex[1], uv_x, uv_y);
++        float u = (float)uv.x / 256.0f;
++        float v = (float)uv.y / 256.0f;
++
++        DEFAULT_DST(0) = yuv_to_rgba(y, u, v);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
++struct Convert_yuv444p16le_rgba
++{
++    static const int in_bit_depth = 16;
++    typedef ushort in_T;
++    typedef ushort in_T_uv;
++    typedef uchar4 out_T;
++    typedef uchar out_T_uv;
++
++    DEF_F(Convert, out_T)
++    {
++        float y = (float)SUB_F(y, 0) / 256.0f;  // 16-bit to 8-bit range
++        float u = (float)tex2D<ushort>(src_tex[1], xo, yo) / 256.0f;
++        float v = (float)tex2D<ushort>(src_tex[2], xo, yo) / 256.0f;
++
++        DEFAULT_DST(0) = yuv_to_rgba(y, u, v);
++    }
++
++    DEF_F(Convert_uv, out_T_uv)
++    {
++    }
++};
++
+ struct Convert_bgr0_bgra
+ {
+     static const int in_bit_depth = 8;
+@@ -1263,6 +1547,9 @@ NEAREST_KERNELS_RGB(bgr0)
+ NEAREST_KERNELS_RGB(rgba)
+ NEAREST_KERNELS_RGB(bgra)
+ 
++NEAREST_KERNELS(gray8)
++NEAREST_KERNELS(rgba)
++
+ #define BILINEAR_KERNEL(C, S) \
+     __global__ void Subsample_Bilinear_##C##S(                      \
+         KERNEL_ARGS(Convert_##C::out_T##S))                         \
+@@ -1303,6 +1590,9 @@ BILINEAR_KERNELS_RGB(bgr0)
+ BILINEAR_KERNELS_RGB(rgba)
+ BILINEAR_KERNELS_RGB(bgra)
+ 
++BILINEAR_KERNELS(gray8)
++BILINEAR_KERNELS(rgba)
++
+ #define BICUBIC_KERNEL(C, S) \
+     __global__ void Subsample_Bicubic_##C##S(                                        \
+         KERNEL_ARGS(Convert_##C::out_T##S))                                          \
+@@ -1343,6 +1633,9 @@ BICUBIC_KERNELS_RGB(bgr0)
+ BICUBIC_KERNELS_RGB(rgba)
+ BICUBIC_KERNELS_RGB(bgra)
+ 
++BICUBIC_KERNELS(gray8)
++BICUBIC_KERNELS(rgba)
++
+ #define LANCZOS_KERNEL(C, S) \
+     __global__ void Subsample_Lanczos_##C##S(                                        \
+         KERNEL_ARGS(Convert_##C::out_T##S))                                          \
+@@ -1382,4 +1675,7 @@ LANCZOS_KERNELS_RGB(rgb0)
+ LANCZOS_KERNELS_RGB(bgr0)
+ LANCZOS_KERNELS_RGB(rgba)
+ LANCZOS_KERNELS_RGB(bgra)
++
++LANCZOS_KERNELS(gray8)
++LANCZOS_KERNELS(rgba)
+ }

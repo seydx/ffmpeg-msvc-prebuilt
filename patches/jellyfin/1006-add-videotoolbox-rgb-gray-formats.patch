@@ -1,0 +1,37 @@
+diff --git a/libavfilter/vf_scale_vt.c b/libavfilter/vf_scale_vt.c
+index da2a50f9..93795625 100644
+--- a/libavfilter/vf_scale_vt.c
++++ b/libavfilter/vf_scale_vt.c
+@@ -50,6 +50,9 @@ typedef struct ScaleVtContext {
+ static const enum AVPixelFormat supported_formats[] = {
+     AV_PIX_FMT_NV12,
+     AV_PIX_FMT_P010,
++    AV_PIX_FMT_GRAY8,
++    AV_PIX_FMT_RGB24,
++    AV_PIX_FMT_BGRA,
+     AV_PIX_FMT_NONE,
+ };
+ 
+diff --git a/libavutil/hwcontext_videotoolbox.c b/libavutil/hwcontext_videotoolbox.c
+index a570400a..40e91c9d 100644
+--- a/libavutil/hwcontext_videotoolbox.c
++++ b/libavutil/hwcontext_videotoolbox.c
+@@ -49,6 +49,8 @@ static const struct {
+     { kCVPixelFormatType_420YpCbCr8Planar,              false, AV_PIX_FMT_YUV420P },
+     { kCVPixelFormatType_420YpCbCr8PlanarFullRange,     true,  AV_PIX_FMT_YUV420P },
+     { kCVPixelFormatType_422YpCbCr8,                    false, AV_PIX_FMT_UYVY422 },
++    { kCVPixelFormatType_OneComponent8,                 true,  AV_PIX_FMT_GRAY8 },
++    { kCVPixelFormatType_24RGB,                         true,  AV_PIX_FMT_RGB24 },
+     { kCVPixelFormatType_32BGRA,                        true,  AV_PIX_FMT_BGRA },
+ #ifdef kCFCoreFoundationVersionNumber10_7
+     { kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,  false, AV_PIX_FMT_NV12 },
+@@ -90,6 +92,9 @@ static const enum AVPixelFormat supported_formats[] = {
+ #endif
+     AV_PIX_FMT_YUV420P,
+     AV_PIX_FMT_UYVY422,
++    AV_PIX_FMT_GRAY8,
++    AV_PIX_FMT_RGB24,
++    AV_PIX_FMT_BGRA,
+ #if HAVE_KCVPIXELFORMATTYPE_420YPCBCR10BIPLANARVIDEORANGE
+     AV_PIX_FMT_P010,
+ #endif

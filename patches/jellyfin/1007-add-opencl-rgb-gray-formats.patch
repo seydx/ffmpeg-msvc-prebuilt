@@ -1,0 +1,508 @@
+diff --git a/libavfilter/opencl/scale.cl b/libavfilter/opencl/scale.cl
+index f92193ce..806100f2 100644
+--- a/libavfilter/opencl/scale.cl
++++ b/libavfilter/opencl/scale.cl
+@@ -328,3 +328,172 @@ __kernel void scale_uv(__write_only image2d_t dst2,
+   #endif
+ }
+ #endif
++
++// YUV to RGB color space conversion (BT.709 limited range)
++float4 yuv_to_rgb(float y, float u, float v) {
++    // BT.709 coefficients for limited range (16-235)
++    // Input: Y in [16/255, 235/255], U/V in [16/255, 240/255] (normalized to 0-1)
++    // Output: RGB in [0, 1]
++    float r = 1.164f * (y - 0.0627f) + 1.793f * (v - 0.502f);
++    float g = 1.164f * (y - 0.0627f) - 0.213f * (u - 0.502f) - 0.533f * (v - 0.502f);
++    float b = 1.164f * (y - 0.0627f) + 2.112f * (u - 0.502f);
++    return (float4)(r, g, b, 1.0f);
++}
++
++// RGB24 and RGBA scaling kernels (with YUV→RGB conversion support)
++#if defined(SCALE_RGB)
++__kernel void scale_rgb(__write_only image2d_t dst,
++                        __read_only  image2d_t src,
++                        __constant   float *cx,
++                        __constant   float *cy,
++                        int filter_width,
++                        int filter_height)
++{
++    int2 dst_pos = { get_global_id(0), get_global_id(1) };
++    int2 dst_sz  = { get_image_width(dst), get_image_height(dst) };
++    int2 src_sz  = { get_image_width(src), get_image_height(src) };
++    int2 src_sz_edge = src_sz - 1;
++    float2 factor = (float2)(src_sz.x, src_sz.y) / (float2)(dst_sz.x, dst_sz.y);
++    int2 src_pos = convert_int2((convert_float2(dst_pos) + 0.5f) * factor - 0.5f);
++    int2 read_pos;
++    float4 col = 0.0f;
++    float4 c;
++    float s_r = 0.0f, s_g = 0.0f, s_b = 0.0f, s_a = 0.0f;
++    int i, j, filterw2 = filter_width - 1, filterh2 = filter_height - 1;
++
++    for (i = 0; i < filter_height; ++i) {
++        s_r = s_g = s_b = s_a = 0.0f;
++        #pragma unroll
++        for (j = 0; j < filter_width; ++j) {
++            read_pos = clamp(src_pos + (int2)(filterw2 - j, filterh2 - i), 0, src_sz_edge);
++            c = read_imagef(src, n_sampler, read_pos);
++            float weight = cx[dst_pos.x * filter_width + j];
++            s_r += c.x * weight;
++            s_g += c.y * weight;
++            s_b += c.z * weight;
++            s_a += c.w * weight;
++        }
++        float weight_y = cy[dst_pos.y * filter_height + i];
++        col.x += s_r * weight_y;
++        col.y += s_g * weight_y;
++        col.z += s_b * weight_y;
++        col.w += s_a * weight_y;
++    }
++
++    write_imagef(dst, dst_pos, col);
++}
++#endif
++
++// YUV to RGB conversion kernel (for NV12/YUV420P → RGB24/RGBA)
++#if defined(SCALE_YUV_TO_RGB)
++__kernel void scale_yuv_to_rgb(__write_only image2d_t dst,
++                                __read_only  image2d_t src_y,
++#if defined(NON_SEMI_PLANAR_IN)
++                                __read_only  image2d_t src_u,
++                                __read_only  image2d_t src_v,
++#else
++                                __read_only  image2d_t src_uv,
++#endif
++                                __constant   float *cx,
++                                __constant   float *cy,
++                                int filter_width,
++                                int filter_height)
++{
++    int2 dst_pos = { get_global_id(0), get_global_id(1) };
++    int2 dst_sz  = { get_image_width(dst), get_image_height(dst) };
++    int2 src_sz  = { get_image_width(src_y), get_image_height(src_y) };
++    int2 src_sz_edge = src_sz - 1;
++    float2 factor = (float2)(src_sz.x, src_sz.y) / (float2)(dst_sz.x, dst_sz.y);
++    int2 src_pos = convert_int2((convert_float2(dst_pos) + 0.5f) * factor - 0.5f);
++
++    float y_val = 0.0f, u_val = 0.0f, v_val = 0.0f;
++    int i, j, filterw2 = filter_width - 1, filterh2 = filter_height - 1;
++
++    // Sample Y channel
++    for (i = 0; i < filter_height; ++i) {
++        float s_y = 0.0f;
++        #pragma unroll
++        for (j = 0; j < filter_width; ++j) {
++            int2 read_pos = clamp(src_pos + (int2)(filterw2 - j, filterh2 - i), 0, src_sz_edge);
++            float4 c_y = read_imagef(src_y, n_sampler, read_pos);
++            s_y += c_y.x * cx[dst_pos.x * filter_width + j];
++        }
++        y_val += s_y * cy[dst_pos.y * filter_height + i];
++    }
++
++    // Sample UV channels (subsampled)
++    int2 uv_sz_edge = (int2)(src_sz.x / 2 - 1, src_sz.y / 2 - 1);
++    for (i = 0; i < filter_height; ++i) {
++        float s_u = 0.0f, s_v = 0.0f;
++        #pragma unroll
++        for (j = 0; j < filter_width; ++j) {
++            int2 read_pos_uv = clamp((src_pos + (int2)(filterw2 - j, filterh2 - i)) / 2, 0, uv_sz_edge);
++            float weight = cx[dst_pos.x * filter_width + j];
++#if defined(NON_SEMI_PLANAR_IN)
++            // YUV420P: separate U and V planes
++            float4 c_u = read_imagef(src_u, n_sampler, read_pos_uv);
++            float4 c_v = read_imagef(src_v, n_sampler, read_pos_uv);
++            s_u += c_u.x * weight;
++            s_v += c_v.x * weight;
++#else
++            // NV12: interleaved UV plane
++            float4 c_uv = read_imagef(src_uv, n_sampler, read_pos_uv);
++            s_u += c_uv.x * weight;
++            s_v += c_uv.y * weight;
++#endif
++        }
++        float weight_y = cy[dst_pos.y * filter_height + i];
++        u_val += s_u * weight_y;
++        v_val += s_v * weight_y;
++    }
++
++    // Convert YUV to RGB (values are already normalized 0-1 from read_imagef)
++    float4 rgb = yuv_to_rgb(y_val, u_val, v_val);
++    write_imagef(dst, dst_pos, clamp(rgb, 0.0f, 1.0f));
++}
++#endif
++
++// YUV to GRAY conversion kernel (extract Y-plane)
++#if defined(SCALE_YUV_TO_GRAY)
++__kernel void scale_yuv_to_gray(__write_only image2d_t dst,
++                                 __read_only  image2d_t src_y,
++                                 __constant   float *cx,
++                                 __constant   float *cy,
++                                 int filter_width,
++                                 int filter_height)
++{
++    int2 dst_pos = { get_global_id(0), get_global_id(1) };
++    int2 dst_sz  = { get_image_width(dst), get_image_height(dst) };
++    int2 src_sz  = { get_image_width(src_y), get_image_height(src_y) };
++    int2 src_sz_edge = src_sz - 1;
++    float2 factor = (float2)(src_sz.x, src_sz.y) / (float2)(dst_sz.x, dst_sz.y);
++    int2 src_pos = convert_int2((convert_float2(dst_pos) + 0.5f) * factor - 0.5f);
++
++    float y_val = 0.0f;
++    int i, j, filterw2 = filter_width - 1, filterh2 = filter_height - 1;
++
++    // Sample Y channel only
++    for (i = 0; i < filter_height; ++i) {
++        float s_y = 0.0f;
++        #pragma unroll
++        for (j = 0; j < filter_width; ++j) {
++            int2 read_pos = clamp(src_pos + (int2)(filterw2 - j, filterh2 - i), 0, src_sz_edge);
++            float4 c_y = read_imagef(src_y, n_sampler, read_pos);
++            s_y += c_y.x * cx[dst_pos.x * filter_width + j];
++        }
++        y_val += s_y * cy[dst_pos.y * filter_height + i];
++    }
++
++    write_imagef(dst, dst_pos, (float4)(y_val, 0.0f, 0.0f, 1.0f));
++}
++#endif
++
++#if defined(CONV_RGB)
++__kernel void conv_rgb(__write_only image2d_t dst,
++                       __read_only  image2d_t src)
++{
++    int2 pos = { get_global_id(0), get_global_id(1) };
++    float4 c = read_imagef(src, n_sampler, pos);
++    write_imagef(dst, pos, c);
++}
++#endif
+diff --git a/libavfilter/vf_scale_opencl.c b/libavfilter/vf_scale_opencl.c
+index 4764eba4..dc62dd6e 100644
+--- a/libavfilter/vf_scale_opencl.c
++++ b/libavfilter/vf_scale_opencl.c
+@@ -42,6 +42,8 @@ static const enum AVPixelFormat supported_formats[] = {
+     AV_PIX_FMT_NV15,
+     AV_PIX_FMT_P010,
+     AV_PIX_FMT_P016,
++    AV_PIX_FMT_GRAY8,
++    AV_PIX_FMT_RGBA,
+ };
+ 
+ enum filters {
+@@ -276,6 +278,16 @@ static int scale_opencl_init(AVFilterContext *avctx)
+     float scalex, scaley;
+     float *cx = NULL, *cy = NULL;
+ 
++    int is_rgb = (ctx->in_fmt == AV_PIX_FMT_RGBA || ctx->out_fmt == AV_PIX_FMT_RGBA);
++
++    int in_is_yuv = (ctx->in_fmt == AV_PIX_FMT_NV12 || ctx->in_fmt == AV_PIX_FMT_YUV420P ||
++                     ctx->in_fmt == AV_PIX_FMT_P010 || ctx->in_fmt == AV_PIX_FMT_P016 ||
++                     ctx->in_fmt == AV_PIX_FMT_NV15);
++    int out_is_rgb = (ctx->out_fmt == AV_PIX_FMT_RGB24 || ctx->out_fmt == AV_PIX_FMT_RGBA);
++    int out_is_gray = (ctx->out_fmt == AV_PIX_FMT_GRAY8);
++    int yuv_to_rgb = in_is_yuv && out_is_rgb;
++    int yuv_to_gray = in_is_yuv && out_is_gray;
++
+     av_bprint_init(&header, 512, AV_BPRINT_SIZE_UNLIMITED);
+ 
+     if (ctx->src_w == ctx->dst_w && ctx->src_h == ctx->dst_h) {
+@@ -283,11 +295,16 @@ static int scale_opencl_init(AVFilterContext *avctx)
+             ctx->initialised = 1;
+             return 0;
+         } else {
+-            av_bprintf(&header, "#define CONV\n");
+-            ctx->kernel_name = "conv_yuv";
++            if (is_rgb) {
++                av_bprintf(&header, "#define CONV_RGB\n");
++                ctx->kernel_name = "conv_rgb";
++            } else {
++                av_bprintf(&header, "#define CONV\n");
++                ctx->kernel_name = "conv_yuv";
++            }
+         }
+-    } else if (ctx->algorithm == F_NEIGHBOR ||
+-               ctx->algorithm == F_BILINEAR) {
++    } else if ((ctx->algorithm == F_NEIGHBOR ||
++                ctx->algorithm == F_BILINEAR) && !is_rgb && !yuv_to_rgb && !yuv_to_gray) {
+         if (ctx->in_fmt == AV_PIX_FMT_NV15) {
+             av_bprintf(&header, "#define CONV\n");
+             ctx->kernel_name_conv = "conv_yuv";
+@@ -302,9 +319,20 @@ static int scale_opencl_init(AVFilterContext *avctx)
+             av_bprintf(&header, "#define CONV\n");
+             ctx->kernel_name_conv = "conv_yuv";
+         }
+-        av_bprintf(&header, "#define SCALE\n");
+-        ctx->kernel_name = "scale";
+-        ctx->kernel_name_uv = "scale_uv";
++        if (yuv_to_rgb) {
++            av_bprintf(&header, "#define SCALE_YUV_TO_RGB\n");
++            ctx->kernel_name = "scale_yuv_to_rgb";
++        } else if (yuv_to_gray) {
++            av_bprintf(&header, "#define SCALE_YUV_TO_GRAY\n");
++            ctx->kernel_name = "scale_yuv_to_gray";
++        } else if (is_rgb) {
++            av_bprintf(&header, "#define SCALE_RGB\n");
++            ctx->kernel_name = "scale_rgb";
++        } else {
++            av_bprintf(&header, "#define SCALE\n");
++            ctx->kernel_name = "scale";
++            ctx->kernel_name_uv = "scale_uv";
++        }
+ 
+         scalex = FFMAX((float)(ctx->src_w / ctx->dst_w), 1);
+         scaley = FFMAX((float)(ctx->src_h / ctx->dst_h), 1);
+@@ -644,18 +672,32 @@ static int scale_opencl_filter_frame_internal(AVFilterLink *inlink,
+     cl_int cle;
+     cl_int2 src_size, uv_size;
+     int err, idx_arg1, idx_arg2;
++    int is_rgb = (ctx->in_fmt == AV_PIX_FMT_RGBA || ctx->out_fmt == AV_PIX_FMT_RGBA);
++    int in_is_yuv = (ctx->in_fmt == AV_PIX_FMT_NV12 || ctx->in_fmt == AV_PIX_FMT_YUV420P ||
++                     ctx->in_fmt == AV_PIX_FMT_P010 || ctx->in_fmt == AV_PIX_FMT_P016 ||
++                     ctx->in_fmt == AV_PIX_FMT_NV15);
++    int out_is_rgb = (ctx->out_fmt == AV_PIX_FMT_RGBA);
++    int out_is_gray = (ctx->out_fmt == AV_PIX_FMT_GRAY8);
++    int yuv_to_rgb = in_is_yuv && out_is_rgb;
++    int yuv_to_gray = in_is_yuv && out_is_gray;
++
++    if (!output->data[0] || !input->data[0]) {
++        err = AVERROR(EIO);
++        goto fail;
++    }
+ 
+-    if (!output->data[0] || !input->data[0] || !output->data[1] || !input->data[1]) {
++    // RGB/GRAY output formats have only 1 plane
++    if (!(yuv_to_rgb || yuv_to_gray || is_rgb) && (!output->data[1] || !input->data[1])) {
+         err = AVERROR(EIO);
+         goto fail;
+     }
+ 
+-    if (out_planes > 2 && !output->data[2]) {
++    if (!(yuv_to_rgb || yuv_to_gray || is_rgb) && out_planes > 2 && !output->data[2]) {
+         err = AVERROR(EIO);
+         goto fail;
+     }
+ 
+-    if (in_planes > 2 && !input->data[2]) {
++    if (!is_rgb && in_planes > 2 && !input->data[2]) {
+         err = AVERROR(EIO);
+         goto fail;
+     }
+@@ -664,91 +706,145 @@ static int scale_opencl_filter_frame_internal(AVFilterLink *inlink,
+     CL_SET_KERNEL_ARG(kernel, 1, cl_mem, &input->data[0]);
+ 
+     if (conv) {
+-        CL_SET_KERNEL_ARG(kernel, 2, cl_mem, &output->data[1]);
+-        CL_SET_KERNEL_ARG(kernel, 3, cl_mem, &input->data[1]);
++        if (!is_rgb) {
++            CL_SET_KERNEL_ARG(kernel, 2, cl_mem, &output->data[1]);
++            CL_SET_KERNEL_ARG(kernel, 3, cl_mem, &input->data[1]);
+ 
+-        idx_arg1 = 4;
+-        if (out_planes > 2) {
+-            CL_SET_KERNEL_ARG(kernel, idx_arg1++, cl_mem, &output->data[2]);
+-        }
+-        if (in_planes > 2) {
+-            CL_SET_KERNEL_ARG(kernel, idx_arg1++, cl_mem, &input->data[2]);
+-        }
+-        if (ctx->dither_image) {
+-            CL_SET_KERNEL_ARG(kernel, idx_arg1++, cl_mem, &ctx->dither_image);
++            idx_arg1 = 4;
++            if (out_planes > 2) {
++                CL_SET_KERNEL_ARG(kernel, idx_arg1++, cl_mem, &output->data[2]);
++            }
++            if (in_planes > 2) {
++                CL_SET_KERNEL_ARG(kernel, idx_arg1++, cl_mem, &input->data[2]);
++            }
++            if (ctx->dither_image) {
++                CL_SET_KERNEL_ARG(kernel, idx_arg1++, cl_mem, &ctx->dither_image);
++            }
+         }
+ 
+-        // conv_yuv
+-        global_work[0] = output->width / x_subsample;
+-        global_work[1] = output->height / y_subsample;
++        // conv_yuv or conv_rgb
++        global_work[0] = is_rgb ? output->width : output->width / x_subsample;
++        global_work[1] = is_rgb ? output->height : output->height / y_subsample;
+ 
+-        av_log(avctx, AV_LOG_DEBUG, "Run kernel conv_yuv "
++        av_log(avctx, AV_LOG_DEBUG, "Run kernel %s "
+                "(%"SIZE_SPECIFIER"x%"SIZE_SPECIFIER").\n",
++               is_rgb ? "conv_rgb" : "conv_yuv",
+                global_work[0], global_work[1]);
+ 
+         cle = clEnqueueNDRangeKernel(ctx->command_queue, kernel, 2, NULL,
+                                      global_work, NULL, 0, NULL, NULL);
+         CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to enqueue kernel: %d.\n", cle);
+     } else {
+-        CL_SET_KERNEL_ARG(ctx->kernel_uv, 0, cl_mem, &output->data[1]);
+-        CL_SET_KERNEL_ARG(ctx->kernel_uv, 1, cl_mem, &input->data[1]);
+-
+-        idx_arg1 = 2;
+-        if (ctx->out_planes > 2) {
+-            CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_mem, &output->data[2]);
+-        }
+-        if (ctx->in_planes > 2) {
+-            CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_mem, &input->data[2]);
+-        }
+-
+-        idx_arg2 = 2;
+-        if (ctx->dither_image) {
+-            CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_mem, &ctx->dither_image);
+-        }
+-        if (!(ctx->algorithm == F_NEIGHBOR || ctx->algorithm == F_BILINEAR)) {
++        // YUV→RGB or YUV→GRAY conversion
++        if (yuv_to_rgb || yuv_to_gray) {
++            // Kernel args: dst, src_y, src_u/src_uv, [src_v], cx, cy, filterw, filterh
++            idx_arg2 = 2;
++            if (yuv_to_rgb) {
++                // YUV to RGB needs UV plane(s)
++                CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_mem, &input->data[1]);
++                if (ctx->in_planes > 2) {
++                    // YUV420P: separate U and V planes
++                    CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_mem, &input->data[2]);
++                }
++                // NV12: only one UV plane (data[1])
++            }
+             CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_mem, &ctx->cx);
+             CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_mem, &ctx->cy);
++            CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_int, &ctx->filterw);
++            CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_int, &ctx->filterh);
++
++            global_work[0] = output->width;
++            global_work[1] = output->height;
++
++            av_log(avctx, AV_LOG_DEBUG, "Run kernel %s "
++                   "(%"SIZE_SPECIFIER"x%"SIZE_SPECIFIER").\n",
++                   ctx->kernel_name, global_work[0], global_work[1]);
++
++            cle = clEnqueueNDRangeKernel(ctx->command_queue, ctx->kernel, 2, NULL,
++                                         global_work, NULL, 0, NULL, NULL);
++            CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to enqueue kernel: %d.\n", cle);
++        } else if (is_rgb) {
++            // RGB only needs 1 kernel (no separate UV processing)
++            idx_arg2 = 2;
++            if (!(ctx->algorithm == F_NEIGHBOR || ctx->algorithm == F_BILINEAR)) {
++                CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_mem, &ctx->cx);
++                CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_mem, &ctx->cy);
++                CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_int, &ctx->filterw);
++                CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_int, &ctx->filterh);
++            }
+ 
+-            CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_mem, &ctx->cx);
+-            CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_mem, &ctx->cy);
+-        }
++            global_work[0] = output->width;
++            global_work[1] = output->height;
+ 
+-        src_size.s[0] = ctx->src_w;
+-        src_size.s[1] = ctx->src_h;
+-        uv_size.s[0] = src_size.s[0] / x_subsample;
+-        uv_size.s[1] = src_size.s[1] / y_subsample;
+-        cl_int crop_x_uv = ctx->crop_x / x_subsample;
+-        cl_int crop_y_uv = ctx->crop_y / y_subsample;
+-        CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_int2, &src_size);
+-        CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_int2, &uv_size);
+-        CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_int, &ctx->crop_x);
+-        CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_int, &ctx->crop_y);
+-        CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_int, &crop_x_uv);
+-        CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_int, &crop_y_uv);
+-
+-        // scale, scale_builtin
+-        global_work[0] = output->width;
+-        global_work[1] = output->height;
++            av_log(avctx, AV_LOG_DEBUG, "Run kernel %s "
++                   "(%"SIZE_SPECIFIER"x%"SIZE_SPECIFIER").\n",
++                   ctx->kernel_name, global_work[0], global_work[1]);
+ 
+-        av_log(avctx, AV_LOG_DEBUG, "Run kernel %s "
+-               "(%"SIZE_SPECIFIER"x%"SIZE_SPECIFIER").\n",
+-               ctx->kernel_name, global_work[0], global_work[1]);
++            cle = clEnqueueNDRangeKernel(ctx->command_queue, ctx->kernel, 2, NULL,
++                                         global_work, NULL, 0, NULL, NULL);
++            CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to enqueue kernel: %d.\n", cle);
++        } else {
++            // YUV processing (original code)
++            CL_SET_KERNEL_ARG(ctx->kernel_uv, 0, cl_mem, &output->data[1]);
++            CL_SET_KERNEL_ARG(ctx->kernel_uv, 1, cl_mem, &input->data[1]);
+ 
+-        cle = clEnqueueNDRangeKernel(ctx->command_queue, ctx->kernel, 2, NULL,
+-                                     global_work, NULL, 0, NULL, NULL);
+-        CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to enqueue kernel: %d.\n", cle);
++            idx_arg1 = 2;
++            if (ctx->out_planes > 2) {
++                CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_mem, &output->data[2]);
++            }
++            if (ctx->in_planes > 2) {
++                CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_mem, &input->data[2]);
++            }
+ 
+-        // scale_uv, scale_builtin_uv
+-        global_work[0] = output->width / x_subsample;
+-        global_work[1] = output->height / y_subsample;
++            idx_arg2 = 2;
++            if (ctx->dither_image) {
++                CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_mem, &ctx->dither_image);
++            }
++            if (!(ctx->algorithm == F_NEIGHBOR || ctx->algorithm == F_BILINEAR)) {
++                CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_mem, &ctx->cx);
++                CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_mem, &ctx->cy);
+ 
+-        av_log(avctx, AV_LOG_DEBUG, "Run kernel %s "
+-               "(%"SIZE_SPECIFIER"x%"SIZE_SPECIFIER").\n",
+-               ctx->kernel_name_uv, global_work[0], global_work[1]);
++                CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_mem, &ctx->cx);
++                CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_mem, &ctx->cy);
++            }
+ 
+-        cle = clEnqueueNDRangeKernel(ctx->command_queue, ctx->kernel_uv, 2, NULL,
+-                                     global_work, NULL, 0, NULL, NULL);
+-        CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to enqueue kernel: %d.\n", cle);
++            src_size.s[0] = ctx->src_w;
++            src_size.s[1] = ctx->src_h;
++            uv_size.s[0] = src_size.s[0] / x_subsample;
++            uv_size.s[1] = src_size.s[1] / y_subsample;
++            cl_int crop_x_uv = ctx->crop_x / x_subsample;
++            cl_int crop_y_uv = ctx->crop_y / y_subsample;
++            CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_int2, &src_size);
++            CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_int2, &uv_size);
++            CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_int, &ctx->crop_x);
++            CL_SET_KERNEL_ARG(ctx->kernel, idx_arg2++, cl_int, &ctx->crop_y);
++            CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_int, &crop_x_uv);
++            CL_SET_KERNEL_ARG(ctx->kernel_uv, idx_arg1++, cl_int, &crop_y_uv);
++
++            // scale, scale_builtin
++            global_work[0] = output->width;
++            global_work[1] = output->height;
++
++            av_log(avctx, AV_LOG_DEBUG, "Run kernel %s "
++                   "(%"SIZE_SPECIFIER"x%"SIZE_SPECIFIER").\n",
++                   ctx->kernel_name, global_work[0], global_work[1]);
++
++            cle = clEnqueueNDRangeKernel(ctx->command_queue, ctx->kernel, 2, NULL,
++                                         global_work, NULL, 0, NULL, NULL);
++            CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to enqueue kernel: %d.\n", cle);
++
++            // scale_uv, scale_builtin_uv
++            global_work[0] = output->width / x_subsample;
++            global_work[1] = output->height / y_subsample;
++
++            av_log(avctx, AV_LOG_DEBUG, "Run kernel %s "
++                   "(%"SIZE_SPECIFIER"x%"SIZE_SPECIFIER").\n",
++                   ctx->kernel_name_uv, global_work[0], global_work[1]);
++
++            cle = clEnqueueNDRangeKernel(ctx->command_queue, ctx->kernel_uv, 2, NULL,
++                                         global_work, NULL, 0, NULL, NULL);
++            CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to enqueue kernel: %d.\n", cle);
++        }
+     }
+ 
+     return 0;
+@@ -904,7 +1000,7 @@ static const AVOption scale_opencl_options[] = {
+         { "sinc",         "Sinc",             0, AV_OPT_TYPE_CONST, { .i64 = F_SINC         }, 0, 0, FLAGS, .unit = "algo" },
+         { "spline",       "Bicubic Spline",   0, AV_OPT_TYPE_CONST, { .i64 = F_SPLINE       }, 0, 0, FLAGS, .unit = "algo" },
+         { "experimental", "Experimental",     0, AV_OPT_TYPE_CONST, { .i64 = F_EXPERIMENTAL }, 0, 0, FLAGS, .unit = "algo" },
+-    { "force_original_aspect_ratio", "Decrease or increase w/h if necessary to keep the original AR", OFFSET(force_original_aspect_ratio), AV_OPT_TYPE_INT, { .i64 = 1 }, 0, 2, FLAGS, .unit = "force_oar" },
++    { "force_original_aspect_ratio", "Decrease or increase w/h if necessary to keep the original AR", OFFSET(force_original_aspect_ratio), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, 2, FLAGS, .unit = "force_oar" },
+         { "disable",       NULL,              0, AV_OPT_TYPE_CONST, {.i64 = 0 }, 0, 0, FLAGS, .unit = "force_oar" },
+         { "decrease",      NULL,              0, AV_OPT_TYPE_CONST, {.i64 = 1 }, 0, 0, FLAGS, .unit = "force_oar" },
+         { "increase",      NULL,              0, AV_OPT_TYPE_CONST, {.i64 = 2 }, 0, 0, FLAGS, .unit = "force_oar" },
