@@ -1,0 +1,56 @@
+diff --git a/libavfilter/vf_libplacebo.c b/libavfilter/vf_libplacebo.c
+index 2176a718..8f864cdf 100644
+--- a/libavfilter/vf_libplacebo.c
++++ b/libavfilter/vf_libplacebo.c
+@@ -769,24 +769,33 @@ static void update_crops(AVFilterContext *ctx, LibplaceboInput *in,
+         s->var_values[VAR_POS_W]  = s->var_values[VAR_PW] = NAN;
+         s->var_values[VAR_POS_H]  = s->var_values[VAR_PH] = NAN;
+ 
+-        /* Compute dimensions first and placement second */
+-        s->var_values[VAR_CROP_W] = s->var_values[VAR_CW] =
+-            av_expr_eval(s->crop_w_pexpr, s->var_values, NULL);
+-        s->var_values[VAR_CROP_H] = s->var_values[VAR_CH] =
+-            av_expr_eval(s->crop_h_pexpr, s->var_values, NULL);
+-        s->var_values[VAR_CROP_W] = s->var_values[VAR_CW] =
+-            av_expr_eval(s->crop_w_pexpr, s->var_values, NULL);
+-        s->var_values[VAR_POS_W]  = s->var_values[VAR_PW] =
+-            av_expr_eval(s->pos_w_pexpr, s->var_values, NULL);
+-        s->var_values[VAR_POS_H]  = s->var_values[VAR_PH] =
+-            av_expr_eval(s->pos_h_pexpr, s->var_values, NULL);
+-        s->var_values[VAR_POS_W]  = s->var_values[VAR_PW] =
+-            av_expr_eval(s->pos_w_pexpr, s->var_values, NULL);
+-
+-        image->crop.x0 = av_expr_eval(s->crop_x_pexpr, s->var_values, NULL);
+-        image->crop.y0 = av_expr_eval(s->crop_y_pexpr, s->var_values, NULL);
+-        image->crop.x1 = image->crop.x0 + s->var_values[VAR_CROP_W];
+-        image->crop.y1 = image->crop.y0 + s->var_values[VAR_CROP_H];
++        /* Apply crop from AVFrame crop fields if present, otherwise use expressions */
++        if (src->crop_left || src->crop_top || src->crop_right || src->crop_bottom) {
++            /* Use AVFrame crop directly */
++            image->crop.x0 = src->crop_left;
++            image->crop.y0 = src->crop_top;
++            image->crop.x1 = in->link->w - src->crop_right;
++            image->crop.y1 = in->link->h - src->crop_bottom;
++        } else {
++            /* Compute dimensions first and placement second using expressions */
++            s->var_values[VAR_CROP_W] = s->var_values[VAR_CW] =
++                av_expr_eval(s->crop_w_pexpr, s->var_values, NULL);
++            s->var_values[VAR_CROP_H] = s->var_values[VAR_CH] =
++                av_expr_eval(s->crop_h_pexpr, s->var_values, NULL);
++            s->var_values[VAR_CROP_W] = s->var_values[VAR_CW] =
++                av_expr_eval(s->crop_w_pexpr, s->var_values, NULL);
++            s->var_values[VAR_POS_W]  = s->var_values[VAR_PW] =
++                av_expr_eval(s->pos_w_pexpr, s->var_values, NULL);
++            s->var_values[VAR_POS_H]  = s->var_values[VAR_PH] =
++                av_expr_eval(s->pos_h_pexpr, s->var_values, NULL);
++            s->var_values[VAR_POS_W]  = s->var_values[VAR_PW] =
++                av_expr_eval(s->pos_w_pexpr, s->var_values, NULL);
++
++            image->crop.x0 = av_expr_eval(s->crop_x_pexpr, s->var_values, NULL);
++            image->crop.y0 = av_expr_eval(s->crop_y_pexpr, s->var_values, NULL);
++            image->crop.x1 = image->crop.x0 + s->var_values[VAR_CROP_W];
++            image->crop.y1 = image->crop.y0 + s->var_values[VAR_CROP_H];
++        }
+ 
+         if (src == ref) {
+             /* Only update the target crop once, for the 'reference' frame */

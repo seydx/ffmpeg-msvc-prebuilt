@@ -96,3 +96,4 @@
 1006-add-videotoolbox-rgb-gray-formats.patch
 1007-add-opencl-rgb-gray-formats.patch
 1008-add-cuda-gray-rgba-formats.patch
+1009-add-avframe-crop-support-to-libplacebo.patch
