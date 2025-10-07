@@ -13,7 +13,7 @@ index da2a50f9..93795625 100644
  };
  
 diff --git a/libavutil/hwcontext_videotoolbox.c b/libavutil/hwcontext_videotoolbox.c
-index a570400a..40e91c9d 100644
+index a570400a..a687b328 100644
 --- a/libavutil/hwcontext_videotoolbox.c
 +++ b/libavutil/hwcontext_videotoolbox.c
 @@ -49,6 +49,8 @@ static const struct {
@@ -25,13 +25,12 @@ index a570400a..40e91c9d 100644
      { kCVPixelFormatType_32BGRA,                        true,  AV_PIX_FMT_BGRA },
  #ifdef kCFCoreFoundationVersionNumber10_7
      { kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,  false, AV_PIX_FMT_NV12 },
-@@ -90,6 +92,9 @@ static const enum AVPixelFormat supported_formats[] = {
+@@ -90,6 +92,8 @@ static const enum AVPixelFormat supported_formats[] = {
  #endif
      AV_PIX_FMT_YUV420P,
      AV_PIX_FMT_UYVY422,
 +    AV_PIX_FMT_GRAY8,
 +    AV_PIX_FMT_RGB24,
-+    AV_PIX_FMT_BGRA,
  #if HAVE_KCVPIXELFORMATTYPE_420YPCBCR10BIPLANARVIDEORANGE
      AV_PIX_FMT_P010,
  #endif
