@@ -9,7 +9,7 @@ run-name: Build ${{inputs.ref_name||github.ref_name}}
 on:
   push:
     tags:
-      - '*'
+      - "*"
   #   branches:
   #     - main
   # pull_request:
@@ -18,16 +18,16 @@ on:
   workflow_call:
     inputs:
       ref_name:
-        description: 'Tag'
+        description: "Tag"
         required: false
         type: string
   workflow_dispatch:
     inputs:
       ref_name:
-        description: 'Tag or Branch'
+        description: "Tag or Branch"
         required: false
         type: string
-        default: 'main'
+        default: "main"
 
 jobs:
   prepare:
@@ -90,7 +90,7 @@ jobs:
       - name: Setup Python for Meson
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install Meson and Ninja
         shell: cmd
@@ -100,6 +100,7 @@ jobs:
       - name: Install Vulkan SDK
         uses: jakoch/install-vulkan-sdk-action@v1
         with:
+          vulkan_version: 1.4.328
           install_runtime: true
           cache: false
           optional_components: com.lunarg.vulkan.arm64
@@ -172,7 +173,7 @@ jobs:
         uses: N-Storm/cuda-toolkit@master
         id: cuda-toolkit
         with:
-          cuda: '12.6.3'
+          cuda: "12.6.3"
           sub-packages: '["nvcc", "cudart", "npp_dev"]'
 
       - name: Test CUDA Installation
