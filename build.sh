@@ -53,7 +53,6 @@ apply-patch() {
 # Apply patches
 echo "Applying patches..."
 apply-patch zlib zlib.patch
-apply-patch FFmpeg ffmpeg.patch
 apply-patch FFmpeg ffmpeg-glslang-msvc.patch
 apply-patch harfbuzz harfbuzz.patch
 
