@@ -98,3 +98,4 @@
 1008-add-cuda-gray-rgba-formats.patch
 1009-add-avframe-crop-support-to-libplacebo.patch
 1010-hevc-recovery-point-backport-from-upstream.patch
+1011-backport-d3d11-scale-filter-from-upstream.patch
