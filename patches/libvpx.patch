@@ -1,5 +1,5 @@
 diff --git a/build/make/Makefile b/build/make/Makefile
-index 658b37617..0178828ad 100644
+index 39dff825b..e0070a990 100644
 --- a/build/make/Makefile
 +++ b/build/make/Makefile
 @@ -76,10 +76,16 @@ TGT_CC:=$(word 3, $(subst -, ,$(TOOLCHAIN)))
@@ -133,7 +133,7 @@ index 658b37617..0178828ad 100644
  $(foreach lib,$(filter %$(SO_VERSION_MAJOR).dylib,$(LIBS)),$(eval $(call dl_template,$(lib))))
  $(foreach lib,$(filter %$(SO_VERSION_MAJOR).dll,$(LIBS)),$(eval $(call dll_template,$(lib))))
 diff --git a/build/make/configure.sh b/build/make/configure.sh
-index d1d89aa69..155c43c54 100644
+index 2477a90d3..40c9b27fc 100644
 --- a/build/make/configure.sh
 +++ b/build/make/configure.sh
 @@ -302,33 +302,33 @@ check_cc() {
@@ -264,7 +264,7 @@ index 1e1db05bb..6f6ea0eda 100755
          done
      done
 diff --git a/libs.mk b/libs.mk
-index d5076b7e8..70affdace 100644
+index 2c7b7c7ab..37c69d54c 100644
 --- a/libs.mk
 +++ b/libs.mk
 @@ -152,8 +152,8 @@ INSTALL_MAPS += include/vpx/% $(SRC_PATH_BARE)/vpx_ports/%
@@ -278,22 +278,24 @@ index d5076b7e8..70affdace 100644
  endif
  
  CODEC_SRCS-yes += build/make/version.sh
-@@ -181,10 +181,10 @@ INSTALL-LIBS-$(CONFIG_ENCODERS) += include/vpx/vpx_encoder.h
+@@ -181,12 +181,12 @@ INSTALL-LIBS-$(CONFIG_ENCODERS) += include/vpx/vpx_encoder.h
  INSTALL-LIBS-$(CONFIG_ENCODERS) += include/vpx/vpx_tpl.h
  ifeq ($(CONFIG_EXTERNAL_BUILD),yes)
  ifeq ($(CONFIG_MSVS),yes)
 -INSTALL-LIBS-yes                  += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(p)/$(CODEC_LIB).lib)
++INSTALL-LIBS-yes                  += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(CODEC_LIB).lib)
+ ifeq ($(CONFIG_STATIC),yes)
 -INSTALL-LIBS-$(CONFIG_DEBUG_LIBS) += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(p)/$(CODEC_LIB)d.lib)
++INSTALL-LIBS-$(CONFIG_DEBUG_LIBS) += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(CODEC_LIB)d.lib)
+ endif
 -INSTALL-LIBS-$(CONFIG_SHARED) += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(p)/vpx.dll)
 -INSTALL-LIBS-$(CONFIG_SHARED) += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(p)/vpx.exp)
-+INSTALL-LIBS-yes                  += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(CODEC_LIB).lib)
-+INSTALL-LIBS-$(CONFIG_DEBUG_LIBS) += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(CODEC_LIB)d.lib)
 +INSTALL-LIBS-$(CONFIG_SHARED) += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/vpx.dll)
 +INSTALL-LIBS-$(CONFIG_SHARED) += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/vpx.exp)
  endif
  else
  INSTALL-LIBS-$(CONFIG_STATIC) += $(LIBSUBDIR)/libvpx.a
-@@ -299,6 +299,32 @@ PROJECTS-yes += vpxrc.$(VCPROJ_SFX)
+@@ -293,6 +293,32 @@ PROJECTS-yes += vpxrc.$(VCPROJ_SFX)
  vpxrc.$(VCPROJ_SFX): vpx_config.asm
  vpxrc.$(VCPROJ_SFX): $(RTCD)
  
