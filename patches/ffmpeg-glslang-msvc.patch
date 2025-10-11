@@ -1,28 +1,25 @@
 diff --git a/configure b/configure
-index 98b582a5d5..f042c1b07f 100755
+index 7828381b5d..31bd40945e 100755
 --- a/configure
 +++ b/configure
-@@ -6920,6 +6920,7 @@ enabled libharfbuzz       && require_pkg_config libharfbuzz harfbuzz hb.h hb_buf
- enabled libglslang && { check_lib spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
+@@ -7134,6 +7134,7 @@ if enabled libglslang; then
+     check_lib spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
                              -lglslang -lMachineIndependent -lGenericCodeGen \
-                             -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ||
+                             ${spvremap} -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ||
 +                        check_pkg_config spirv_compiler glslang "glslang/Include/glslang_c_interface.h glslang/build_info.h" glslang_initialize_process ||
                          require spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
                              -lglslang -lMachineIndependent -lOSDependent -lHLSL -lOGLCompiler -lGenericCodeGen \
-                             -lSPVRemapper -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ; }
-diff --git a/libavfilter/vulkan_glslang.c b/libavfilter/vulkan_glslang.c
-index 845a530ee0..3f1ef8a4d4 100644
---- a/libavfilter/vulkan_glslang.c
-+++ b/libavfilter/vulkan_glslang.c
-@@ -16,7 +16,11 @@
+                             ${spvremap} -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ;
+diff --git a/libavutil/vulkan_glslang.c b/libavutil/vulkan_glslang.c
+index 4cf54de854..6099ff047d 100644
+--- a/libavutil/vulkan_glslang.c
++++ b/libavutil/vulkan_glslang.c
+@@ -16,7 +16,7 @@
   * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
   */
  
-+#ifdef _WIN32
-+#include "compat/w32pthreads.h"
-+#else
- #include <pthread.h>
-+#endif
+-#include <pthread.h>
++#include <thread.h>
  
  #include <glslang/build_info.h>
  #include <glslang/Include/glslang_c_interface.h>

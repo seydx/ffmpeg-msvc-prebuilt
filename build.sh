@@ -200,7 +200,7 @@ libdir=\${prefix}/lib
 
 Name: glslang
 Description: Khronos reference compiler and validator for GLSL, ESSL, and HLSL
-Version: 1.3.268
+Version: 1.4.328
 Cflags: -I\${includedir}
 Libs: -L\${libdir} $GLSLANG_LIBS
 EOF
