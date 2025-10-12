@@ -187,7 +187,7 @@ if [ -n "$ENABLE_LIBGLSLANG" ]; then
     GLSLANG_LIBS="$GLSLANG_LIBS -lOSDependent"
 
     # Add HLSL and OGLCompiler (both built with our config)
-    # GLSLANG_LIBS="$GLSLANG_LIBS -lHLSL -lOGLCompiler"
+    GLSLANG_LIBS="$GLSLANG_LIBS -lHLSL -lOGLCompiler"
 
     # Add SPIRV-Tools
     GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools-opt -lSPIRV-Tools"
@@ -199,7 +199,7 @@ libdir=\${prefix}/lib
 
 Name: glslang
 Description: Khronos reference compiler and validator for GLSL, ESSL, and HLSL
-Version: 1.4.328
+Version: 1.4.328.1
 Cflags: -I\${includedir}
 Libs: -L\${libdir} $GLSLANG_LIBS
 EOF
