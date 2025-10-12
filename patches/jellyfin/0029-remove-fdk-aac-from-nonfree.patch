@@ -2,15 +2,15 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -1876,7 +1876,6 @@ EXTERNAL_LIBRARY_GPL_LIST="
+@@ -1926,7 +1926,6 @@ EXTERNAL_LIBRARY_GPL_LIST="
  
  EXTERNAL_LIBRARY_NONFREE_LIST="
      decklink
 -    libfdk_aac
+     libmpeghdec
      libtls
  "
- 
-@@ -1916,6 +1915,7 @@ EXTERNAL_LIBRARY_LIST="
+@@ -1967,6 +1966,7 @@ EXTERNAL_LIBRARY_LIST="
      libcodec2
      libdav1d
      libdc1394

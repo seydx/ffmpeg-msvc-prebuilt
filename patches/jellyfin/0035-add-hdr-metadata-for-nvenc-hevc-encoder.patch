@@ -17,8 +17,8 @@ Index: FFmpeg/libavcodec/nvenc.c
 +#include "libavutil/mastering_display_metadata.h"
  #include "libavutil/mem.h"
  #include "libavutil/pixdesc.h"
- #include "libavutil/mathematics.h"
-@@ -2639,6 +2641,80 @@ static int prepare_sei_data_array(AVCode
+ #include "libavutil/timecode_internal.h"
+@@ -2892,6 +2894,80 @@ static int prepare_sei_data_array(AVCode
              }
          }
      }

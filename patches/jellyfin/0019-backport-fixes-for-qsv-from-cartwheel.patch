@@ -30,7 +30,7 @@ Index: FFmpeg/libavcodec/qsvdec.c
  #include "qsv.h"
 +#include "h264_sei.h"
  #include "qsv_internal.h"
- #include "refstruct.h"
+ #include "libavutil/refstruct.h"
  
 @@ -111,8 +114,13 @@ typedef struct QSVContext {
  
@@ -207,7 +207,7 @@ Index: FFmpeg/libavcodec/qsvdec.c
          if ((avctx->export_side_data & AV_CODEC_EXPORT_DATA_FILM_GRAIN) &&
 @@ -986,6 +1139,8 @@ static void qsv_decode_close_qsvcontext(
      av_buffer_unref(&q->frames_ctx.hw_frames_ctx);
-     ff_refstruct_unref(&q->frames_ctx.mids);
+     av_refstruct_unref(&q->frames_ctx.mids);
      av_buffer_pool_uninit(&q->pool);
 +
 +    av_freep(&q->payload.Data);

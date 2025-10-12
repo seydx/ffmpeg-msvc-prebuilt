@@ -2,15 +2,7 @@ Index: FFmpeg/libavformat/id3v2.c
 ===================================================================
 --- FFmpeg.orig/libavformat/id3v2.c
 +++ FFmpeg/libavformat/id3v2.c
-@@ -137,6 +137,7 @@ const CodecMime ff_id3v2_mime_tags[] = {
-     { "image/png",  AV_CODEC_ID_PNG   },
-     { "image/tiff", AV_CODEC_ID_TIFF  },
-     { "image/bmp",  AV_CODEC_ID_BMP   },
-+    { "image/webp", AV_CODEC_ID_WEBP  },
-     { "JPG",        AV_CODEC_ID_MJPEG }, /* ID3v2.2  */
-     { "PNG",        AV_CODEC_ID_PNG   }, /* ID3v2.2  */
-     { "",           AV_CODEC_ID_NONE  },
-@@ -326,39 +327,54 @@ static void read_ttag(AVFormatContext *s
+@@ -328,39 +328,54 @@ static void read_ttag(AVFormatContext *s
                        AVDictionary **metadata, const char *key)
  {
      uint8_t *dst;

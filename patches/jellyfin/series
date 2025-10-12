@@ -14,8 +14,8 @@
 0014-add-vaapi-hwupload-filter.patch
 0015-add-alpha-format-option-to-vaapi-overlay-filter.patch
 0016-add-fixes-for-nvdec-exceed-32-surfaces-error.patch
-0017-backport-fixes-for-vaapi-from-upstream.patch
-0018-backport-fixes-for-qsv-from-upstream.patch
+# 0017-backport-fixes-for-vaapi-from-upstream.patch (already in upstream)
+# 0018-backport-fixes-for-qsv-from-upstream.patch (already in upstream)
 0019-backport-fixes-for-qsv-from-cartwheel.patch
 0020-add-fixes-for-qsv-vpp-filters.patch
 0021-add-external-frame-support-for-qsv-enc.patch
@@ -29,6 +29,7 @@
 0029-remove-fdk-aac-from-nonfree.patch
 0030-pass-dovi-sidedata-to-hlsenc-and-mpegtsenc.patch
 0031-add-pause-support-for-ffmpeg-cli.patch
+# 0032-enable-gcc-vectorization-and-fix-cpuflags.patch (not for msvc)
 0033-tune-dxva-align-for-intel-to-avoid-copy-on-qsv.patch
 0034-add-10bit-support-for-cuda-overlay.patch
 0035-add-hdr-metadata-for-nvenc-hevc-encoder.patch
@@ -41,7 +42,7 @@
 0042-add-vui-info-to-the-seq-header-of-hevc-vaapi-encoder.patch
 0043-sync-intel-d3d11va-textures-before-mapping-to-opencl.patch
 0044-add-icon-for-windows-version-ffmpeg.patch
-0045-fix-libx265-encoded-fmp4-hls-playback-on-safari.patch
+# 0045-fix-libx265-encoded-fmp4-hls-playback-on-safari.patch (already in upstream)
 0046-add-full-hwa-pipeline-for-rockchip-rk3588-platform.patch
 0047-add-format-option-to-vt-scale-filter.patch
 0048-add-vf-overlay-videotoolbox-filter.patch
@@ -53,14 +54,15 @@
 0054-add-cuda-transpose-filter-impl.patch
 0055-add-flip-feat-to-opencl-transpose-filter.patch
 0056-opus-allow-5point1-side-inputs.patch
+# 0057-add-simd-optimized-tonemapx-filter.patch (not for msvc)
 0058-add-ac4-decoder-for-atsc-3-0.patch
 0059-tune-the-default-inter-thread-queue-sizes.patch
-0060-backport-fixes-for-vulkan-from-upstream.patch
-0061-revert-the-broken-vulkan-hwupload-rewrite.patch
+# 0060-backport-fixes-for-vulkan-from-upstream.patch (already in upstream)
+# 0061-revert-the-broken-vulkan-hwupload-rewrite.patch (not needed - hwupload works fine in master, tested successfully)
 0062-use-linear-contiguous-vulkan-images-for-amd-encoder.patch
 0063-prefer-vulkan-device-with-higher-api-version.patch
-0064-add-pgs-support-to-vulkan-overlay.patch
-0065-fix-yuv420p-to-p01x-unscaled-conversion.patch
+# 0064-add-pgs-support-to-vulkan-overlay.patch (FFmpeg 8 Vulkan API incompatible - would need complete rewrite)
+# 0065-fix-yuv420p-to-p01x-unscaled-conversion.patch (already in upstream - commit 0bb53948ac)
 0066-allow-vt-sw-decoder-for-every-codec.patch
 0067-add-bwdif-videotoolbox-filter.patch
 0068-add-12bit-decoding-on-videotoolbox.patch
@@ -71,31 +73,31 @@
 0073-fix-atenc-layout-samplerate.patch
 0074-videotoolbox-remove-opengl-compatability.patch
 0075-use-dynamic-pool-for-vpl-qsv-hwupload.patch
-0076-backport-av1-videotoolbox.patch
+# 0076-backport-av1-videotoolbox.patch (already in upstream)
 0077-fix-ass-incorrect-null-copy.patch
-0078-fix-a-race-condition-in-vaapi-csc-to-yuv420p.patch
-0079-add-first-vframe-only-to-ffprobe.patch
-0080-fix-auto-inserting-sw-color-conv-filters-between-hw-fmts.patch
-0081-fix-dummy-hw-frame-missing-hw-frames-ctx.patch
-0082-add-yadif-and-bwdif-opencl-filter-impl.patch
-0083-allow-vpp-tonemap-without-hdr10-metadata.patch
-0084-allow-qsvenc-to-bail-out-from-unsupported-low-power-mode.patch
-0085-pass-eac3-addbsi-to-movenc-for-dolby-atmos-remuxing.patch
-0086-add-array-of-textures-support-for-d3d11va-hwaccel.patch
-0087-no-error-out-on-unmatched-dovi-rpu-trailing-padding-bytes.patch
-0088-remove-el-when-stripping-dovi-metadata.patch
-0089-fix-avcodec-params-when-bsfs-are-enable-by-decoder.patch
-0090-dont-return-ext-error-for-invalid-vt-frame.patch
-0091-backport-a-fix-for-setting-values-in-lavc-decode.patch
-0092-backport-a-fix-for-stripping-fps-from-setpts-outlink.patch
-1001-add-avframe-crop-support-to-videotoolbox-scale.patch
-1002-add-avframe-crop-support-to-cuda-scale.patch
-1003-add-avframe-crop-support-to-qsv-scale.patch
-1004-add-avframe-crop-support-to-opencl-scale.patch
-1005-add-avframe-crop-support-to-rkrga-scale.patch
-1006-add-videotoolbox-rgb-gray-formats.patch
-1007-add-opencl-rgb-gray-formats.patch
-1008-add-cuda-gray-rgba-formats.patch
-1009-add-avframe-crop-support-to-libplacebo.patch
-1010-hevc-recovery-point-backport-from-upstream.patch
-1011-backport-d3d11-scale-filter-from-upstream.patch
+# 0078-fix-a-race-condition-in-vaapi-csc-to-yuv420p.patch (already in upstream)
+# 0079-add-first-vframe-only-to-ffprobe.patch
+# 0080-fix-auto-inserting-sw-color-conv-filters-between-hw-fmts.patch
+# 0081-fix-dummy-hw-frame-missing-hw-frames-ctx.patch
+# 0082-add-yadif-and-bwdif-opencl-filter-impl.patch
+# 0083-allow-vpp-tonemap-without-hdr10-metadata.patch
+# 0084-allow-qsvenc-to-bail-out-from-unsupported-low-power-mode.patch
+# 0085-pass-eac3-addbsi-to-movenc-for-dolby-atmos-remuxing.patch
+# 0086-add-array-of-textures-support-for-d3d11va-hwaccel.patch
+# 0087-no-error-out-on-unmatched-dovi-rpu-trailing-padding-bytes.patch
+# 0088-remove-el-when-stripping-dovi-metadata.patch
+# 0089-fix-avcodec-params-when-bsfs-are-enable-by-decoder.patch
+# 0090-dont-return-ext-error-for-invalid-vt-frame.patch
+# 0091-backport-a-fix-for-setting-values-in-lavc-decode.patch
+# 0092-backport-a-fix-for-stripping-fps-from-setpts-outlink.patch
+# 1001-add-avframe-crop-support-to-videotoolbox-scale.patch
+# 1002-add-avframe-crop-support-to-cuda-scale.patch
+# 1003-add-avframe-crop-support-to-qsv-scale.patch
+# 1004-add-avframe-crop-support-to-opencl-scale.patch
+# 1005-add-avframe-crop-support-to-rkrga-scale.patch
+# 1006-add-videotoolbox-rgb-gray-formats.patch
+# 1007-add-opencl-rgb-gray-formats.patch
+# 1008-add-cuda-gray-rgba-formats.patch
+# 1009-add-avframe-crop-support-to-libplacebo.patch
+# 1010-hevc-recovery-point-backport-from-upstream.patch (already in upstream)
+# 1011-backport-d3d11-scale-filter-from-upstream.patch (already in upstream)

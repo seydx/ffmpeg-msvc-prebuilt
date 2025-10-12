@@ -2,7 +2,7 @@ Index: FFmpeg/libavutil/hwcontext_vaapi.c
 ===================================================================
 --- FFmpeg.orig/libavutil/hwcontext_vaapi.c
 +++ FFmpeg/libavutil/hwcontext_vaapi.c
-@@ -1358,9 +1358,8 @@ static int vaapi_map_to_drm_esh(AVHWFram
+@@ -1360,9 +1360,8 @@ static int vaapi_map_to_drm_esh(AVHWFram
  
          vas = vaSyncSurface(hwctx->display, surface_id);
          if (vas != VA_STATUS_SUCCESS) {

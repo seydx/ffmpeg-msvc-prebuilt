@@ -1832,15 +1832,16 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
  #include "video.h"
  #include "colorspace.h"
 +#include "dither_matrix.h"
-+
-+#define OPENCL_SOURCE_NB 3
-+
-+#define REF_WHITE_SCALE (REFERENCE_WHITE / REFERENCE_WHITE_ALT)
  
 -// TODO:
 -// - separate peak-detection from tone-mapping kernel to solve
 -//    one-frame-delay issue.
 -// - more format support
++#define OPENCL_SOURCE_NB 3
++
++#define REF_WHITE_SCALE (REFERENCE_WHITE / REFERENCE_WHITE_ALT)
+ 
+-#define DETECTION_FRAMES 63
 +static const enum AVPixelFormat supported_formats[] = {
 +    AV_PIX_FMT_YUV420P,
 +    AV_PIX_FMT_YUV420P16,
@@ -1849,8 +1850,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
 +    AV_PIX_FMT_P010,
 +    AV_PIX_FMT_P016,
 +};
- 
--#define DETECTION_FRAMES 63
++
 +static const int colorspaces_out[] = {
 +    AVCOL_SPC_UNSPECIFIED,
 +    AVCOL_SPC_BT709,
@@ -1924,14 +1924,15 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
 -    cl_mem                util_mem;
  } TonemapOpenCLContext;
  
- static const char *const linearize_funcs[AVCOL_TRC_NB] = {
+-static const char *const linearize_funcs[] = {
 -    [AVCOL_TRC_SMPTE2084] = "eotf_st2084",
 -    [AVCOL_TRC_ARIB_STD_B67] = "inverse_oetf_hlg",
++static const char *const linearize_funcs[AVCOL_TRC_NB] = {
 +    [AVCOL_TRC_SMPTE2084]    = "eotf_st2084",
 +    [AVCOL_TRC_ARIB_STD_B67] = "eotf_arib_b67",
  };
  
- static const char *const delinearize_funcs[AVCOL_TRC_NB] = {
+ static const char *const delinearize_funcs[] = {
 @@ -80,7 +137,7 @@ static const char *const delinearize_fun
      [AVCOL_TRC_BT2020_10] = "inverse_eotf_bt1886",
  };
@@ -1956,495 +1957,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
  };
  
  static int get_rgb2rgb_matrix(enum AVColorPrimaries in, enum AVColorPrimaries out,
-@@ -108,90 +173,458 @@ static int get_rgb2rgb_matrix(enum AVCol
-     return 0;
- }
- 
--#define OPENCL_SOURCE_NB 3
--// Average light level for SDR signals. This is equal to a signal level of 0.5
--// under a typical presentation gamma of about 2.0.
--static const float sdr_avg = 0.25f;
-+static unsigned as_unsigned(const float x) {
-+    const float *px = &x;
-+    return *(unsigned*)px;
-+}
-+
-+// IEEE-754 16-bit floating-point format (without infinity):
-+// 1-5-10, exp-15, +-131008.0, +-6.1035156E-5, +-5.9604645E-8, 3.311 digits
-+static cl_half cl_float2half(const cl_float x) {
-+    // round-to-nearest-even: add last bit after truncated mantissa
-+    const unsigned b = as_unsigned(x)+0x00001000;
-+    // exponent
-+    const unsigned e = (b&0x7F800000)>>23;
-+    // mantissa; in line below:
-+    // 0x007FF000 = 0x00800000-0x00001000 = decimal indicator flag - initial rounding
-+    const unsigned m = b&0x007FFFFF;
-+
-+    // sign : normalized : denormalized : saturate
-+    return (b&0x80000000)>>16                                   |
-+           (e>112)*((((e-112)<<10)&0x7C00)|m>>13)               |
-+           ((e<113)&(e>101))*((((0x007FF000+m)>>(125-e))+1)>>1) |
-+           (e>143)*0x7FFF;
-+}
-+
-+static int tonemap_opencl_update_dovi_buf(AVFilterContext *avctx)
-+{
-+    TonemapOpenCLContext *ctx = avctx->priv;
-+    const unsigned fp16 = !!ctx->dovi_use_fp16;
-+    const size_t buf_sz = 3*(params_sz+pivots_sz+coeffs_sz+mmr_sz) >> fp16;
-+    void *pbuf = NULL;
-+    cl_float coeffs_dataf[8][4] = {0};
-+    cl_float mmr_packed_dataf[8*6][4] = {0};
-+    cl_half coeffs_datah[8][4] = {0};
-+    cl_half mmr_packed_datah[8*6][4] = {0};
-+    int c, i, j, k, err;
-+    cl_int cle;
-+
-+    pbuf = clEnqueueMapBuffer(ctx->command_queue, ctx->dovi_buf,
-+                              CL_TRUE, CL_MAP_WRITE_INVALIDATE_REGION, 0,
-+                              buf_sz, 0, NULL, NULL, &cle);
-+    CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to map dovi buf: %d.\n", cle);
-+
-+    av_assert0(pbuf);
-+
-+    for (c = 0; c < 3; c++) {
-+        int has_poly = 0, has_mmr = 0, mmr_single = 1;
-+        int mmr_idx = 0, min_order = 3, max_order = 1;
-+        const struct ReshapeData *comp = &ctx->dovi->comp[c];
-+        if (!comp->num_pivots)
-+            continue;
-+        av_assert0(comp->num_pivots >= 2 && comp->num_pivots <= 9);
-+
-+        memset(coeffs_dataf, 0, sizeof(coeffs_dataf));
-+        for (i = 0; i < comp->num_pivots - 1; i++) {
-+            switch (comp->method[i]) {
-+            case 0: // polynomial
-+                has_poly = 1;
-+                coeffs_dataf[i][3] = 0.0f; // order=0 signals polynomial
-+                for (k = 0; k < 3; k++)
-+                    coeffs_dataf[i][k] = comp->poly_coeffs[i][k];
-+                break;
-+            case 1:
-+                min_order = FFMIN(min_order, comp->mmr_order[i]);
-+                max_order = FFMAX(max_order, comp->mmr_order[i]);
-+                mmr_single = !has_mmr;
-+                has_mmr = 1;
-+                coeffs_dataf[i][3] = (float)comp->mmr_order[i];
-+                coeffs_dataf[i][0] = comp->mmr_constant[i];
-+                coeffs_dataf[i][1] = (float)mmr_idx;
-+                for (j = 0; j < comp->mmr_order[i]; j++) {
-+                    // store weights per order as two packed vec4s
-+                    cl_float *mmr = &mmr_packed_dataf[mmr_idx][0];
-+                    mmr[0] = comp->mmr_coeffs[i][j][0];
-+                    mmr[1] = comp->mmr_coeffs[i][j][1];
-+                    mmr[2] = comp->mmr_coeffs[i][j][2];
-+                    mmr[3] = 0.0f; // unused
-+                    mmr[4] = comp->mmr_coeffs[i][j][3];
-+                    mmr[5] = comp->mmr_coeffs[i][j][4];
-+                    mmr[6] = comp->mmr_coeffs[i][j][5];
-+                    mmr[7] = comp->mmr_coeffs[i][j][6];
-+                    mmr_idx += 2;
-+                }
-+                break;
-+            default:
-+                av_assert0(0);
-+            }
-+        }
-+
-+        av_assert0(has_poly || has_mmr);
-+
-+        if (has_mmr)
-+            av_assert0(min_order <= max_order);
-+
-+        if (fp16) {
-+            for (i = 0; i < 8; i++)
-+                for (j = 0; j < 4; j++)
-+                    coeffs_datah[i][j] = cl_float2half(coeffs_dataf[i][j]);
-+
-+            for (i = 0; i < 8*6; i++)
-+                for (j = 0; j < 4; j++)
-+                    mmr_packed_datah[i][j] = cl_float2half(mmr_packed_dataf[i][j]);
-+        }
-+
-+        // dovi_params
-+        {
-+            const cl_float paramsf[8] = {
-+                comp->num_pivots, !!has_mmr, !!has_poly,
-+                mmr_single, min_order, max_order,
-+                comp->pivots[0], comp->pivots[comp->num_pivots - 1]
-+            };
-+
-+            if (fp16) {
-+                cl_half paramsh[8] = {0};
-+                for (i = 0; i < 8; i++)
-+                    paramsh[i] = cl_float2half(paramsf[i]);
-+
-+                memcpy((cl_half*)pbuf + c*params_cnt, paramsh, params_sz>>1);
-+            } else
-+                memcpy((cl_float*)pbuf + c*params_cnt, paramsf, params_sz);
-+        }
-+
-+        // dovi_pivots
-+        if (c == 0 && comp->num_pivots > 2) {
-+            // Skip the (irrelevant) lower and upper bounds
-+            cl_float pivots_dataf[7+1] = {0};
-+            memcpy(pivots_dataf, comp->pivots + 1,
-+                   (comp->num_pivots - 2) * sizeof(pivots_dataf[0]));
-+            // Fill the remainder with a quasi-infinite sentinel pivot
-+            for (i = comp->num_pivots - 2; i < FF_ARRAY_ELEMS(pivots_dataf); i++)
-+                pivots_dataf[i] = 1e9f;
-+
-+            if (fp16) {
-+                cl_half pivots_datah[7+1] = {0};
-+                for (i = 0; i < 7+1; i++)
-+                    pivots_datah[i] = cl_float2half(pivots_dataf[i]);
-+
-+                memcpy((cl_half*)pbuf + 3*params_cnt + c*pivots_cnt, pivots_datah, pivots_sz>>1);
-+            } else
-+                memcpy((cl_float*)pbuf + 3*params_cnt + c*pivots_cnt, pivots_dataf, pivots_sz);
-+        }
-+
-+        // dovi_coeffs
-+        if (fp16)
-+            memcpy((cl_half*)pbuf + 3*(params_cnt+pivots_cnt) + c*coeffs_cnt, &coeffs_datah[0], coeffs_sz>>1);
-+        else
-+            memcpy((cl_float*)pbuf + 3*(params_cnt+pivots_cnt) + c*coeffs_cnt, &coeffs_dataf[0], coeffs_sz);
-+
-+        // dovi_mmr
-+        if (has_mmr) {
-+            if (fp16)
-+                memcpy((cl_half*)pbuf + 3*(params_cnt+pivots_cnt+coeffs_cnt) + c*mmr_cnt, &mmr_packed_datah[0], mmr_sz>>1);
-+            else
-+                memcpy((cl_float*)pbuf + 3*(params_cnt+pivots_cnt+coeffs_cnt) + c*mmr_cnt, &mmr_packed_dataf[0], mmr_sz);
-+        }
-+    }
-+
-+    cle = clEnqueueUnmapMemObject(ctx->command_queue, ctx->dovi_buf, pbuf, 0, NULL, NULL);
-+    CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to unmap dovi buf: %d.\n", cle);
-+
-+fail:
-+    return cle;
-+}
-+
-+static char *check_opencl_device_str(cl_device_id device_id,
-+                                     cl_device_info key)
-+{
-+    char *str;
-+    size_t size;
-+    cl_int cle;
-+    cle = clGetDeviceInfo(device_id, key, 0, NULL, &size);
-+    if (cle != CL_SUCCESS)
-+        return NULL;
-+    str = av_malloc(size);
-+    if (!str)
-+        return NULL;
-+    cle = clGetDeviceInfo(device_id, key, size, str, &size);
-+    if (cle != CL_SUCCESS) {
-+        av_free(str);
-+        return NULL;
-+    }
-+    av_assert0(strlen(str) + 1== size);
-+    return str;
-+}
- 
- static int tonemap_opencl_init(AVFilterContext *avctx)
- {
-     TonemapOpenCLContext *ctx = avctx->priv;
-+    AVBPrint header;
-+    const char *opencl_sources[OPENCL_SOURCE_NB];
-+    size_t m_origin[3] = {0};
-+    size_t m_region[3] = {ff_fruit_dither_size, ff_fruit_dither_size, 1};
-+    size_t m_row_pitch = ff_fruit_dither_size * sizeof(ff_fruit_dither_matrix[0]);
-     int rgb2rgb_passthrough = 1;
-     double rgb2rgb[3][3], rgb2yuv[3][3], yuv2rgb[3][3];
-     const AVLumaCoefficients *luma_src, *luma_dst;
-+    cl_event event = NULL;
-+    cl_bool device_is_integrated;
-+    cl_uint max_compute_units, device_vendor_id;
-     cl_int cle;
--    int err;
--    AVBPrint header;
--    const char *opencl_sources[OPENCL_SOURCE_NB];
-+    cl_mem_flags dovi_buf_flags = CL_MEM_ALLOC_HOST_PTR | CL_MEM_HOST_WRITE_ONLY | CL_MEM_READ_ONLY;
-+    char *device_vendor = NULL;
-+    char *device_name = NULL;
-+    char *device_exts = NULL;
-+    int is_device_qualcomm = 0;
-+    int i, j, err;
- 
--    av_bprint_init(&header, 1024, AV_BPRINT_SIZE_AUTOMATIC);
-+    if (ctx->tonemap_mode == TONEMAP_MODE_AUTO) {
-+        ctx->tonemap_mode = TONEMAP_MODE_ITP;
-+    }
- 
-     switch(ctx->tonemap) {
-     case TONEMAP_GAMMA:
-         if (isnan(ctx->param))
--            ctx->param = 1.8f;
-+            ctx->final_param = 1.8f;
-         break;
-     case TONEMAP_REINHARD:
-         if (!isnan(ctx->param))
--            ctx->param = (1.0f - ctx->param) / ctx->param;
-+            ctx->final_param = (1.0f - ctx->param) / ctx->param;
-         break;
-     case TONEMAP_MOBIUS:
-         if (isnan(ctx->param))
--            ctx->param = 0.3f;
-+            ctx->final_param = 0.3f;
-+        break;
-+    case TONEMAP_BT2390:
-+        if (isnan(ctx->param))
-+            ctx->final_param = 1.0f; // diff from the spec-defined 0.5f
-+        else
-+            ctx->final_param = FFMIN(FFMAX(ctx->param, 0.5f), 2.0f);
-         break;
-     }
- 
--    if (isnan(ctx->param))
--        ctx->param = 1.0f;
-+    if (isnan(ctx->final_param))
-+        ctx->final_param = 1.0f;
-+
-+    if (ctx->peak)
-+        ctx->src_peak = ctx->peak / 10.0f * REF_WHITE_SCALE;
-+
-+    // sanity check
-+    if (ctx->src_peak <= REF_WHITE_SCALE)
-+        ctx->src_peak = 10.0f * REF_WHITE_SCALE;
- 
-     // SDR peak is 1.0f
-     ctx->target_peak = 1.0f;
--    av_log(ctx, AV_LOG_DEBUG, "tone mapping transfer from %s to %s\n",
-+
-+    cle = clGetDeviceInfo(ctx->ocf.hwctx->device_id, CL_DEVICE_VENDOR_ID,
-+                          sizeof(cl_uint), &device_vendor_id,
-+                          NULL);
-+    CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to check OpenCL "
-+                     "device vendor id %d.\n", cle);
-+
-+    if (ctx->tradeoff == -1) {
-+        ctx->tradeoff = 1;
-+        cle = clGetDeviceInfo(ctx->ocf.hwctx->device_id, CL_DEVICE_HOST_UNIFIED_MEMORY,
-+                              sizeof(cl_bool), &device_is_integrated,
-+                              NULL);
-+        CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to check if OpenCL "
-+                         "device is integrated %d.\n", cle);
-+        cle = clGetDeviceInfo(ctx->ocf.hwctx->device_id, CL_DEVICE_MAX_COMPUTE_UNITS,
-+                              sizeof(cl_uint), &max_compute_units,
-+                              NULL);
-+        CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to check OpenCL "
-+                         "device max compute units %d.\n", cle);
-+        if (device_vendor_id == 0x8086 && device_is_integrated == CL_TRUE) {
-+            if (max_compute_units >= 40)
-+                ctx->tradeoff = 0;
-+            if (device_name = check_opencl_device_str(ctx->ocf.hwctx->device_id, CL_DEVICE_NAME)) {
-+                const char *excluded_devices[5] = { "Arc", "Iris", "Xe", "770", "750" };
-+                for (i = 0; i < FF_ARRAY_ELEMS(excluded_devices); i++) {
-+                    if (strstr(device_name, excluded_devices[i])) {
-+                        ctx->tradeoff = 0;
-+                        break;
-+                    }
-+                }
-+                av_freep(&device_name);
-+            }
-+        } else if (device_vendor_id == 0x5143 || device_vendor_id == MKTAG('Q', 'C', 'O', 'M')) {
-+            // Always use tradeoff on Qualcomm due to inconsistent performance
-+            ctx->tradeoff = 1;
-+        } else if (device_is_integrated == CL_TRUE) {
-+            device_vendor = check_opencl_device_str(ctx->ocf.hwctx->device_id, CL_DEVICE_VENDOR);
-+            device_name = check_opencl_device_str(ctx->ocf.hwctx->device_id, CL_DEVICE_NAME);
-+            if (!strstr(device_vendor, "ARM") &&
-+                !strstr(device_name, "Mali"))
-+                ctx->tradeoff = 0;
-+            if (device_vendor)
-+                av_freep(&device_vendor);
-+            if (device_name)
-+                av_freep(&device_name);
-+        } else {
-+            ctx->tradeoff = 0;
-+        }
-+
-+        if (!ctx->tradeoff)
-+            av_log(avctx, AV_LOG_DEBUG, "Disabled tradeoffs on high performance device.\n");
-+    }
-+
-+    // for low perf device, only do reshaping for pure dovi
-+    if (ctx->tradeoff && ctx->dovi && !ctx->is_pure_dovi) {
-+        av_freep(&ctx->dovi);
-+        ctx->dovi = NULL;
-+        ctx->apply_dovi = 0;
-+    }
-+
-+    device_exts = check_opencl_device_str(ctx->ocf.hwctx->device_id, CL_DEVICE_EXTENSIONS);
-+
-+    // use FP16 for dovi reshaping only when tradeoff is enabled and it's supported
-+    ctx->dovi_use_fp16 = 0;
-+    if (ctx->tradeoff && ctx->dovi) {
-+        if (device_exts && strstr(device_exts, "cl_khr_fp16")) {
-+            ctx->dovi_use_fp16 = 1;
-+            av_log(avctx, AV_LOG_DEBUG, "FP16 is enabled for DOVI reshaping.\n");
-+        }
-+    }
-+
-+    if (device_vendor_id == 0x5143) {
-+        // Qualcomm has two device IDs: 0x5143 and 0x4d4f4351 ('Q' | 'C' << 8 | 'O' << 16 | 'M' << 24)
-+        // The former is reported by Qualcomm's official OpenCL driver
-+        // and the latter is reported by Microsoft's compatability layer
-+        // The former has better performance if the kernel is written in a way its compiler handles properly
-+        // The latter one has more predictable performance and compiler behaves a bit more like other GPU
-+        // Only use the workaround on Qualcomm native OpenCL driver
-+        av_log(avctx, AV_LOG_DEBUG, "Qualcomm driver in use, vendor specific workarounds applied.\n");
-+        is_device_qualcomm = 1;
-+    }
-+
-+#ifndef CL_MEM_FORCE_HOST_MEMORY_INTEL
-+  #define CL_MEM_FORCE_HOST_MEMORY_INTEL (1 << 20)
-+#endif
-+    // zero-copy buffer requires this extension on Intel dGPUs
-+    if (device_vendor_id == 0x8086) {
-+        if (device_exts && strstr(device_exts, "cl_intel_mem_force_host_memory"))
-+            dovi_buf_flags |= CL_MEM_FORCE_HOST_MEMORY_INTEL;
-+    }
-+
-+    if (device_exts)
-+        av_freep(&device_exts);
-+
-+    av_log(ctx, AV_LOG_DEBUG, "Tonemapping transfer from %s to %s\n",
-            av_color_transfer_name(ctx->trc_in),
-            av_color_transfer_name(ctx->trc_out));
--    av_log(ctx, AV_LOG_DEBUG, "mapping colorspace from %s to %s\n",
--           av_color_space_name(ctx->colorspace_in),
-+    av_log(ctx, AV_LOG_DEBUG, "Mapping colorspace from %s to %s\n",
-+           ctx->dovi ? "dolby_vision" : av_color_space_name(ctx->colorspace_in),
-            av_color_space_name(ctx->colorspace_out));
--    av_log(ctx, AV_LOG_DEBUG, "mapping primaries from %s to %s\n",
-+    av_log(ctx, AV_LOG_DEBUG, "Mapping primaries from %s to %s\n",
-            av_color_primaries_name(ctx->primaries_in),
-            av_color_primaries_name(ctx->primaries_out));
--    av_log(ctx, AV_LOG_DEBUG, "mapping range from %s to %s\n",
-+    av_log(ctx, AV_LOG_DEBUG, "Mapping range from %s to %s\n",
-            av_color_range_name(ctx->range_in),
-            av_color_range_name(ctx->range_out));
--    // checking valid value just because of limited implementaion
--    // please remove when more functionalities are implemented
-+
-     av_assert0(ctx->trc_out == AVCOL_TRC_BT709 ||
--               ctx->trc_out == AVCOL_TRC_BT2020_10);
-+               ctx->trc_out == AVCOL_TRC_BT2020_10 ||
-+               ctx->trc_out == AVCOL_TRC_SMPTE2084);
-+
-     av_assert0(ctx->trc_in == AVCOL_TRC_SMPTE2084||
-                ctx->trc_in == AVCOL_TRC_ARIB_STD_B67);
--    av_assert0(ctx->colorspace_in == AVCOL_SPC_BT2020_NCL ||
-+    av_assert0(ctx->dovi ||
-+               ctx->colorspace_in == AVCOL_SPC_BT2020_NCL ||
-                ctx->colorspace_in == AVCOL_SPC_BT709);
-     av_assert0(ctx->primaries_in == AVCOL_PRI_BT2020 ||
-                ctx->primaries_in == AVCOL_PRI_BT709);
- 
--    av_bprintf(&header, "__constant const float tone_param = %.4ff;\n",
--               ctx->param);
--    av_bprintf(&header, "__constant const float desat_param = %.4ff;\n",
-+    if (ctx->trc_out == AVCOL_TRC_SMPTE2084) {
-+        int is_10_or_16b_out = ctx->out_desc->comp[0].depth == 10 ||
-+                               ctx->out_desc->comp[0].depth == 16;
-+        if (!(is_10_or_16b_out &&
-+            ctx->primaries_out == AVCOL_PRI_BT2020 &&
-+            ctx->colorspace_out == AVCOL_SPC_BT2020_NCL)) {
-+            av_log(avctx, AV_LOG_ERROR, "HDR passthrough requires BT.2020 "
-+                   "colorspace and 10/16 bit output format depth.\n");
-+            return AVERROR(EINVAL);
-+        }
-+    }
-+
-+    av_bprint_init(&header, 2048, AV_BPRINT_SIZE_UNLIMITED);
-+
-+    if (is_device_qualcomm)
-+        av_bprintf(&header, "#define IS_QCOM_GPU\n");
-+
-+    av_bprintf(&header, "__constant float tone_param = %.4ff;\n",
-+               ctx->final_param);
-+    av_bprintf(&header, "__constant float desat_param = %.4ff;\n",
-                ctx->desat_param);
--    av_bprintf(&header, "__constant const float target_peak = %.4ff;\n",
-+    av_bprintf(&header, "__constant float target_peak = %.4ff;\n",
-                ctx->target_peak);
--    av_bprintf(&header, "__constant const float sdr_avg = %.4ff;\n", sdr_avg);
--    av_bprintf(&header, "__constant const float scene_threshold = %.4ff;\n",
-+    av_bprintf(&header, "__constant float scene_threshold = %.4ff;\n",
-                ctx->scene_threshold);
-+
-     av_bprintf(&header, "#define TONE_FUNC %s\n", tonemap_func[ctx->tonemap]);
--    av_bprintf(&header, "#define DETECTION_FRAMES %d\n", DETECTION_FRAMES);
-+    if (ctx->tonemap == TONEMAP_BT2390)
-+        av_bprintf(&header, "#define TONE_FUNC_BT2390\n");
-+
-+    if (ctx->tonemap_mode == TONEMAP_MODE_RGB) {
-+        av_bprintf(&header, "#define TONE_MODE_RGB\n");
-+        av_bprintf(&header, "#define MAP_IN_DST_SPACE\n");
-+    }
-+    else if (ctx->tonemap_mode == TONEMAP_MODE_MAX) {
-+        av_bprintf(&header, "#define TONE_MODE_MAX\n");
-+        av_bprintf(&header, "#define MAP_IN_DST_SPACE\n");
-+    }
-+    else if (ctx->tonemap_mode == TONEMAP_MODE_ITP)
-+        av_bprintf(&header, "#define TONE_MODE_ITP\n");
-+
-+    if (ctx->in_planes > 2)
-+        av_bprintf(&header, "#define NON_SEMI_PLANAR_IN\n");
-+
-+    if (ctx->out_planes > 2)
-+        av_bprintf(&header, "#define NON_SEMI_PLANAR_OUT\n");
-+
-+    if (ctx->in_fmt == AV_PIX_FMT_NV15)
-+        av_bprintf(&header, "#define P010LE_COMPACT_IN\n");
-+
-+    if (ctx->in_desc->comp[0].depth > ctx->out_desc->comp[0].depth) {
-+        av_bprintf(&header, "#define ENABLE_DITHER\n");
-+        av_bprintf(&header, "__constant float dither_size2 = %.1ff;\n", (float)(ff_fruit_dither_size * ff_fruit_dither_size));
-+        av_bprintf(&header, "__constant float dither_quantization = %.1ff;\n", (float)((1 << ctx->out_desc->comp[0].depth) - 1));
-+    }
- 
-     if (ctx->primaries_out != ctx->primaries_in) {
-         if ((err = get_rgb2rgb_matrix(ctx->primaries_in, ctx->primaries_out, rgb2rgb)) < 0)
-             goto fail;
-         rgb2rgb_passthrough = 0;
-     }
-+
-     if (ctx->range_in == AVCOL_RANGE_JPEG)
-         av_bprintf(&header, "#define FULL_RANGE_IN\n");
- 
-     if (ctx->range_out == AVCOL_RANGE_JPEG)
-         av_bprintf(&header, "#define FULL_RANGE_OUT\n");
- 
-+    if (ctx->in_desc->comp[0].depth == 16) {
-+        // Assume 16bit is actually 12bit for now as that is what the hardware decoders producing
-+        // and what videos are actually encoded in
-+        av_bprintf(&header, "__constant float input_quantization_offset = %.13lff;\n", QUANTIZATION_OFFSET(12));
-+        av_bprintf(&header, "__constant float input_y_scale = %.13lff;\n", INPUT_Y_SCALE(12));
-+        av_bprintf(&header, "__constant float input_uv_scale = %.13lff;\n", INPUT_UV_SCALE(12));
-+    } else {
-+        av_bprintf(&header, "__constant float input_quantization_offset = %.13lff;\n", QUANTIZATION_OFFSET(ctx->in_desc->comp[0].depth));
-+        av_bprintf(&header, "__constant float input_y_scale = %.13lff;\n", INPUT_Y_SCALE(ctx->in_desc->comp[0].depth));
-+        av_bprintf(&header, "__constant float input_uv_scale = %.13lff;\n", INPUT_UV_SCALE(ctx->in_desc->comp[0].depth));
-+    }
-+
-+    if (ctx->out_desc->comp[0].depth > 8) {
-+        av_bprintf(&header, "#define RESCALE_LIMITED_RANGE_OUTPUT\n");
-+    }
-+
-+    if (ctx->out_desc->comp[0].depth == 10) {
-+        av_bprintf(&header, "__constant float output_quantization_offset = %.13lff;\n", QUANTIZATION_OFFSET(10));
-+    } else {
-+        // Don't handle 12b offset for now and assume 16b output is real 16b out to make it consistent with other filters
-+        av_bprintf(&header, "__constant float output_quantization_offset = 0.0f;\n");
-+    }
-+
-     av_bprintf(&header, "#define chroma_loc %d\n", (int)ctx->chroma_loc);
- 
-     if (rgb2rgb_passthrough)
-@@ -199,19 +632,41 @@ static int tonemap_opencl_init(AVFilterC
+@@ -199,19 +264,41 @@ static int tonemap_opencl_init(AVFilterC
      else
          ff_opencl_print_const_matrix_3x3(&header, "rgb2rgb", rgb2rgb);
  
@@ -2493,7 +2006,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
                 ctx->colorspace_out, av_color_space_name(ctx->colorspace_out));
          goto fail;
      }
-@@ -219,24 +674,13 @@ static int tonemap_opencl_init(AVFilterC
+@@ -219,24 +306,13 @@ static int tonemap_opencl_init(AVFilterC
      ff_fill_rgb2yuv_table(luma_dst, rgb2yuv);
      ff_opencl_print_const_matrix_3x3(&header, "yuv_matrix", rgb2yuv);
  
@@ -2523,7 +2036,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
  
      av_log(avctx, AV_LOG_DEBUG, "Generated OpenCL header:\n%s\n", header.str);
      opencl_sources[0] = header.str;
-@@ -254,46 +698,216 @@ static int tonemap_opencl_init(AVFilterC
+@@ -254,46 +330,216 @@ static int tonemap_opencl_init(AVFilterC
      CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to create OpenCL "
                       "command queue %d.\n", cle);
  
@@ -2551,7 +2064,12 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
 +            err = AVERROR(EIO);
 +            goto fail;
 +        }
-+
+ 
+-    ctx->util_mem =
+-        clCreateBuffer(ctx->ocf.hwctx->context, 0,
+-                       (2 * DETECTION_FRAMES + 7) * sizeof(unsigned),
+-                       NULL, &cle);
+-    CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to create util buffer: %d.\n", cle);
 +        cle = clEnqueueWriteImage(ctx->command_queue,
 +                                  ctx->dither_image,
 +                                  CL_FALSE, m_origin, m_region,
@@ -2590,12 +2108,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
 +        ctx->kernel = clCreateKernel(ctx->ocf.program, "tonemap", &cle);
 +        CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to create kernel %d.\n", cle);
 +    }
- 
--    ctx->util_mem =
--        clCreateBuffer(ctx->ocf.hwctx->context, 0,
--                       (2 * DETECTION_FRAMES + 7) * sizeof(unsigned),
--                       NULL, &cle);
--    CL_FAIL_ON_ERROR(AVERROR(EIO), "Failed to create util buffer: %d.\n", cle);
++
 +    if (ctx->dovi) {
 +        const size_t buf_sz = 3*(params_sz+pivots_sz+coeffs_sz+mmr_sz) >> !!ctx->dovi_use_fp16;
 +        CL_CREATE_BUFFER_FLAGS(ctx, dovi_buf, dovi_buf_flags, buf_sz, NULL);
@@ -2726,6 +2239,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
 +    if (!inl->hw_frames_ctx)
          return AVERROR(EINVAL);
 -      }
+-    }
 +    in_frames_ctx = (AVHWFramesContext*)inl->hw_frames_ctx->data;
 +    in_format     = in_frames_ctx->sw_format;
 +    out_format    = (ctx->format == AV_PIX_FMT_NONE) ? in_format : ctx->format;
@@ -2741,7 +2255,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
 +        av_log(ctx, AV_LOG_ERROR, "Unsupported output format: %s\n",
 +               av_get_pix_fmt_name(out_format));
 +        return AVERROR(ENOSYS);
-     }
++    }
 +    if (in_desc->comp[0].depth != 10 && in_desc->comp[0].depth != 16) {
 +        av_log(ctx, AV_LOG_ERROR, "Unsupported input format depth: %d\n",
 +               in_desc->comp[0].depth);
@@ -2760,7 +2274,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
      ret = ff_opencl_filter_config_output(outlink);
      if (ret < 0)
          return ret;
-@@ -308,13 +922,49 @@ static int launch_kernel(AVFilterContext
+@@ -308,13 +554,49 @@ static int launch_kernel(AVFilterContext
      size_t global_work[2];
      size_t local_work[2];
      cl_int cle;
@@ -2770,7 +2284,13 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
 +        err = AVERROR(EIO);
 +        goto fail;
 +    }
-+
+ 
+-    CL_SET_KERNEL_ARG(kernel, 0, cl_mem, &output->data[0]);
+-    CL_SET_KERNEL_ARG(kernel, 1, cl_mem, &input->data[0]);
+-    CL_SET_KERNEL_ARG(kernel, 2, cl_mem, &output->data[1]);
+-    CL_SET_KERNEL_ARG(kernel, 3, cl_mem, &input->data[1]);
+-    CL_SET_KERNEL_ARG(kernel, 4, cl_mem, &ctx->util_mem);
+-    CL_SET_KERNEL_ARG(kernel, 5, cl_float, &peak);
 +    if (ctx->out_planes > 2 && !output->data[2]) {
 +        err = AVERROR(EIO);
 +        goto fail;
@@ -2805,18 +2325,12 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
 +    if (ctx->dovi_buf) {
 +        CL_SET_KERNEL_ARG(kernel, idx_arg++, cl_mem, &ctx->dovi_buf);
 +    }
- 
--    CL_SET_KERNEL_ARG(kernel, 0, cl_mem, &output->data[0]);
--    CL_SET_KERNEL_ARG(kernel, 1, cl_mem, &input->data[0]);
--    CL_SET_KERNEL_ARG(kernel, 2, cl_mem, &output->data[1]);
--    CL_SET_KERNEL_ARG(kernel, 3, cl_mem, &input->data[1]);
--    CL_SET_KERNEL_ARG(kernel, 4, cl_mem, &ctx->util_mem);
--    CL_SET_KERNEL_ARG(kernel, 5, cl_float, &peak);
++
 +    CL_SET_KERNEL_ARG(kernel, idx_arg++, cl_float, &peak);
  
      local_work[0]  = 16;
      local_work[1]  = 16;
-@@ -338,12 +988,10 @@ static int tonemap_opencl_filter_frame(A
+@@ -338,12 +620,10 @@ static int tonemap_opencl_filter_frame(A
      AVFilterContext    *avctx = inlink->dst;
      AVFilterLink     *outlink = avctx->outputs[0];
      TonemapOpenCLContext *ctx = avctx->priv;
@@ -2830,7 +2344,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
  
      av_log(ctx, AV_LOG_DEBUG, "Filter input: %s, %ux%u (%"PRId64").\n",
             av_get_pix_fmt_name(input->format),
-@@ -351,7 +999,6 @@ static int tonemap_opencl_filter_frame(A
+@@ -351,7 +631,6 @@ static int tonemap_opencl_filter_frame(A
  
      if (!input->hw_frames_ctx)
          return AVERROR(EINVAL);
@@ -2838,7 +2352,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
  
      output = ff_get_video_buffer(outlink, outlink->w, outlink->h);
      if (!output) {
-@@ -363,17 +1010,65 @@ static int tonemap_opencl_filter_frame(A
+@@ -363,17 +642,65 @@ static int tonemap_opencl_filter_frame(A
      if (err < 0)
          goto fail;
  
@@ -2910,7 +2424,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
  
      ctx->trc_in = input->color_trc;
      ctx->trc_out = output->color_trc;
-@@ -385,72 +1080,50 @@ static int tonemap_opencl_filter_frame(A
+@@ -385,72 +712,50 @@ static int tonemap_opencl_filter_frame(A
      ctx->range_out = output->color_range;
      ctx->chroma_loc = output->chroma_location;
  
@@ -3006,7 +2520,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
      av_frame_free(&input);
      av_frame_free(&output);
      return err;
-@@ -458,62 +1131,101 @@ fail:
+@@ -458,62 +763,101 @@ fail:
  
  static av_cold void tonemap_opencl_uninit(AVFilterContext *avctx)
  {
@@ -3155,10 +2669,10 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
      { NULL }
  };
  
-@@ -541,11 +1253,12 @@ const AVFilter ff_vf_tonemap_opencl = {
-     .description    = NULL_IF_CONFIG_SMALL("Perform HDR to SDR conversion with tonemapping."),
+@@ -542,10 +886,11 @@ const FFFilter ff_vf_tonemap_opencl = {
+     .p.priv_class   = &tonemap_opencl_class,
+     .p.flags        = AVFILTER_FLAG_HWDEVICE,
      .priv_size      = sizeof(TonemapOpenCLContext),
-     .priv_class     = &tonemap_opencl_class,
 +    .preinit        = &tonemap_opencl_preinit,
      .init           = &ff_opencl_filter_init,
      .uninit         = &tonemap_opencl_uninit,
@@ -3167,5 +2681,4 @@ Index: FFmpeg/libavfilter/vf_tonemap_opencl.c
 -    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
 +    FILTER_QUERY_FUNC(tonemap_opencl_query_formats),
      .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
-     .flags          = AVFILTER_FLAG_HWDEVICE,
  };

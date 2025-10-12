@@ -22,19 +22,18 @@ Index: FFmpeg/libavcodec/audiotoolboxenc.c
      FFAT_ENC_CLASS(NAME) \
      const FFCodec ff_##NAME##_at_encoder = { \
          .p.name         = #NAME "_at", \
-@@ -652,9 +652,10 @@ static const AVOption options[] = {
+@@ -652,8 +652,9 @@ static const AVOption options[] = {
                            AV_CODEC_CAP_ENCODER_FLUSH CAPS, \
-         .p.ch_layouts   = CH_LAYOUTS, \
-         .p.sample_fmts  = (const enum AVSampleFormat[]) { \
--            AV_SAMPLE_FMT_S16, \
-+            AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S32,\
-             AV_SAMPLE_FMT_U8,  AV_SAMPLE_FMT_NONE \
-         }, \
-+        .p.supported_samplerates = SAMPLE_RATES, \
          .p.profiles     = PROFILES, \
          .p.wrapper_name = "at", \
++        .p.supported_samplerates = SAMPLE_RATES, \
+         CODEC_CH_LAYOUTS_ARRAY(CH_LAYOUTS), \
+-        CODEC_SAMPLEFMTS(AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_U8), \
++        CODEC_SAMPLEFMTS(AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S32, AV_SAMPLE_FMT_U8), \
      };
-@@ -669,15 +670,25 @@ static const AVChannelLayout aac_at_ch_l
+ 
+ static const AVChannelLayout aac_at_ch_layouts[] = {
+@@ -666,15 +667,25 @@ static const AVChannelLayout aac_at_ch_l
      AV_CHANNEL_LAYOUT_6POINT0,
      AV_CHANNEL_LAYOUT_6POINT1,
      AV_CHANNEL_LAYOUT_7POINT0,

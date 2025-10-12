@@ -33,7 +33,7 @@ Index: FFmpeg/libavfilter/qsvvpp.c
      else if (qsv_frame->frame->repeat_pict == 2)
          qsv_frame->surface.Info.PicStruct |= MFX_PICSTRUCT_FRAME_DOUBLING;
      else if (qsv_frame->frame->repeat_pict == 4)
-@@ -913,8 +918,13 @@ static int qsvvpp_init_vpp_session(AVFil
+@@ -908,8 +913,13 @@ static int qsvvpp_init_vpp_session(AVFil
  
          /* Query VPP params again, including params for frame */
          ret = MFXVideoVPP_Query(s->session, &s->vpp_param, &s->vpp_param);
@@ -150,7 +150,7 @@ Index: FFmpeg/libavfilter/vf_overlay_qsv.c
          vpp->qsv_param.out_sw_format = hw_frame0->sw_format;
      }
  
-@@ -374,6 +371,7 @@ static int overlay_qsv_query_formats(AVF
+@@ -376,6 +373,7 @@ static int overlay_qsv_query_formats(con
      static const enum AVPixelFormat main_in_fmts[] = {
          AV_PIX_FMT_YUV420P,
          AV_PIX_FMT_NV12,
@@ -158,7 +158,7 @@ Index: FFmpeg/libavfilter/vf_overlay_qsv.c
          AV_PIX_FMT_YUYV422,
          AV_PIX_FMT_RGB32,
          AV_PIX_FMT_QSV,
-@@ -381,6 +379,7 @@ static int overlay_qsv_query_formats(AVF
+@@ -383,6 +381,7 @@ static int overlay_qsv_query_formats(con
      };
      static const enum AVPixelFormat out_pix_fmts[] = {
          AV_PIX_FMT_NV12,
@@ -301,7 +301,7 @@ Index: FFmpeg/libavfilter/vf_vpp_qsv.c
      { NULL }
  };
  
-@@ -982,19 +1017,14 @@ static const AVOption qsvscale_options[]
+@@ -984,19 +1019,14 @@ static const AVOption qsvscale_options[]
      { "h",      "Output video height(0=input video height, -1=keep input video aspect)", OFFSET(oh), AV_OPT_TYPE_STRING, { .str = "ih"   }, .flags = FLAGS },
      { "format", "Output pixel format", OFFSET(output_format_str), AV_OPT_TYPE_STRING, { .str = "same" }, .flags = FLAGS },
  
@@ -323,7 +323,7 @@ Index: FFmpeg/libavfilter/vf_vpp_qsv.c
      { NULL },
  };
  
-@@ -1019,6 +1049,7 @@ static const AVOption qsvdeint_options[]
+@@ -1021,6 +1051,7 @@ static const AVOption qsvdeint_options[]
      { "bob",   "bob algorithm",                  0, AV_OPT_TYPE_CONST,      {.i64 = MFX_DEINTERLACING_BOB}, MFX_DEINTERLACING_BOB, MFX_DEINTERLACING_ADVANCED, FLAGS, .unit = "mode"},
      { "advanced", "Motion adaptive algorithm",   0, AV_OPT_TYPE_CONST, {.i64 = MFX_DEINTERLACING_ADVANCED}, MFX_DEINTERLACING_BOB, MFX_DEINTERLACING_ADVANCED, FLAGS, .unit = "mode"},
  

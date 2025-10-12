@@ -2,7 +2,7 @@ Index: FFmpeg/libavcodec/videotoolboxenc.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/videotoolboxenc.c
 +++ FFmpeg/libavcodec/videotoolboxenc.c
-@@ -1035,9 +1035,10 @@ static int create_cv_pixel_buffer_info(A
+@@ -1050,9 +1050,10 @@ static int create_cv_pixel_buffer_info(A
      CFNumberRef width_num = NULL;
      CFNumberRef height_num = NULL;
      CFMutableDictionaryRef pixel_buffer_info = NULL;
@@ -14,7 +14,7 @@ Index: FFmpeg/libavcodec/videotoolboxenc.c
                                       avctx->color_range,
                                       &cv_color_format,
                                       NULL);
-@@ -1692,11 +1693,9 @@ static int vtenc_configure_encoder(AVCod
+@@ -1723,11 +1724,9 @@ static int vtenc_configure_encoder(AVCod
                               kCFBooleanTrue);
      }
  

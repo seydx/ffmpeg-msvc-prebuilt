@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3976,6 +3976,7 @@ tinterlace_merge_test_deps="tinterlace_f
+@@ -4122,6 +4122,7 @@ tinterlace_merge_test_deps="tinterlace_f
  tinterlace_pad_test_deps="tinterlace_filter"
  tonemap_filter_deps="const_nan"
  tonemap_vaapi_filter_deps="vaapi VAProcFilterParameterBufferHDRToneMapping"
@@ -14,7 +14,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -537,6 +537,9 @@ OBJS-$(CONFIG_TONEMAP_CUDA_FILTER)
+@@ -549,6 +549,9 @@ OBJS-$(CONFIG_TONEMAP_CUDA_FILTER)
  OBJS-$(CONFIG_TONEMAP_OPENCL_FILTER)         += vf_tonemap_opencl.o opencl.o \
                                                  opencl/tonemap.o opencl/colorspace_common.o
  OBJS-$(CONFIG_TONEMAP_VAAPI_FILTER)          += vf_tonemap_vaapi.o vaapi_vpp.o
@@ -28,14 +28,14 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -502,6 +502,7 @@ extern const AVFilter ff_vf_tonemap;
- extern const AVFilter ff_vf_tonemap_cuda;
- extern const AVFilter ff_vf_tonemap_opencl;
- extern const AVFilter ff_vf_tonemap_vaapi;
-+extern const AVFilter ff_vf_tonemap_videotoolbox;
- extern const AVFilter ff_vf_tpad;
- extern const AVFilter ff_vf_transpose;
- extern const AVFilter ff_vf_transpose_npp;
+@@ -512,6 +512,7 @@ extern const FFFilter ff_vf_tonemap;
+ extern const FFFilter ff_vf_tonemap_cuda;
+ extern const FFFilter ff_vf_tonemap_opencl;
+ extern const FFFilter ff_vf_tonemap_vaapi;
++extern const FFFilter ff_vf_tonemap_videotoolbox;
+ extern const FFFilter ff_vf_tpad;
+ extern const FFFilter ff_vf_transpose;
+ extern const FFFilter ff_vf_transpose_npp;
 Index: FFmpeg/libavfilter/metal/vf_tonemap_videotoolbox.metal
 ===================================================================
 --- /dev/null
@@ -2166,15 +2166,15 @@ Index: FFmpeg/libavfilter/vf_tonemap_videotoolbox.m
 +    },
 +};
 +
-+const AVFilter ff_vf_tonemap_videotoolbox = {
-+    .name           = "tonemap_videotoolbox",
-+    .description    = NULL_IF_CONFIG_SMALL("Perform HDR to SDR conversion with Metal."),
-+    .priv_size      = sizeof(TonemapVideoToolboxContext),
-+    .priv_class     = &tonemap_videotoolbox_class,
-+    .preinit        = tonemap_videotoolbox_preinit,
-+    .uninit         = tonemap_videotoolbox_uninit,
++const FFFilter ff_vf_tonemap_videotoolbox = {
++    .p.name           = "tonemap_videotoolbox",
++    .p.description    = NULL_IF_CONFIG_SMALL("Perform HDR to SDR conversion with Metal."),
++    .p.priv_class     = &tonemap_videotoolbox_class,
++    .priv_size        = sizeof(TonemapVideoToolboxContext),
++    .preinit          = tonemap_videotoolbox_preinit,
++    .uninit           = tonemap_videotoolbox_uninit,
 +    FILTER_INPUTS(tonemap_videotoolbox_inputs),
 +    FILTER_OUTPUTS(tonemap_videotoolbox_outputs),
 +    FILTER_QUERY_FUNC(tonemap_videotoolbox_query_formats),
-+    .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
++    .flags_internal   = FF_FILTER_FLAG_HWFRAME_AWARE,
 +};

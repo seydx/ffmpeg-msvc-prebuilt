@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3312,6 +3312,8 @@ scale_cuda_filter_deps="ffnvcodec"
+@@ -3418,6 +3418,8 @@ scale_cuda_filter_deps="ffnvcodec"
  scale_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
  thumbnail_cuda_filter_deps="ffnvcodec"
  thumbnail_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
@@ -11,7 +11,7 @@ Index: FFmpeg/configure
  transpose_npp_filter_deps="ffnvcodec libnpp"
  overlay_cuda_filter_deps="ffnvcodec"
  overlay_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
-@@ -4690,8 +4692,10 @@ if enabled cuda_nvcc; then
+@@ -4850,8 +4852,10 @@ if enabled cuda_nvcc; then
      nvcc_default="nvcc"
      nvccflags_default="-gencode arch=compute_30,code=sm_30 -O2"
  else
@@ -23,9 +23,9 @@ Index: FFmpeg/configure
      NVCC_C=""
  fi
  
-@@ -4701,6 +4705,11 @@ if enabled cuda_nvcc; then
+@@ -4864,6 +4868,11 @@ if enabled cuda_nvcc; then
      if $nvcc $nvccflags_default 2>&1 | grep -qi unsupported; then
-         nvccflags_default="-gencode arch=compute_60,code=sm_60 -O2"
+         nvccflags_default="-gencode arch=compute_75,code=sm_75 -O2"
      fi
 +else
 +    # '--cuda-feature=+ptx*' option is not available before clang-15
@@ -35,7 +35,7 @@ Index: FFmpeg/configure
  fi
  
  set_default arch cc cxx doxygen pkg_config ranlib strip sysinclude \
-@@ -6753,7 +6762,7 @@ fi
+@@ -6982,7 +6991,7 @@ fi
  if enabled cuda_nvcc; then
      nvccflags="$nvccflags -ptx"
  else
@@ -48,9 +48,9 @@ Index: FFmpeg/ffbuild/common.mak
 ===================================================================
 --- FFmpeg.orig/ffbuild/common.mak
 +++ FFmpeg/ffbuild/common.mak
-@@ -44,6 +44,7 @@ ASFLAGS    := $(CPPFLAGS) $(ASFLAGS)
+@@ -53,6 +53,7 @@ ASFLAGS    := $(CPPFLAGS) $(ASFLAGS)
  # end up in CXXFLAGS.
- $(call PREPEND,CXXFLAGS, CPPFLAGS CFLAGS)
+ $(call PREPEND,CXXFLAGS, CPPFLAGS)
  X86ASMFLAGS += $(IFLAGS:%=%/) -I$(<D)/ -Pconfig.asm
 +NVCCFLAGS  += $(IFLAGS)
  
@@ -60,7 +60,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -524,6 +524,8 @@ OBJS-$(CONFIG_TMEDIAN_FILTER)
+@@ -536,6 +536,8 @@ OBJS-$(CONFIG_TMEDIAN_FILTER)
  OBJS-$(CONFIG_TMIDEQUALIZER_FILTER)          += vf_tmidequalizer.o
  OBJS-$(CONFIG_TMIX_FILTER)                   += vf_mix.o framesync.o
  OBJS-$(CONFIG_TONEMAP_FILTER)                += vf_tonemap.o
@@ -73,14 +73,14 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -494,6 +494,7 @@ extern const AVFilter ff_vf_tmedian;
- extern const AVFilter ff_vf_tmidequalizer;
- extern const AVFilter ff_vf_tmix;
- extern const AVFilter ff_vf_tonemap;
-+extern const AVFilter ff_vf_tonemap_cuda;
- extern const AVFilter ff_vf_tonemap_opencl;
- extern const AVFilter ff_vf_tonemap_vaapi;
- extern const AVFilter ff_vf_tpad;
+@@ -504,6 +504,7 @@ extern const FFFilter ff_vf_tmedian;
+ extern const FFFilter ff_vf_tmidequalizer;
+ extern const FFFilter ff_vf_tmix;
+ extern const FFFilter ff_vf_tonemap;
++extern const FFFilter ff_vf_tonemap_cuda;
+ extern const FFFilter ff_vf_tonemap_opencl;
+ extern const FFFilter ff_vf_tonemap_vaapi;
+ extern const FFFilter ff_vf_tpad;
 Index: FFmpeg/libavfilter/colorspace.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/colorspace.c

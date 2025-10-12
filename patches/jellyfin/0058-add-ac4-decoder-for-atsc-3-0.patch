@@ -2,14 +2,14 @@ Index: FFmpeg/libavcodec/Makefile
 ===================================================================
 --- FFmpeg.orig/libavcodec/Makefile
 +++ FFmpeg/libavcodec/Makefile
-@@ -210,6 +210,7 @@ OBJS-$(CONFIG_AC3_ENCODER)             +
+@@ -219,6 +219,7 @@ OBJS-$(CONFIG_AC3_ENCODER)             +
                                            ac3.o kbdwin.o
  OBJS-$(CONFIG_AC3_FIXED_ENCODER)       += ac3enc_fixed.o ac3enc.o ac3tab.o ac3.o kbdwin.o
  OBJS-$(CONFIG_AC3_MF_ENCODER)          += mfenc.o mf_utils.o
 +OBJS-$(CONFIG_AC4_DECODER)             += ac4dec.o kbdwin.o
- OBJS-$(CONFIG_ACELP_KELVIN_DECODER)    += g729dec.o lsp.o celp_math.o celp_filters.o acelp_filters.o acelp_pitch_delay.o acelp_vectors.o g729postfilter.o
+ OBJS-$(CONFIG_ACELP_KELVIN_DECODER)    += g729dec.o lsp.o celp_filters.o acelp_filters.o acelp_pitch_delay.o acelp_vectors.o g729postfilter.o
  OBJS-$(CONFIG_AGM_DECODER)             += agm.o jpegquanttables.o
- OBJS-$(CONFIG_AIC_DECODER)             += aic.o
+ OBJS-$(CONFIG_AHX_DECODER)             += mpegaudiodec_float.o
 Index: FFmpeg/libavcodec/ac4dec.c
 ===================================================================
 --- /dev/null
@@ -7613,14 +7613,14 @@ Index: FFmpeg/libavcodec/allcodecs.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/allcodecs.c
 +++ FFmpeg/libavcodec/allcodecs.c
-@@ -430,6 +430,7 @@ extern const FFCodec ff_ac3_encoder;
+@@ -437,6 +437,7 @@ extern const FFCodec ff_ac3_encoder;
  extern const FFCodec ff_ac3_decoder;
  extern const FFCodec ff_ac3_fixed_encoder;
  extern const FFCodec ff_ac3_fixed_decoder;
 +extern const FFCodec ff_ac4_decoder;
  extern const FFCodec ff_acelp_kelvin_decoder;
+ extern const FFCodec ff_ahx_decoder;
  extern const FFCodec ff_alac_encoder;
- extern const FFCodec ff_alac_decoder;
 Index: FFmpeg/libavcodec/kbdwin.h
 ===================================================================
 --- FFmpeg.orig/libavcodec/kbdwin.h
@@ -7638,7 +7638,7 @@ Index: FFmpeg/libavcodec/utils.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/utils.c
 +++ FFmpeg/libavcodec/utils.c
-@@ -601,7 +601,8 @@ static int get_audio_frame_duration(enum
+@@ -602,7 +602,8 @@ static int get_audio_frame_duration(enum
      case AV_CODEC_ID_ATRAC3P:      return 2048;
      case AV_CODEC_ID_MP2:
      case AV_CODEC_ID_MUSEPACK7:    return 1152;
@@ -7652,7 +7652,7 @@ Index: FFmpeg/libavformat/isom_tags.c
 ===================================================================
 --- FFmpeg.orig/libavformat/isom_tags.c
 +++ FFmpeg/libavformat/isom_tags.c
-@@ -310,6 +310,7 @@ const AVCodecTag ff_codec_movaudio_tags[
+@@ -323,6 +323,7 @@ const AVCodecTag ff_codec_movaudio_tags[
      { AV_CODEC_ID_DTS,             MKTAG('d', 't', 's', 'e') }, /* DTS Express */
      { AV_CODEC_ID_DTS,             MKTAG('D', 'T', 'S', ' ') }, /* non-standard */
      { AV_CODEC_ID_EAC3,            MKTAG('e', 'c', '-', '3') }, /* ETSI TS 102 366 Annex F (only valid in ISOBMFF) */

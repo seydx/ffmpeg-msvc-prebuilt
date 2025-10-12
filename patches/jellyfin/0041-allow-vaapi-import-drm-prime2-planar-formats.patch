@@ -2,7 +2,7 @@ Index: FFmpeg/libavutil/hwcontext_vaapi.c
 ===================================================================
 --- FFmpeg.orig/libavutil/hwcontext_vaapi.c
 +++ FFmpeg/libavutil/hwcontext_vaapi.c
-@@ -170,6 +170,9 @@ static const VAAPIFormatDescriptor vaapi
+@@ -171,6 +171,9 @@ static const VAAPIFormatDescriptor vaapi
  #ifdef VA_FOURCC_X2R10G10B10
      MAP(X2R10G10B10, RGB32_10, X2RGB10, 0),
  #endif
@@ -12,7 +12,7 @@ Index: FFmpeg/libavutil/hwcontext_vaapi.c
  #ifdef VA_FOURCC_Y410
      // libva doesn't include a fourcc for XV30 and the driver only declares
      // support for Y410, so we must fudge the mapping here.
-@@ -1047,9 +1050,11 @@ static const struct {
+@@ -1049,9 +1052,11 @@ static const struct {
      DRM_MAP(NV12, 1, DRM_FORMAT_NV12),
  #if defined(VA_FOURCC_P010) && defined(DRM_FORMAT_R16)
      DRM_MAP(P010, 2, DRM_FORMAT_R16, DRM_FORMAT_RG1616),
@@ -24,7 +24,7 @@ Index: FFmpeg/libavutil/hwcontext_vaapi.c
  #endif
      DRM_MAP(BGRA, 1, DRM_FORMAT_ARGB8888),
      DRM_MAP(BGRX, 1, DRM_FORMAT_XRGB8888),
-@@ -1073,6 +1078,9 @@ static const struct {
+@@ -1075,6 +1080,9 @@ static const struct {
  #if defined(VA_FOURCC_X2R10G10B10) && defined(DRM_FORMAT_XRGB2101010)
      DRM_MAP(X2R10G10B10, 1, DRM_FORMAT_XRGB2101010),
  #endif
@@ -34,7 +34,7 @@ Index: FFmpeg/libavutil/hwcontext_vaapi.c
  };
  #undef DRM_MAP
  
-@@ -1128,12 +1136,6 @@ static int vaapi_map_from_drm(AVHWFrames
+@@ -1130,12 +1138,6 @@ static int vaapi_map_from_drm(AVHWFrames
  
      desc = (AVDRMFrameDescriptor*)src->data[0];
  
@@ -47,7 +47,7 @@ Index: FFmpeg/libavutil/hwcontext_vaapi.c
      va_fourcc = 0;
      for (i = 0; i < FF_ARRAY_ELEMS(vaapi_drm_format_map); i++) {
          if (desc->nb_layers != vaapi_drm_format_map[i].nb_layer_formats)
-@@ -1273,6 +1275,12 @@ static int vaapi_map_from_drm(AVHWFrames
+@@ -1275,6 +1277,12 @@ static int vaapi_map_from_drm(AVHWFrames
                                 buffer_attrs, FF_ARRAY_ELEMS(buffer_attrs));
      }
  #else

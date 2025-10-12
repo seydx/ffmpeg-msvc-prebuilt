@@ -2,19 +2,19 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3935,6 +3935,7 @@ rubberband_filter_deps="librubberband"
+@@ -4077,6 +4077,7 @@ rubberband_filter_deps="librubberband"
  sab_filter_deps="gpl swscale"
  scale2ref_filter_deps="swscale"
  scale_filter_deps="swscale"
 +scale_opencl_filter_deps="opencl"
+ sr_amf_filter_deps="amf"
+ vpp_amf_filter_deps="amf"
  scale_qsv_filter_deps="libmfx"
- scale_qsv_filter_select="qsvvpp"
- scdet_filter_select="scene_sad"
 Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -461,6 +461,7 @@ OBJS-$(CONFIG_SCALE_FILTER)
+@@ -471,6 +471,7 @@ OBJS-$(CONFIG_SCALE_D3D11_FILTER)
  OBJS-$(CONFIG_SCALE_CUDA_FILTER)             += vf_scale_cuda.o scale_eval.o \
                                                  vf_scale_cuda.ptx.o cuda/load_helper.o
  OBJS-$(CONFIG_SCALE_NPP_FILTER)              += vf_scale_npp.o scale_eval.o
@@ -26,14 +26,14 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -433,6 +433,7 @@ extern const AVFilter ff_vf_sab;
- extern const AVFilter ff_vf_scale;
- extern const AVFilter ff_vf_scale_cuda;
- extern const AVFilter ff_vf_scale_npp;
-+extern const AVFilter ff_vf_scale_opencl;
- extern const AVFilter ff_vf_scale_qsv;
- extern const AVFilter ff_vf_scale_vaapi;
- extern const AVFilter ff_vf_scale_vt;
+@@ -442,6 +442,7 @@ extern const FFFilter ff_vf_sr_amf;
+ extern const FFFilter ff_vf_scale_cuda;
+ extern const FFFilter ff_vf_scale_d3d11;
+ extern const FFFilter ff_vf_scale_npp;
++extern const FFFilter ff_vf_scale_opencl;
+ extern const FFFilter ff_vf_scale_qsv;
+ extern const FFFilter ff_vf_scale_vaapi;
+ extern const FFFilter ff_vf_scale_vt;
 Index: FFmpeg/libavfilter/opencl/scale.cl
 ===================================================================
 --- /dev/null

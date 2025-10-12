@@ -11,7 +11,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
      AV_PIX_FMT_NONE,
  };
  
-@@ -104,12 +106,14 @@ typedef struct OverlayCUDAContext {
+@@ -98,12 +100,14 @@ typedef struct OverlayCUDAContext {
      enum AVPixelFormat in_format_overlay;
      enum AVPixelFormat in_format_main;
  
@@ -28,7 +28,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
      CUstream cu_stream;
  
      FFFrameSync fs;
-@@ -117,6 +121,7 @@ typedef struct OverlayCUDAContext {
+@@ -111,6 +115,7 @@ typedef struct OverlayCUDAContext {
      int eval_mode;
      int x_position;
      int y_position;
@@ -36,7 +36,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
  
      double var_values[VAR_VARS_NB];
      char *x_expr, *y_expr;
-@@ -184,7 +189,10 @@ static int set_expr(AVExpr **pexpr, cons
+@@ -178,7 +183,10 @@ static int set_expr(AVExpr **pexpr, cons
  static int formats_match(const enum AVPixelFormat format_main, const enum AVPixelFormat format_overlay) {
      switch(format_main) {
      case AV_PIX_FMT_NV12:
@@ -48,7 +48,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
      case AV_PIX_FMT_YUV420P:
          return format_overlay == AV_PIX_FMT_YUV420P ||
                 format_overlay == AV_PIX_FMT_YUVA420P;
-@@ -199,26 +207,34 @@ static int formats_match(const enum AVPi
+@@ -193,26 +201,34 @@ static int formats_match(const enum AVPi
  static int overlay_cuda_call_kernel(
      OverlayCUDAContext *ctx,
      int x_position, int y_position,
@@ -88,7 +88,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
          DIV_UP(main_width, BLOCK_X), DIV_UP(main_height, BLOCK_Y), 1,
          BLOCK_X, BLOCK_Y, 1,
          0, ctx->cu_stream, kernel_args, NULL));
-@@ -242,8 +258,6 @@ static int overlay_cuda_blend(FFFrameSyn
+@@ -236,8 +252,6 @@ static int overlay_cuda_blend(FFFrameSyn
  
      AVFrame *input_main, *input_overlay;
  
@@ -97,7 +97,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
      // read main and overlay frames from inputs
      ret = ff_framesync_dualinput_get(fs, &input_main, &input_overlay);
      if (ret < 0)
-@@ -300,11 +314,15 @@ FF_ENABLE_DEPRECATION_WARNINGS
+@@ -285,11 +299,15 @@ static int overlay_cuda_blend(FFFrameSyn
  
      overlay_cuda_call_kernel(ctx,
          ctx->x_position, ctx->y_position,
@@ -116,7 +116,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
  
      // overlay rest planes depending on pixel format
  
-@@ -312,29 +330,46 @@ FF_ENABLE_DEPRECATION_WARNINGS
+@@ -297,29 +315,46 @@ static int overlay_cuda_blend(FFFrameSyn
      case AV_PIX_FMT_NV12:
          overlay_cuda_call_kernel(ctx,
              ctx->x_position, ctx->y_position / 2,
@@ -181,7 +181,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
          break;
      default:
          av_log(ctx, AV_LOG_ERROR, "Passed unsupported overlay pixel format\n");
-@@ -406,7 +441,7 @@ static av_cold void overlay_cuda_uninit(
+@@ -388,7 +423,7 @@ static av_cold void overlay_cuda_uninit(
      if (ctx->hwctx && ctx->cu_module) {
          CUcontext dummy;
          CudaFunctions *cu = ctx->hwctx->internal->cuda_dl;
@@ -190,7 +190,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
          CHECK_CU(cu->cuModuleUnload(ctx->cu_module));
          CHECK_CU(cu->cuCtxPopCurrent(&dummy));
      }
-@@ -465,6 +500,8 @@ static int overlay_cuda_config_output(AV
+@@ -447,6 +482,8 @@ static int overlay_cuda_config_output(AV
          return AVERROR(ENOSYS);
      }
  
@@ -199,7 +199,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
      // check overlay input formats
  
      if (!frames_ctx_overlay) {
-@@ -518,7 +555,13 @@ static int overlay_cuda_config_output(AV
+@@ -500,7 +537,13 @@ static int overlay_cuda_config_output(AV
          return err;
      }
  
@@ -214,7 +214,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.c
      if (err < 0) {
          CHECK_CU(cu->cuCtxPopCurrent(&dummy));
          return err;
-@@ -543,6 +586,9 @@ static int overlay_cuda_config_output(AV
+@@ -525,6 +568,9 @@ static int overlay_cuda_config_output(AV
  static const AVOption overlay_cuda_options[] = {
      { "x", "set the x expression of overlay", OFFSET(x_expr), AV_OPT_TYPE_STRING, { .str = "0" }, 0, 0, FLAGS },
      { "y", "set the y expression of overlay", OFFSET(y_expr), AV_OPT_TYPE_STRING, { .str = "0" }, 0, 0, FLAGS },
@@ -253,7 +253,7 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.cu
  {
      int x = blockIdx.x * blockDim.x + threadIdx.x;
      int y = blockIdx.y * blockDim.y + threadIdx.y;
-@@ -42,13 +44,59 @@ __global__ void Overlay_Cuda(
+@@ -42,12 +44,59 @@ __global__ void Overlay_Cuda(
      int overlay_x = x - x_position;
      int overlay_y = y - y_position;
  
@@ -310,9 +310,9 @@ Index: FFmpeg/libavfilter/vf_overlay_cuda.cu
 +        overlay_alpha, alpha_linesize, \
 +        alpha_adj_x, alpha_adj_y, \
 +        need_unpremul, overlay_full); \
- }
- 
++}
++
 +OVERLAY_VARIANT(uchar, unsigned char)
 +OVERLAY_VARIANT(ushort, unsigned short)
 +
-+}
+ }

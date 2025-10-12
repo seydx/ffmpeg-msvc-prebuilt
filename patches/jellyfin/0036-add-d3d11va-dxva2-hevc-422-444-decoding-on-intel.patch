@@ -11,7 +11,7 @@ Index: FFmpeg/libavcodec/d3d12va_hevc.c
      DXVA_Qmatrix_HEVC      qm;
      unsigned               slice_count;
      DXVA_Slice_HEVC_Short  slice_short[MAX_SLICES];
-@@ -151,12 +151,12 @@ static int d3d12va_hevc_end_frame(AVCode
+@@ -154,12 +154,12 @@ static int d3d12va_hevc_end_frame(AVCode
      HEVCContext              *h       = avctx->priv_data;
      HEVCDecodePictureContext *ctx_pic = h->cur_frame->hwaccel_picture_private;
  
@@ -167,7 +167,7 @@ Index: FFmpeg/libavcodec/dxva2.c
      }
  }
  
-@@ -627,8 +688,7 @@ int ff_dxva2_common_frame_params(AVCodec
+@@ -637,8 +698,7 @@ int ff_dxva2_common_frame_params(AVCodec
      else
          num_surfaces += 2 + 4; /* 4 base work surface in vpp async */
  
@@ -243,7 +243,7 @@ Index: FFmpeg/libavcodec/dxva2_hevc.c
      pp->wFormatAndSequenceInfoFlags = (sps->chroma_format_idc             <<  0) |
                                        (sps->separate_colour_plane         <<  2) |
                                        ((sps->bit_depth - 8)               <<  3) |
-@@ -413,14 +443,15 @@ static int dxva2_hevc_end_frame(AVCodecC
+@@ -414,14 +444,15 @@ static int dxva2_hevc_end_frame(AVCodecC
  {
      HEVCContext *h = avctx->priv_data;
      struct hevc_dxva2_picture_context *ctx_pic = h->cur_frame->hwaccel_picture_private;
@@ -324,22 +324,20 @@ Index: FFmpeg/libavcodec/dxva2_internal.h
  #if CONFIG_D3D12VA
  unsigned ff_d3d12va_get_surface_index(const AVCodecContext *avctx,
                                        D3D12VADecodeContext *ctx, const AVFrame *frame,
-@@ -171,7 +223,9 @@ void ff_dxva2_h264_fill_picture_paramete
- 
+@@ -172,7 +224,7 @@ void ff_dxva2_h264_fill_picture_paramete
  void ff_dxva2_h264_fill_scaling_lists(const AVCodecContext *avctx, AVDXVAContext *ctx, DXVA_Qmatrix_H264 *qm);
  
+ #if CONFIG_HEVC_D3D12VA_HWACCEL || CONFIG_HEVC_D3D11VA_HWACCEL || CONFIG_HEVC_D3D11VA2_HWACCEL || CONFIG_HEVC_DXVA2_HWACCEL
 -void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVAContext *ctx, DXVA_PicParams_HEVC *pp);
-+#if CONFIG_HEVC_D3D12VA_HWACCEL || CONFIG_HEVC_D3D11VA_HWACCEL || CONFIG_HEVC_D3D11VA2_HWACCEL || CONFIG_HEVC_DXVA2_HWACCEL
 +void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVAContext *ctx, ff_DXVA_PicParams_HEVC_Rext *ppext);
-+#endif
  
  void ff_dxva2_hevc_fill_scaling_lists(const AVCodecContext *avctx, AVDXVAContext *ctx, DXVA_Qmatrix_HEVC *qm);
- 
+ #endif
 Index: FFmpeg/libavcodec/hevc/hevcdec.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/hevc/hevcdec.c
 +++ FFmpeg/libavcodec/hevc/hevcdec.c
-@@ -592,6 +592,13 @@ static enum AVPixelFormat get_format(HEV
+@@ -648,6 +648,13 @@ static enum AVPixelFormat get_format(HEV
  #endif
          break;
      case AV_PIX_FMT_YUV444P:
@@ -353,7 +351,7 @@ Index: FFmpeg/libavcodec/hevc/hevcdec.c
  #if CONFIG_HEVC_VAAPI_HWACCEL
          *fmt++ = AV_PIX_FMT_VAAPI;
  #endif
-@@ -610,6 +617,13 @@ static enum AVPixelFormat get_format(HEV
+@@ -666,6 +673,13 @@ static enum AVPixelFormat get_format(HEV
          break;
      case AV_PIX_FMT_YUV422P:
      case AV_PIX_FMT_YUV422P10LE:
@@ -367,7 +365,7 @@ Index: FFmpeg/libavcodec/hevc/hevcdec.c
  #if CONFIG_HEVC_VAAPI_HWACCEL
         *fmt++ = AV_PIX_FMT_VAAPI;
  #endif
-@@ -627,6 +641,13 @@ static enum AVPixelFormat get_format(HEV
+@@ -686,6 +700,13 @@ static enum AVPixelFormat get_format(HEV
      /* NOTE: fallthrough */
      case AV_PIX_FMT_YUV420P12:
      case AV_PIX_FMT_YUV444P12:
@@ -381,7 +379,7 @@ Index: FFmpeg/libavcodec/hevc/hevcdec.c
  #if CONFIG_HEVC_VAAPI_HWACCEL
         *fmt++ = AV_PIX_FMT_VAAPI;
  #endif
-@@ -641,6 +662,13 @@ static enum AVPixelFormat get_format(HEV
+@@ -700,6 +721,13 @@ static enum AVPixelFormat get_format(HEV
  #endif
          break;
      case AV_PIX_FMT_YUV422P12:

@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3317,6 +3317,8 @@ thumbnail_cuda_filter_deps="ffnvcodec"
+@@ -3423,6 +3423,8 @@ thumbnail_cuda_filter_deps="ffnvcodec"
  thumbnail_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
  tonemap_cuda_filter_deps="ffnvcodec const_nan"
  tonemap_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
@@ -15,7 +15,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -542,6 +542,8 @@ OBJS-$(CONFIG_TONEMAP_VIDEOTOOLBOX_FILTE
+@@ -554,6 +554,8 @@ OBJS-$(CONFIG_TONEMAP_VIDEOTOOLBOX_FILTE
                                                  metal/utils.o
  OBJS-$(CONFIG_TPAD_FILTER)                   += vf_tpad.o
  OBJS-$(CONFIG_TRANSPOSE_FILTER)              += vf_transpose.o
@@ -28,14 +28,14 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -505,6 +505,7 @@ extern const AVFilter ff_vf_tonemap_vaap
- extern const AVFilter ff_vf_tonemap_videotoolbox;
- extern const AVFilter ff_vf_tpad;
- extern const AVFilter ff_vf_transpose;
-+extern const AVFilter ff_vf_transpose_cuda;
- extern const AVFilter ff_vf_transpose_npp;
- extern const AVFilter ff_vf_transpose_opencl;
- extern const AVFilter ff_vf_transpose_vaapi;
+@@ -515,6 +515,7 @@ extern const FFFilter ff_vf_tonemap_vaap
+ extern const FFFilter ff_vf_tonemap_videotoolbox;
+ extern const FFFilter ff_vf_tpad;
+ extern const FFFilter ff_vf_transpose;
++extern const FFFilter ff_vf_transpose_cuda;
+ extern const FFFilter ff_vf_transpose_npp;
+ extern const FFFilter ff_vf_transpose_opencl;
+ extern const FFFilter ff_vf_transpose_vaapi;
 Index: FFmpeg/libavfilter/vf_transpose_cuda.c
 ===================================================================
 --- /dev/null
@@ -510,17 +510,17 @@ Index: FFmpeg/libavfilter/vf_transpose_cuda.c
 +    },
 +};
 +
-+const AVFilter ff_vf_transpose_cuda = {
-+    .name           = "transpose_cuda",
-+    .description    = NULL_IF_CONFIG_SMALL("Transpose input video using CUDA"),
-+    .init           = cudatranspose_init,
-+    .uninit         = cudatranspose_uninit,
-+    .priv_size      = sizeof(TransposeCUDAContext),
-+    .priv_class     = &cudatranspose_class,
++const FFFilter ff_vf_transpose_cuda = {
++    .p.name           = "transpose_cuda",
++    .p.description    = NULL_IF_CONFIG_SMALL("Transpose input video using CUDA"),
++    .p.priv_class     = &cudatranspose_class,
++    .p.flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
++    .init             = cudatranspose_init,
++    .uninit           = cudatranspose_uninit,
++    .priv_size        = sizeof(TransposeCUDAContext),
 +    FILTER_INPUTS(cudatranspose_inputs),
 +    FILTER_OUTPUTS(cudatranspose_outputs),
 +    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_CUDA),
-+    .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 +};
 Index: FFmpeg/libavfilter/vf_transpose_cuda.cu
 ===================================================================

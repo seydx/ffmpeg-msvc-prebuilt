@@ -229,7 +229,7 @@ Index: FFmpeg/libavutil/hwcontext_opencl.c
  static void opencl_unmap_from_d3d11(AVHWFramesContext *dst_fc,
                                      HWMapDescriptor *hwmap)
  {
-@@ -3089,6 +3288,11 @@ static int opencl_map_to(AVHWFramesConte
+@@ -3101,6 +3300,11 @@ static int opencl_map_to(AVHWFramesConte
              return opencl_map_from_dxva2(hwfc, dst, src, flags);
  #endif
  #if HAVE_OPENCL_D3D11
@@ -241,7 +241,7 @@ Index: FFmpeg/libavutil/hwcontext_opencl.c
      case AV_PIX_FMT_D3D11:
          if (priv->d3d11_mapping_usable)
              return opencl_map_from_d3d11(hwfc, dst, src, flags);
-@@ -3143,6 +3347,12 @@ static int opencl_frames_derive_to(AVHWF
+@@ -3155,6 +3359,12 @@ static int opencl_frames_derive_to(AVHWF
          break;
  #endif
  #if HAVE_OPENCL_D3D11

@@ -2,16 +2,16 @@ Index: FFmpeg/libavfilter/drawutils.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/drawutils.c
 +++ FFmpeg/libavfilter/drawutils.c
-@@ -437,7 +437,7 @@ void ff_blend_rectangle(FFDrawContext *d
+@@ -461,7 +461,7 @@ void ff_blend_rectangle(FFDrawContext *d
  
  static void blend_pixel16(uint8_t *dst, unsigned src, unsigned alpha,
                            const uint8_t *mask, int mask_linesize, int l2depth,
 -                          unsigned w, unsigned h, unsigned shift, unsigned xm0)
 +                          unsigned w, unsigned h, unsigned shift, unsigned xm0, int srca_opaque)
  {
-     unsigned xm, x, y, t = 0;
+     unsigned t = 0;
      unsigned xmshf = 3 - l2depth;
-@@ -456,12 +456,13 @@ static void blend_pixel16(uint8_t *dst,
+@@ -480,12 +480,13 @@ static void blend_pixel16(uint8_t *dst,
          mask += mask_linesize;
      }
      alpha = (t >> shift) * alpha;
@@ -24,9 +24,9 @@ Index: FFmpeg/libavfilter/drawutils.c
 -                        unsigned w, unsigned h, unsigned shift, unsigned xm0)
 +                        unsigned w, unsigned h, unsigned shift, unsigned xm0, int srca_opaque)
  {
-     unsigned xm, x, y, t = 0;
+     unsigned t = 0;
      unsigned xmshf = 3 - l2depth;
-@@ -479,6 +480,7 @@ static void blend_pixel(uint8_t *dst, un
+@@ -503,6 +504,7 @@ static void blend_pixel(uint8_t *dst, un
          mask += mask_linesize;
      }
      alpha = (t >> shift) * alpha;
@@ -34,14 +34,13 @@ Index: FFmpeg/libavfilter/drawutils.c
      *dst = ((0x1010101 - alpha) * *dst + alpha * src) >> 24;
  }
  
-@@ -486,50 +488,134 @@ static void blend_line_hv16(uint8_t *dst
+@@ -510,48 +512,132 @@ static void blend_line_hv16(uint8_t *dst
                              unsigned src, unsigned alpha,
                              const uint8_t *mask, int mask_linesize, int l2depth, int w,
                              unsigned hsub, unsigned vsub,
 -                            int xm, int left, int right, int hband)
 +                            int xm, int left, int right, int hband, int srca_opaque)
  {
-     int x;
  
      if (left) {
          blend_pixel16(dst, src, alpha, mask, mask_linesize, l2depth,
@@ -50,7 +49,7 @@ Index: FFmpeg/libavfilter/drawutils.c
          dst += dst_delta;
          xm += left;
      }
-     for (x = 0; x < w; x++) {
+     for (int x = 0; x < w; x++) {
          blend_pixel16(dst, src, alpha, mask, mask_linesize, l2depth,
 -                      1 << hsub, hband, hsub + vsub, xm);
 +                      1 << hsub, hband, hsub + vsub, xm, srca_opaque);
@@ -70,7 +69,6 @@ Index: FFmpeg/libavfilter/drawutils.c
 -                          int xm, int left, int right, int hband)
 +                          int xm, int left, int right, int hband, int srca_opaque)
  {
-     int x;
  
      if (left) {
          blend_pixel(dst, src, alpha, mask, mask_linesize, l2depth,
@@ -79,7 +77,7 @@ Index: FFmpeg/libavfilter/drawutils.c
          dst += dst_delta;
          xm += left;
      }
-     for (x = 0; x < w; x++) {
+     for (int x = 0; x < w; x++) {
          blend_pixel(dst, src, alpha, mask, mask_linesize, l2depth,
 -                    1 << hsub, hband, hsub + vsub, xm);
 +                    1 << hsub, hband, hsub + vsub, xm, srca_opaque);
@@ -177,7 +175,7 @@ Index: FFmpeg/libavfilter/drawutils.c
  }
  
  void ff_blend_mask(FFDrawContext *draw, FFDrawColor *color,
-@@ -567,13 +653,79 @@ void ff_blend_mask(FFDrawContext *draw,
+@@ -589,13 +675,79 @@ void ff_blend_mask(FFDrawContext *draw,
          y_sub = y0;
          subsampling_bounds(draw->hsub[plane], &x_sub, &w_sub, &left, &right);
          subsampling_bounds(draw->vsub[plane], &y_sub, &h_sub, &top, &bottom);
@@ -195,7 +193,7 @@ Index: FFmpeg/libavfilter/drawutils.c
 +            uint8_t *pdst[4];
 +            unsigned src[4];
 +
-+            for (comp = 0; comp < nb_comp; comp++) {
++            for (unsigned comp = 0; comp < nb_comp; comp++) {
 +                av_assert0(draw->desc->comp[comp].plane == plane);
 +
 +                offset[comp] = draw->desc->comp[comp].offset;
@@ -213,11 +211,11 @@ Index: FFmpeg/libavfilter/drawutils.c
 +                    draw->hsub[plane], draw->vsub[plane],
 +                    xm0, left, right, top, srca_opaque, limited);
 +
-+                for (comp = 0; comp < nb_comp; comp++)
++                for (unsigned comp = 0; comp < nb_comp; comp++)
 +                    pdst[comp] += dst_linesize[plane];
 +                m += top * mask_linesize;
 +            }
-+            for (y = 0; y < h_sub; y++) {
++            for (int y = 0; y < h_sub; y++) {
 +                blend_line_hv_unpremul_rgb32(
 +                    pdst[0], pdst[1], pdst[2], pdst[3], draw->pixelstep[plane],
 +                    src, alpha,
@@ -225,7 +223,7 @@ Index: FFmpeg/libavfilter/drawutils.c
 +                    draw->hsub[plane], draw->vsub[plane],
 +                    xm0, left, right, 1 << draw->vsub[plane], srca_opaque, limited);
 +
-+                for (comp = 0; comp < nb_comp; comp++)
++                for (unsigned comp = 0; comp < nb_comp; comp++)
 +                    pdst[comp] += dst_linesize[plane];
 +                m += mask_linesize << draw->vsub[plane];
 +            }
@@ -240,7 +238,7 @@ Index: FFmpeg/libavfilter/drawutils.c
 +            break;
 +        }
 +
-         for (comp = 0; comp < nb_comp; comp++) {
+         for (unsigned comp = 0; comp < nb_comp; comp++) {
              const int depth = draw->desc->comp[comp].depth;
              const int offset = draw->desc->comp[comp].offset;
              const int index = offset / ((depth + 7) / 8);
@@ -257,7 +255,7 @@ Index: FFmpeg/libavfilter/drawutils.c
              p = p0 + offset;
              m = mask;
              if (top) {
-@@ -582,13 +734,13 @@ void ff_blend_mask(FFDrawContext *draw,
+@@ -604,13 +756,13 @@ void ff_blend_mask(FFDrawContext *draw,
                                    color->comp[plane].u8[index], alpha,
                                    m, mask_linesize, l2depth, w_sub,
                                    draw->hsub[plane], draw->vsub[plane],
@@ -273,7 +271,7 @@ Index: FFmpeg/libavfilter/drawutils.c
                  }
                  p += dst_linesize[plane];
                  m += top * mask_linesize;
-@@ -599,7 +751,7 @@ void ff_blend_mask(FFDrawContext *draw,
+@@ -621,7 +773,7 @@ void ff_blend_mask(FFDrawContext *draw,
                                    color->comp[plane].u8[index], alpha,
                                    m, mask_linesize, l2depth, w_sub,
                                    draw->hsub[plane], draw->vsub[plane],
@@ -282,7 +280,7 @@ Index: FFmpeg/libavfilter/drawutils.c
                      p += dst_linesize[plane];
                      m += mask_linesize << draw->vsub[plane];
                  }
-@@ -609,7 +761,7 @@ void ff_blend_mask(FFDrawContext *draw,
+@@ -631,7 +783,7 @@ void ff_blend_mask(FFDrawContext *draw,
                                      color->comp[plane].u16[index], alpha,
                                      m, mask_linesize, l2depth, w_sub,
                                      draw->hsub[plane], draw->vsub[plane],
@@ -291,7 +289,7 @@ Index: FFmpeg/libavfilter/drawutils.c
                      p += dst_linesize[plane];
                      m += mask_linesize << draw->vsub[plane];
                  }
-@@ -620,13 +772,13 @@ void ff_blend_mask(FFDrawContext *draw,
+@@ -642,13 +794,13 @@ void ff_blend_mask(FFDrawContext *draw,
                                    color->comp[plane].u8[index], alpha,
                                    m, mask_linesize, l2depth, w_sub,
                                    draw->hsub[plane], draw->vsub[plane],
@@ -307,7 +305,7 @@ Index: FFmpeg/libavfilter/drawutils.c
                  }
              }
          }
-@@ -658,3 +810,4 @@ AVFilterFormats *ff_draw_supported_pixel
+@@ -679,3 +831,4 @@ AVFilterFormats *ff_draw_supported_pixel
              return NULL;
      return fmts;
  }
@@ -316,7 +314,7 @@ Index: FFmpeg/libavfilter/drawutils.h
 ===================================================================
 --- FFmpeg.orig/libavfilter/drawutils.h
 +++ FFmpeg/libavfilter/drawutils.h
-@@ -59,7 +59,17 @@ typedef struct FFDrawColor {
+@@ -61,7 +61,17 @@ typedef struct FFDrawColor {
  /**
    * Process alpha pixel component.
    */
@@ -335,7 +333,7 @@ Index: FFmpeg/libavfilter/drawutils.h
  
  /**
   * Init a draw context.
-@@ -164,3 +174,4 @@ int ff_draw_round_to_sub(FFDrawContext *
+@@ -173,3 +183,4 @@ int ff_draw_round_to_sub(FFDrawContext *
  AVFilterFormats *ff_draw_supported_pixel_formats(unsigned flags);
  
  #endif /* AVFILTER_DRAWUTILS_H */
@@ -376,14 +374,12 @@ Index: FFmpeg/libavfilter/vf_subtitles.c
  
  /* libass supports a log level ranging from 0 to 7 */
  static const int ass_libavfilter_log_level_map[] = {
-@@ -146,9 +155,25 @@ static int query_formats(AVFilterContext
- static int config_input(AVFilterLink *inlink)
- {
-     AssContext *ass = inlink->dst->priv;
+@@ -185,11 +194,28 @@ static int config_input(AVFilterLink *in
+     AVFilterContext *ctx = inlink->dst;
+     AssContext *ass = ctx->priv;
+     int ret;
 +    int draw_flags = ass->alpha ? FF_DRAW_PROCESS_ALPHA : 0;
- 
--    ff_draw_init2(&ass->draw, inlink->format, inlink->colorspace, inlink->color_range,
--                  ass->alpha ? FF_DRAW_PROCESS_ALPHA : 0);
++
 +    if (ass->sub2video) {
 +        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(inlink->format);
 +        if (!desc)
@@ -399,12 +395,16 @@ Index: FFmpeg/libavfilter/vf_subtitles.c
 +            inlink->format == AV_PIX_FMT_BGR32_1)
 +            draw_flags |= FF_DRAW_MASK_UNPREMUL_RGB32;
 +    }
-+
-+    ff_draw_init2(&ass->draw, inlink->format, inlink->colorspace, inlink->color_range, draw_flags);
  
-     ass_set_frame_size  (ass->renderer, inlink->w, inlink->h);
-     if (ass->original_w && ass->original_h) {
-@@ -161,6 +186,8 @@ static int config_input(AVFilterLink *in
+     ret = ff_draw_init2(&ass->draw, inlink->format,
+                         ass_get_color_space(ass->track->YCbCrMatrix, inlink->colorspace),
+                         ass_get_color_range(ass->track->YCbCrMatrix, inlink->color_range),
+-                        inlink->alpha_mode, ass->alpha ? FF_DRAW_PROCESS_ALPHA : 0);
++                        inlink->alpha_mode, draw_flags);
+     if (ret < 0) {
+         av_log(ctx, AV_LOG_ERROR, "Failed to initialize FFDrawContext\n");
+         return ret;
+@@ -206,6 +232,8 @@ static int config_input(AVFilterLink *in
      if (ass->shaping != -1)
          ass_set_shaper(ass->renderer, ass->shaping);
  
@@ -413,7 +413,7 @@ Index: FFmpeg/libavfilter/vf_subtitles.c
      return 0;
  }
  
-@@ -189,20 +216,44 @@ static int filter_frame(AVFilterLink *in
+@@ -234,20 +262,44 @@ static int filter_frame(AVFilterLink *in
  {
      AVFilterContext *ctx = inlink->dst;
      AVFilterLink *outlink = ctx->outputs[0];
@@ -460,7 +460,7 @@ Index: FFmpeg/libavfilter/vf_subtitles.c
  static const AVFilterPad ass_inputs[] = {
      {
          .name             = "default",
-@@ -217,10 +268,6 @@ static const AVFilterPad ass_inputs[] =
+@@ -262,10 +314,6 @@ static const AVFilterPad ass_inputs[] =
  
  static const AVOption ass_options[] = {
      COMMON_OPTIONS
@@ -471,7 +471,7 @@ Index: FFmpeg/libavfilter/vf_subtitles.c
      {NULL},
  };
  
-@@ -244,6 +291,9 @@ static av_cold int init_ass(AVFilterCont
+@@ -289,6 +337,9 @@ static av_cold int init_ass(AVFilterCont
                 ass->filename);
          return AVERROR(EINVAL);
      }
@@ -481,7 +481,7 @@ Index: FFmpeg/libavfilter/vf_subtitles.c
      return 0;
  }
  
-@@ -265,8 +315,8 @@ const AVFilter ff_vf_ass = {
+@@ -310,8 +361,8 @@ const FFFilter ff_vf_ass = {
  static const AVOption subtitles_options[] = {
      COMMON_OPTIONS
      {"charenc",      "set input character encoding", OFFSET(charenc),      AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, FLAGS},
@@ -492,7 +492,7 @@ Index: FFmpeg/libavfilter/vf_subtitles.c
      {"force_style",  "force subtitle style",         OFFSET(force_style),  AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, FLAGS},
  #if FF_ASS_FEATURE_WRAP_UNICODE
      {"wrap_unicode", "break lines according to the Unicode Line Breaking Algorithm", OFFSET(wrap_unicode), AV_OPT_TYPE_BOOL, { .i64 = -1 }, -1, 1, FLAGS },
-@@ -495,6 +545,8 @@ static av_cold int init_subtitles(AVFilt
+@@ -540,6 +591,8 @@ static av_cold int init_subtitles(AVFilt
          avsubtitle_free(&sub);
      }
  

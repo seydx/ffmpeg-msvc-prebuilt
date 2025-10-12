@@ -17,7 +17,7 @@ Index: FFmpeg/libavfilter/qsvvpp.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/qsvvpp.c
 +++ FFmpeg/libavfilter/qsvvpp.c
-@@ -657,6 +657,9 @@ static int init_vpp_session(AVFilterCont
+@@ -653,6 +653,9 @@ static int init_vpp_session(AVFilterCont
  
          out_frames_hwctx->frame_type      = s->out_mem_mode;
  

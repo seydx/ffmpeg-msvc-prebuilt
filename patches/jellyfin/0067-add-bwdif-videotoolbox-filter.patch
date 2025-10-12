@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3863,6 +3863,7 @@ boxblur_opencl_filter_deps="opencl gpl"
+@@ -3999,6 +3999,7 @@ boxblur_opencl_filter_deps="opencl gpl"
  bs2b_filter_deps="libbs2b"
  bwdif_cuda_filter_deps="ffnvcodec"
  bwdif_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
@@ -14,7 +14,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -219,6 +219,10 @@ OBJS-$(CONFIG_BOXBLUR_OPENCL_FILTER)
+@@ -224,6 +224,10 @@ OBJS-$(CONFIG_BOXBLUR_OPENCL_FILTER)
  OBJS-$(CONFIG_BWDIF_FILTER)                  += vf_bwdif.o bwdifdsp.o yadif_common.o
  OBJS-$(CONFIG_BWDIF_CUDA_FILTER)             += vf_bwdif_cuda.o vf_bwdif_cuda.ptx.o \
                                                  yadif_common.o
@@ -29,14 +29,14 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -201,6 +201,7 @@ extern const AVFilter ff_vf_boxblur;
- extern const AVFilter ff_vf_boxblur_opencl;
- extern const AVFilter ff_vf_bwdif;
- extern const AVFilter ff_vf_bwdif_cuda;
-+extern const AVFilter ff_vf_bwdif_videotoolbox;
- extern const AVFilter ff_vf_bwdif_vulkan;
- extern const AVFilter ff_vf_cas;
- extern const AVFilter ff_vf_ccrepack;
+@@ -204,6 +204,7 @@ extern const FFFilter ff_vf_boxblur;
+ extern const FFFilter ff_vf_boxblur_opencl;
+ extern const FFFilter ff_vf_bwdif;
+ extern const FFFilter ff_vf_bwdif_cuda;
++extern const FFFilter ff_vf_bwdif_videotoolbox;
+ extern const FFFilter ff_vf_bwdif_vulkan;
+ extern const FFFilter ff_vf_cas;
+ extern const FFFilter ff_vf_ccrepack;
 Index: FFmpeg/libavfilter/metal/vf_bwdif_videotoolbox.metal
 ===================================================================
 --- /dev/null

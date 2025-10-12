@@ -2,7 +2,7 @@ Index: FFmpeg/fftools/Makefile
 ===================================================================
 --- FFmpeg.orig/fftools/Makefile
 +++ FFmpeg/fftools/Makefile
-@@ -40,6 +40,12 @@ endef
+@@ -68,6 +68,12 @@ endef
  
  $(foreach P,$(AVPROGS-yes),$(eval $(call DOFFTOOL,$(P))))
  

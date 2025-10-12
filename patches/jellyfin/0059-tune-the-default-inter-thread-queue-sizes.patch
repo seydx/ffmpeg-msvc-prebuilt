@@ -6,7 +6,7 @@ Index: FFmpeg/fftools/ffmpeg_sched.h
  /**
   * Default size of a frame thread queue.
   */
--#define DEFAULT_FRAME_THREAD_QUEUE_SIZE 8
+-#define DEFAULT_FRAME_THREAD_QUEUE_SIZE 2
 +#define DEFAULT_FRAME_THREAD_QUEUE_SIZE 1
 +
 +// The new default value of 8 does little to help hwaccel, but instead increases

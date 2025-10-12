@@ -69,7 +69,7 @@ Index: FFmpeg/libavutil/hwcontext_qsv.c
 ===================================================================
 --- FFmpeg.orig/libavutil/hwcontext_qsv.c
 +++ FFmpeg/libavutil/hwcontext_qsv.c
-@@ -2142,11 +2142,25 @@ static int qsv_frames_derive_to(AVHWFram
+@@ -2190,11 +2190,25 @@ static int qsv_frames_derive_to(AVHWFram
      }
  }
  
@@ -95,7 +95,7 @@ Index: FFmpeg/libavutil/hwcontext_qsv.c
  
      for (i = 0; i < hwctx->nb_surfaces && index < 0; i++) {
          switch(src->format) {
-@@ -2185,21 +2199,77 @@ static int qsv_fixed_pool_map_to(AVHWFra
+@@ -2233,21 +2247,77 @@ static int qsv_fixed_pool_map_to(AVHWFra
          }
      }
      if (index < 0) {

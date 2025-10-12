@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3928,6 +3928,7 @@ overlay_opencl_filter_deps="opencl"
+@@ -4072,6 +4072,7 @@ overlay_opencl_filter_deps="opencl"
  overlay_qsv_filter_deps="libmfx"
  overlay_qsv_filter_select="qsvvpp"
  overlay_vaapi_filter_deps="vaapi VAProcPipelineCaps_blend_flags"
@@ -14,9 +14,9 @@ Index: FFmpeg/doc/filters.texi
 ===================================================================
 --- FFmpeg.orig/doc/filters.texi
 +++ FFmpeg/doc/filters.texi
-@@ -19050,6 +19050,58 @@ See @ref{framesync}.
+@@ -19108,6 +19108,58 @@ testsrc=s=100x100, split=4 [in0][in1][in
  
- This filter also supports the @ref{framesync} options.
+ @end itemize
  
 +@section overlay_videotoolbox
 +
@@ -77,7 +77,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -416,6 +416,9 @@ OBJS-$(CONFIG_OVERLAY_OPENCL_FILTER)
+@@ -424,6 +424,9 @@ OBJS-$(CONFIG_OVERLAY_OPENCL_FILTER)
                                                  opencl/overlay.o framesync.o
  OBJS-$(CONFIG_OVERLAY_QSV_FILTER)            += vf_overlay_qsv.o framesync.o
  OBJS-$(CONFIG_OVERLAY_VAAPI_FILTER)          += vf_overlay_vaapi.o framesync.o vaapi_vpp.o
@@ -91,19 +91,19 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -389,6 +389,7 @@ extern const AVFilter ff_vf_overlay;
- extern const AVFilter ff_vf_overlay_opencl;
- extern const AVFilter ff_vf_overlay_qsv;
- extern const AVFilter ff_vf_overlay_vaapi;
-+extern const AVFilter ff_vf_overlay_videotoolbox;
- extern const AVFilter ff_vf_overlay_vulkan;
- extern const AVFilter ff_vf_overlay_cuda;
- extern const AVFilter ff_vf_overlay_rkrga;
+@@ -394,6 +394,7 @@ extern const FFFilter ff_vf_overlay;
+ extern const FFFilter ff_vf_overlay_opencl;
+ extern const FFFilter ff_vf_overlay_qsv;
+ extern const FFFilter ff_vf_overlay_vaapi;
++extern const FFFilter ff_vf_overlay_videotoolbox;
+ extern const FFFilter ff_vf_overlay_vulkan;
+ extern const FFFilter ff_vf_overlay_cuda;
+ extern const FFFilter ff_vf_overlay_rkrga;
 Index: FFmpeg/libavfilter/metal/utils.m
 ===================================================================
 --- FFmpeg.orig/libavfilter/metal/utils.m
 +++ FFmpeg/libavfilter/metal/utils.m
-@@ -55,6 +55,9 @@ CVMetalTextureRef ff_metal_texture_from_
+@@ -56,6 +56,9 @@ CVMetalTextureRef ff_metal_texture_from_
  {
      CVMetalTextureRef tex = NULL;
      CVReturn ret;
@@ -113,7 +113,7 @@ Index: FFmpeg/libavfilter/metal/utils.m
  
      ret = CVMetalTextureCacheCreateTextureFromImage(
          NULL,
-@@ -62,8 +65,8 @@ CVMetalTextureRef ff_metal_texture_from_
+@@ -63,8 +66,8 @@ CVMetalTextureRef ff_metal_texture_from_
          pixbuf,
          NULL,
          format,

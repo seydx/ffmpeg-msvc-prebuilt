@@ -29,7 +29,7 @@ Index: FFmpeg/libavfilter/vf_scale_vt.c
  static av_cold int scale_vt_init(AVFilterContext *avctx)
  {
      ScaleVtContext *s = avctx->priv;
-@@ -182,6 +197,7 @@ static int scale_vt_config_output(AVFilt
+@@ -241,6 +256,7 @@ static int scale_vt_config_output(AVFilt
      FilterLink        *inl = ff_filter_link(inlink);
      AVHWFramesContext *hw_frame_ctx_in;
      AVHWFramesContext *hw_frame_ctx_out;
@@ -37,7 +37,7 @@ Index: FFmpeg/libavfilter/vf_scale_vt.c
  
      err = ff_scale_eval_dimensions(s, s->w_expr, s->h_expr, inlink, outlink,
                                     &s->output_width,
-@@ -201,11 +217,18 @@ static int scale_vt_config_output(AVFilt
+@@ -263,11 +279,18 @@ static int scale_vt_config_output(AVFilt
  
      hw_frame_ctx_in = (AVHWFramesContext *)inl->hw_frames_ctx->data;
  
@@ -57,7 +57,7 @@ Index: FFmpeg/libavfilter/vf_scale_vt.c
      hw_frame_ctx_out->width = outlink->w;
      hw_frame_ctx_out->height = outlink->h;
      ((AVVTFramesContext *)hw_frame_ctx_out->hwctx)->color_range = ((AVVTFramesContext *)hw_frame_ctx_in->hwctx)->color_range;
-@@ -238,6 +261,8 @@ static const AVOption scale_vt_options[]
+@@ -300,6 +323,8 @@ static const AVOption scale_vt_options[]
              OFFSET(colour_primaries_string), AV_OPT_TYPE_STRING, { .str = NULL }, .flags = FLAGS },
      { "color_transfer", "Output colour transfer characteristics",
              OFFSET(colour_transfer_string),  AV_OPT_TYPE_STRING, { .str = NULL }, .flags = FLAGS },
