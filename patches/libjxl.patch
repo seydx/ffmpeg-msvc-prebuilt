@@ -1,3 +1,21 @@
+diff --git a/lib/jxl.cmake b/lib/jxl.cmake
+index c407e61..5414284 100644
+--- a/lib/jxl.cmake
++++ b/lib/jxl.cmake
+@@ -299,9 +299,10 @@ endif()
+ set(JPEGXL_LIBRARY_MAIN jxl)
+ 
+ # Fix pkg-config file on MSVC when building static libraries.
+-if (MSVC AND NOT BUILD_SHARED_LIBS)
+-  set(JPEGXL_LIBRARY_MAIN jxl-static)
+-endif()
++# Disabled: CMake builds jxl.lib, not jxl-static.lib
++#if (MSVC AND NOT BUILD_SHARED_LIBS)
++#  set(JPEGXL_LIBRARY_MAIN jxl-static)
++#endif()
+ 
+ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/jxl/libjxl.pc.in"
+                "libjxl.pc" @ONLY)
 diff --git a/lib/jxl_cms.cmake b/lib/jxl_cms.cmake
 index e8ed879..4c8eebb 100644
 --- a/lib/jxl_cms.cmake
