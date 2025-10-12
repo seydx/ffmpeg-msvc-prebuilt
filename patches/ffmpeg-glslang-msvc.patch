@@ -1,8 +1,8 @@
 diff --git a/configure b/configure
-index 7828381b5d..31bd40945e 100755
+index cd9bbe570c..20f2554aec 100755
 --- a/configure
 +++ b/configure
-@@ -7134,6 +7134,7 @@ if enabled libglslang; then
+@@ -7167,6 +7167,7 @@ if enabled libglslang; then
      check_lib spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
                              -lglslang -lMachineIndependent -lGenericCodeGen \
                              ${spvremap} -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ||
@@ -11,7 +11,7 @@ index 7828381b5d..31bd40945e 100755
                              -lglslang -lMachineIndependent -lOSDependent -lHLSL -lOGLCompiler -lGenericCodeGen \
                              ${spvremap} -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ;
 diff --git a/libavutil/vulkan_glslang.c b/libavutil/vulkan_glslang.c
-index 4cf54de854..6099ff047d 100644
+index 4cf54de854..ec73875c2a 100644
 --- a/libavutil/vulkan_glslang.c
 +++ b/libavutil/vulkan_glslang.c
 @@ -16,7 +16,7 @@
@@ -19,7 +19,7 @@ index 4cf54de854..6099ff047d 100644
   */
  
 -#include <pthread.h>
-+#include <thread.h>
++#include "thread.h"
  
  #include <glslang/build_info.h>
  #include <glslang/Include/glslang_c_interface.h>
