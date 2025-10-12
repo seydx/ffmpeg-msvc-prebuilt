@@ -4,3 +4,4 @@ build
 /jellyfin
 *.patch~
 /.pc
+/patches/.pc
