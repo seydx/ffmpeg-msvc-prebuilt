@@ -180,17 +180,12 @@ if [ -n "$ENABLE_LIBGLSLANG" ]; then
     # Create pkg-config file for glslang so FFmpeg can find it with our patch
     mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
 
-    # Build library list - order matters for FFmpeg's configure!
-    GLSLANG_LIBS="-lglslang -lMachineIndependent -lGenericCodeGen -lSPVRemapper -lSPIRV"
-
-    # Add OSDependent (always built)
-    GLSLANG_LIBS="$GLSLANG_LIBS -lOSDependent"
-
-    # Add HLSL and OGLCompiler (both built with our config)
-    GLSLANG_LIBS="$GLSLANG_LIBS -lHLSL -lOGLCompiler"
-
-    # Add SPIRV-Tools
-    GLSLANG_LIBS="$GLSLANG_LIBS -lSPIRV-Tools-opt -lSPIRV-Tools"
+    # Note: glslang 14.0.0+ removed separate HLSL, OGLCompiler, and SPVRemapper libraries
+    # - HLSL sources are now compiled directly into glslang when ENABLE_HLSL=ON
+    # - OGLCompiler and SPVRemapper were stub libraries that have been removed
+    # - MachineIndependent, GenericCodeGen, OSDependent are stub libraries (contain only stub.cpp)
+    #   but we include them for completeness since they exist and some build systems may expect them
+    GLSLANG_LIBS="-lglslang -lMachineIndependent -lGenericCodeGen -lOSDependent -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools"
 
     cat > "$INSTALL_PREFIX/lib/pkgconfig/glslang.pc" << EOF
 prefix=$INSTALL_PREFIX
