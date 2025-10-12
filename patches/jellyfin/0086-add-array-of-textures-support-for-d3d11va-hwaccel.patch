@@ -261,11 +261,11 @@ Index: FFmpeg/libavutil/hwcontext_d3d11va.c
 ===================================================================
 --- FFmpeg.orig/libavutil/hwcontext_d3d11va.c
 +++ FFmpeg/libavutil/hwcontext_d3d11va.c
-@@ -318,7 +318,8 @@ static int d3d11va_frames_init(AVHWFrame
+@@ -326,7 +326,8 @@ static int d3d11va_frames_init(AVHWFrame
          ctx->initial_pool_size = texDesc2.ArraySize;
          hwctx->BindFlags = texDesc2.BindFlags;
          hwctx->MiscFlags = texDesc2.MiscFlags;
--    } else if (!(texDesc.BindFlags & D3D11_BIND_RENDER_TARGET) && texDesc.ArraySize > 0) {
+-    } else if (texDesc.ArraySize > 0) {
 +    } else if ((!(texDesc.BindFlags & D3D11_BIND_RENDER_TARGET) &&
 +                !((texDesc.BindFlags & D3D11_BIND_DECODER) && hwctx->array_of_tex)) && texDesc.ArraySize > 0) {
          hr = ID3D11Device_CreateTexture2D(device_hwctx->device, &texDesc, NULL, &hwctx->texture);

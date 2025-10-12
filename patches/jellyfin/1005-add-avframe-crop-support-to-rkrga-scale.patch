@@ -1,8 +1,8 @@
-diff --git a/libavfilter/vf_vpp_rkrga.c b/libavfilter/vf_vpp_rkrga.c
-index af13e6ae..d6dd22eb 100644
---- a/libavfilter/vf_vpp_rkrga.c
-+++ b/libavfilter/vf_vpp_rkrga.c
-@@ -413,6 +413,15 @@ static int rgavpp_activate(AVFilterContext *ctx)
+Index: FFmpeg/libavfilter/vf_vpp_rkrga.c
+===================================================================
+--- FFmpeg.orig/libavfilter/vf_vpp_rkrga.c
++++ FFmpeg/libavfilter/vf_vpp_rkrga.c
+@@ -413,6 +413,15 @@ static int rgavpp_activate(AVFilterConte
      }
  
      if (in) {

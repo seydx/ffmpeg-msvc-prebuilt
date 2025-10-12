@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3867,6 +3867,7 @@ boxblur_opencl_filter_deps="opencl gpl"
+@@ -4000,6 +4000,7 @@ boxblur_opencl_filter_deps="opencl gpl"
  bs2b_filter_deps="libbs2b"
  bwdif_cuda_filter_deps="ffnvcodec"
  bwdif_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
@@ -10,7 +10,7 @@ Index: FFmpeg/configure
  bwdif_videotoolbox_filter_deps="metal corevideo videotoolbox"
  bwdif_vulkan_filter_deps="vulkan spirv_compiler"
  chromaber_vulkan_filter_deps="vulkan spirv_compiler"
-@@ -4019,6 +4020,7 @@ xfade_opencl_filter_deps="opencl"
+@@ -4155,6 +4156,7 @@ xfade_opencl_filter_deps="opencl"
  xfade_vulkan_filter_deps="vulkan spirv_compiler"
  yadif_cuda_filter_deps="ffnvcodec"
  yadif_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
@@ -22,7 +22,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -219,6 +219,8 @@ OBJS-$(CONFIG_BOXBLUR_OPENCL_FILTER)
+@@ -224,6 +224,8 @@ OBJS-$(CONFIG_BOXBLUR_OPENCL_FILTER)
  OBJS-$(CONFIG_BWDIF_FILTER)                  += vf_bwdif.o bwdifdsp.o yadif_common.o
  OBJS-$(CONFIG_BWDIF_CUDA_FILTER)             += vf_bwdif_cuda.o vf_bwdif_cuda.ptx.o \
                                                  yadif_common.o
@@ -31,7 +31,7 @@ Index: FFmpeg/libavfilter/Makefile
  OBJS-$(CONFIG_BWDIF_VIDEOTOOLBOX_FILTER)     += vf_bwdif_videotoolbox.o \
                                                  metal/vf_bwdif_videotoolbox.metallib.o \
                                                  metal/utils.o \
-@@ -591,6 +593,8 @@ OBJS-$(CONFIG_XSTACK_FILTER)
+@@ -603,6 +605,8 @@ OBJS-$(CONFIG_XSTACK_FILTER)
  OBJS-$(CONFIG_YADIF_FILTER)                  += vf_yadif.o yadif_common.o
  OBJS-$(CONFIG_YADIF_CUDA_FILTER)             += vf_yadif_cuda.o vf_yadif_cuda.ptx.o \
                                                  yadif_common.o cuda/load_helper.o
@@ -44,22 +44,22 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -201,6 +201,7 @@ extern const AVFilter ff_vf_boxblur;
- extern const AVFilter ff_vf_boxblur_opencl;
- extern const AVFilter ff_vf_bwdif;
- extern const AVFilter ff_vf_bwdif_cuda;
-+extern const AVFilter ff_vf_bwdif_opencl;
- extern const AVFilter ff_vf_bwdif_videotoolbox;
- extern const AVFilter ff_vf_bwdif_vulkan;
- extern const AVFilter ff_vf_cas;
-@@ -548,6 +549,7 @@ extern const AVFilter ff_vf_xpsnr;
- extern const AVFilter ff_vf_xstack;
- extern const AVFilter ff_vf_yadif;
- extern const AVFilter ff_vf_yadif_cuda;
-+extern const AVFilter ff_vf_yadif_opencl;
- extern const AVFilter ff_vf_yadif_videotoolbox;
- extern const AVFilter ff_vf_yaepblur;
- extern const AVFilter ff_vf_zmq;
+@@ -204,6 +204,7 @@ extern const FFFilter ff_vf_boxblur;
+ extern const FFFilter ff_vf_boxblur_opencl;
+ extern const FFFilter ff_vf_bwdif;
+ extern const FFFilter ff_vf_bwdif_cuda;
++extern const FFFilter ff_vf_bwdif_opencl;
+ extern const FFFilter ff_vf_bwdif_videotoolbox;
+ extern const FFFilter ff_vf_bwdif_vulkan;
+ extern const FFFilter ff_vf_cas;
+@@ -557,6 +558,7 @@ extern const FFFilter ff_vf_xpsnr;
+ extern const FFFilter ff_vf_xstack;
+ extern const FFFilter ff_vf_yadif;
+ extern const FFFilter ff_vf_yadif_cuda;
++extern const FFFilter ff_vf_yadif_opencl;
+ extern const FFFilter ff_vf_yadif_videotoolbox;
+ extern const FFFilter ff_vf_yaepblur;
+ extern const FFFilter ff_vf_zmq;
 Index: FFmpeg/libavfilter/opencl.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/opencl.c
@@ -878,18 +878,18 @@ Index: FFmpeg/libavfilter/vf_bwdif_opencl.c
 +    },
 +};
 +
-+const AVFilter ff_vf_bwdif_opencl = {
-+    .name           = "bwdif_opencl",
-+    .description    = NULL_IF_CONFIG_SMALL("Deinterlace (BWDIF) the video through OpenCL."),
++const FFFilter ff_vf_bwdif_opencl = {
++    .p.name         = "bwdif_opencl",
++    .p.description  = NULL_IF_CONFIG_SMALL("Deinterlace (BWDIF) the video through OpenCL."),
++    .p.priv_class   = &bwdif_opencl_class,
++    .p.flags        = AVFILTER_FLAG_HWDEVICE |
++                      AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 +    .priv_size      = sizeof(DeintOpenCLContext),
-+    .priv_class     = &bwdif_opencl_class,
 +    .init           = &deint_opencl_init,
 +    .uninit         = &deint_opencl_uninit,
 +    FILTER_INPUTS(deint_opencl_inputs),
 +    FILTER_OUTPUTS(deint_opencl_outputs),
 +    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
-+    .flags          = AVFILTER_FLAG_HWDEVICE |
-+                      AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 +    .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 +};
 Index: FFmpeg/libavfilter/vf_yadif_opencl.c
@@ -1203,17 +1203,17 @@ Index: FFmpeg/libavfilter/vf_yadif_opencl.c
 +    },
 +};
 +
-+const AVFilter ff_vf_yadif_opencl = {
-+    .name           = "yadif_opencl",
-+    .description    = NULL_IF_CONFIG_SMALL("Deinterlace (YADIF) the video through OpenCL."),
++const FFFilter ff_vf_yadif_opencl = {
++    .p.name         = "yadif_opencl",
++    .p.description  = NULL_IF_CONFIG_SMALL("Deinterlace (YADIF) the video through OpenCL."),
++    .p.priv_class   = &yadif_opencl_class,
++    .p.flags        = AVFILTER_FLAG_HWDEVICE |
++                      AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 +    .priv_size      = sizeof(DeintOpenCLContext),
-+    .priv_class     = &yadif_opencl_class,
 +    .init           = &deint_opencl_init,
 +    .uninit         = &deint_opencl_uninit,
 +    FILTER_INPUTS(deint_opencl_inputs),
 +    FILTER_OUTPUTS(deint_opencl_outputs),
 +    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
-+    .flags          = AVFILTER_FLAG_HWDEVICE |
-+                      AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 +    .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 +};

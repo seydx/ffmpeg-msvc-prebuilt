@@ -1,8 +1,8 @@
-diff --git a/libavfilter/qsvvpp.c b/libavfilter/qsvvpp.c
-index b013f06f..b1270653 100644
---- a/libavfilter/qsvvpp.c
-+++ b/libavfilter/qsvvpp.c
-@@ -487,6 +487,21 @@ static QSVFrame *submit_frame(QSVVPPContext *s, AVFilterLink *inlink, AVFrame *p
+Index: FFmpeg/libavfilter/qsvvpp.c
+===================================================================
+--- FFmpeg.orig/libavfilter/qsvvpp.c
++++ FFmpeg/libavfilter/qsvvpp.c
+@@ -487,6 +487,21 @@ static QSVFrame *submit_frame(QSVVPPCont
      qsv_frame->surface.Data.TimeStamp = av_rescale_q(qsv_frame->frame->pts,
                                                        inlink->time_base, default_tb);
  

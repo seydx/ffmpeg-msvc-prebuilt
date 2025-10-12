@@ -2,7 +2,7 @@ Index: FFmpeg/fftools/ffmpeg_filter.c
 ===================================================================
 --- FFmpeg.orig/fftools/ffmpeg_filter.c
 +++ FFmpeg/fftools/ffmpeg_filter.c
-@@ -2384,10 +2384,21 @@ static int close_output(OutputFilterPriv
+@@ -2475,10 +2475,21 @@ static int close_output(OutputFilterPriv
      if (!fgt->got_frame) {
          AVFrame *frame = fgt->frame;
          FrameData *fd;

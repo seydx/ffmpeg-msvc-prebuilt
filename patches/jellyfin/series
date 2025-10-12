@@ -76,28 +76,28 @@
 # 0076-backport-av1-videotoolbox.patch (already in upstream)
 0077-fix-ass-incorrect-null-copy.patch
 # 0078-fix-a-race-condition-in-vaapi-csc-to-yuv420p.patch (already in upstream)
-# 0079-add-first-vframe-only-to-ffprobe.patch
-# 0080-fix-auto-inserting-sw-color-conv-filters-between-hw-fmts.patch
-# 0081-fix-dummy-hw-frame-missing-hw-frames-ctx.patch
-# 0082-add-yadif-and-bwdif-opencl-filter-impl.patch
-# 0083-allow-vpp-tonemap-without-hdr10-metadata.patch
-# 0084-allow-qsvenc-to-bail-out-from-unsupported-low-power-mode.patch
-# 0085-pass-eac3-addbsi-to-movenc-for-dolby-atmos-remuxing.patch
-# 0086-add-array-of-textures-support-for-d3d11va-hwaccel.patch
-# 0087-no-error-out-on-unmatched-dovi-rpu-trailing-padding-bytes.patch
-# 0088-remove-el-when-stripping-dovi-metadata.patch
-# 0089-fix-avcodec-params-when-bsfs-are-enable-by-decoder.patch
-# 0090-dont-return-ext-error-for-invalid-vt-frame.patch
-# 0091-backport-a-fix-for-setting-values-in-lavc-decode.patch
-# 0092-backport-a-fix-for-stripping-fps-from-setpts-outlink.patch
-# 1001-add-avframe-crop-support-to-videotoolbox-scale.patch
-# 1002-add-avframe-crop-support-to-cuda-scale.patch
-# 1003-add-avframe-crop-support-to-qsv-scale.patch
-# 1004-add-avframe-crop-support-to-opencl-scale.patch
-# 1005-add-avframe-crop-support-to-rkrga-scale.patch
-# 1006-add-videotoolbox-rgb-gray-formats.patch
-# 1007-add-opencl-rgb-gray-formats.patch
-# 1008-add-cuda-gray-rgba-formats.patch
-# 1009-add-avframe-crop-support-to-libplacebo.patch
+0079-add-first-vframe-only-to-ffprobe.patch
+0080-fix-auto-inserting-sw-color-conv-filters-between-hw-fmts.patch
+0081-fix-dummy-hw-frame-missing-hw-frames-ctx.patch
+0082-add-yadif-and-bwdif-opencl-filter-impl.patch
+0083-allow-vpp-tonemap-without-hdr10-metadata.patch
+0084-allow-qsvenc-to-bail-out-from-unsupported-low-power-mode.patch
+# 0085-pass-eac3-addbsi-to-movenc-for-dolby-atmos-remuxing.patch (already in upstream)
+0086-add-array-of-textures-support-for-d3d11va-hwaccel.patch
+# 0087-no-error-out-on-unmatched-dovi-rpu-trailing-padding-bytes.patch (already in upstream)
+# 0088-remove-el-when-stripping-dovi-metadata.patch (already in upstream)
+0089-fix-avcodec-params-when-bsfs-are-enable-by-decoder.patch
+0090-dont-return-ext-error-for-invalid-vt-frame.patch
+# 0091-backport-a-fix-for-setting-values-in-lavc-decode.patch (already in upstream)
+# 0092-backport-a-fix-for-stripping-fps-from-setpts-outlink.patch (already in upstream)
+# 1001-add-avframe-crop-support-to-videotoolbox-scale.patch (already in upstream)
+# 1002-add-avframe-crop-support-to-cuda-scale.patch (already in upstream)
+1003-add-avframe-crop-support-to-qsv-scale.patch
+1004-add-avframe-crop-support-to-opencl-scale.patch
+1005-add-avframe-crop-support-to-rkrga-scale.patch
+# 1006-add-videotoolbox-rgb-gray-formats.patch (not needed)
+# 1007-add-opencl-rgb-gray-formats.patch (not needed)
+# 1008-add-cuda-gray-rgba-formats.patch (not needed)
+1009-add-avframe-crop-support-to-libplacebo.patch
 # 1010-hevc-recovery-point-backport-from-upstream.patch (already in upstream)
 # 1011-backport-d3d11-scale-filter-from-upstream.patch (already in upstream)

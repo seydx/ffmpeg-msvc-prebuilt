@@ -9,5 +9,5 @@ Index: FFmpeg/libavcodec/videotoolbox.c
 -        return AVERROR_EXTERNAL;
 +        return 0;
      }
-
+ 
      frame->crop_right = 0;

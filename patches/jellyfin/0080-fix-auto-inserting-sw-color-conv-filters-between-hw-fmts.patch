@@ -2,7 +2,7 @@ Index: FFmpeg/fftools/ffmpeg_filter.c
 ===================================================================
 --- FFmpeg.orig/fftools/ffmpeg_filter.c
 +++ FFmpeg/fftools/ffmpeg_filter.c
-@@ -1543,8 +1543,21 @@ static int configure_output_video_filter
+@@ -1565,8 +1565,21 @@ static int configure_output_video_filter
                 ofp->format != AV_PIX_FMT_NONE || !ofp->formats);
      av_bprint_init(&bprint, 0, AV_BPRINT_SIZE_UNLIMITED);
      choose_pix_fmts(ofp, &bprint);
@@ -23,6 +23,6 @@ Index: FFmpeg/fftools/ffmpeg_filter.c
 +            choose_color_ranges(ofp, &bprint);
 +        }
 +    }
+     choose_alpha_modes(ofp, &bprint);
      if (!av_bprint_is_complete(&bprint))
          return AVERROR(ENOMEM);
- 

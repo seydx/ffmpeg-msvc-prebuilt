@@ -1,8 +1,8 @@
-diff --git a/libavfilter/opencl/scale.cl b/libavfilter/opencl/scale.cl
-index 3470fbc0..f92193ce 100644
---- a/libavfilter/opencl/scale.cl
-+++ b/libavfilter/opencl/scale.cl
-@@ -145,12 +145,15 @@ __kernel void scale_builtin(__write_only image2d_t dst1,
+Index: FFmpeg/libavfilter/opencl/scale.cl
+===================================================================
+--- FFmpeg.orig/libavfilter/opencl/scale.cl
++++ FFmpeg/libavfilter/opencl/scale.cl
+@@ -145,12 +145,15 @@ __kernel void scale_builtin(__write_only
    #ifdef ENABLE_DITHER
                              __read_only  image2d_t dither,
    #endif
@@ -19,7 +19,7 @@ index 3470fbc0..f92193ce 100644
      src_pos = clamp(src_pos, 0.0f, convert_float2(src_sz - 1));
  
    #if defined(ENABLE_DITHER) && !defined(CONV)
-@@ -180,12 +183,15 @@ __kernel void scale_builtin_uv(__write_only image2d_t dst2,
+@@ -180,12 +183,15 @@ __kernel void scale_builtin_uv(__write_o
    #if defined(NON_SEMI_PLANAR_IN) && !defined(CONV)
                                 __read_only  image2d_t src3,
    #endif
@@ -36,7 +36,7 @@ index 3470fbc0..f92193ce 100644
      src_pos = clamp(src_pos, 0.0f, convert_float2(src_sz - 1));
  
    #if defined(NON_SEMI_PLANAR_IN) && !defined(CONV)
-@@ -221,12 +227,15 @@ __kernel void scale(__write_only image2d_t dst1,
+@@ -221,12 +227,15 @@ __kernel void scale(__write_only image2d
    #endif
                      __constant   float    *cx,
                      __constant   float    *cy,
@@ -53,7 +53,7 @@ index 3470fbc0..f92193ce 100644
      int2 src_pos = convert_int2(floor(src_coord - 0.5f));
  
    #if defined(ENABLE_DITHER) && !defined(CONV)
-@@ -270,12 +279,15 @@ __kernel void scale_uv(__write_only image2d_t dst2,
+@@ -270,12 +279,15 @@ __kernel void scale_uv(__write_only imag
    #endif
                         __constant   float    *cx,
                         __constant   float    *cy,
@@ -70,10 +70,10 @@ index 3470fbc0..f92193ce 100644
      int2 src_pos = convert_int2(floor(src_coord - 0.5f));
  
      int i, j;
-diff --git a/libavfilter/vf_scale_opencl.c b/libavfilter/vf_scale_opencl.c
-index c92c192e..f000028a 100644
---- a/libavfilter/vf_scale_opencl.c
-+++ b/libavfilter/vf_scale_opencl.c
+Index: FFmpeg/libavfilter/vf_scale_opencl.c
+===================================================================
+--- FFmpeg.orig/libavfilter/vf_scale_opencl.c
++++ FFmpeg/libavfilter/vf_scale_opencl.c
 @@ -87,6 +87,8 @@ typedef struct ScaleOpenCLContext {
      char *w_expr,  *h_expr;
      int   dst_w,    dst_h;
@@ -83,7 +83,7 @@ index c92c192e..f000028a 100644
      int   passthrough;
      int   algorithm;
      int   force_original_aspect_ratio;
-@@ -586,8 +588,16 @@ static int scale_opencl_config_output(AVFilterLink *outlink)
+@@ -586,8 +588,16 @@ static int scale_opencl_config_output(AV
          ((int64_t)ctx->dst_w * inlink->h) > INT_MAX)
          av_log(ctx, AV_LOG_ERROR, "Rescaled value for width or height is too big.\n");
  
@@ -102,7 +102,7 @@ index c92c192e..f000028a 100644
      ctx->ocf.output_width  = ctx->dst_w;
      ctx->ocf.output_height = ctx->dst_h;
  
-@@ -707,8 +717,14 @@ static int scale_opencl_filter_frame_internal(AVFilterLink *inlink,
+@@ -707,8 +717,14 @@ static int scale_opencl_filter_frame_int
          src_size.s[1] = ctx->src_h;
          uv_size.s[0] = src_size.s[0] / x_subsample;
          uv_size.s[1] = src_size.s[1] / y_subsample;
@@ -117,7 +117,7 @@ index c92c192e..f000028a 100644
  
          // scale, scale_builtin
          global_work[0] = output->width;
-@@ -893,6 +909,10 @@ static const AVOption scale_opencl_options[] = {
+@@ -893,6 +909,10 @@ static const AVOption scale_opencl_optio
          { "decrease",      NULL,              0, AV_OPT_TYPE_CONST, {.i64 = 1 }, 0, 0, FLAGS, .unit = "force_oar" },
          { "increase",      NULL,              0, AV_OPT_TYPE_CONST, {.i64 = 2 }, 0, 0, FLAGS, .unit = "force_oar" },
      { "force_divisible_by", "Enforce that the output resolution is divisible by a defined integer when force_original_aspect_ratio is used", OFFSET(force_divisible_by), AV_OPT_TYPE_INT, { .i64 = 2 }, 1, 256, FLAGS },

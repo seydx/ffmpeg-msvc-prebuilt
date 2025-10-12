@@ -2,7 +2,7 @@ Index: FFmpeg/fftools/ffprobe.c
 ===================================================================
 --- FFmpeg.orig/fftools/ffprobe.c
 +++ FFmpeg/fftools/ffprobe.c
-@@ -147,6 +147,8 @@ static int show_private_data
+@@ -141,6 +141,8 @@ static const char *video_codec_name = NU
  #define SHOW_OPTIONAL_FIELDS_ALWAYS      1
  static int show_optional_fields = SHOW_OPTIONAL_FIELDS_AUTO;
  
@@ -11,7 +11,7 @@ Index: FFmpeg/fftools/ffprobe.c
  static char *output_format;
  static char *stream_specifier;
  static char *show_data_hash;
-@@ -3108,9 +3110,10 @@ static int read_interval_packets(WriterC
+@@ -1552,9 +1554,10 @@ static int read_interval_packets(AVTextF
      AVFormatContext *fmt_ctx = ifile->fmt_ctx;
      AVPacket *pkt = NULL;
      AVFrame *frame = NULL;
@@ -23,7 +23,7 @@ Index: FFmpeg/fftools/ffprobe.c
  
      av_log(NULL, AV_LOG_VERBOSE, "Processing read interval ");
      log_read_interval(interval, NULL, AV_LOG_VERBOSE);
-@@ -3149,6 +3152,22 @@ static int read_interval_packets(WriterC
+@@ -1593,6 +1596,22 @@ static int read_interval_packets(AVTextF
          ret = AVERROR(ENOMEM);
          goto end;
      }
@@ -46,7 +46,7 @@ Index: FFmpeg/fftools/ffprobe.c
      while (!av_read_frame(fmt_ctx, pkt)) {
          if (fmt_ctx->nb_streams > nb_streams) {
              REALLOCZ_ARRAY_STREAM(nb_streams_frames,  nb_streams, fmt_ctx->nb_streams);
-@@ -3181,6 +3200,12 @@ static int read_interval_packets(WriterC
+@@ -1627,6 +1646,12 @@ static int read_interval_packets(AVTextF
              }
  
              frame_count++;
@@ -58,10 +58,10 @@ Index: FFmpeg/fftools/ffprobe.c
 +
              if (do_read_packets) {
                  if (do_show_packets)
-                     show_packet(w, ifile, pkt, i++);
-@@ -3201,6 +3226,16 @@ static int read_interval_packets(WriterC
+                     show_packet(tfc, ifile, pkt, i++);
+@@ -1647,6 +1672,16 @@ static int read_interval_packets(AVTextF
  
-                 while (process_frame(w, ifile, frame, pkt, &packet_new) > 0);
+                 while (process_frame(tfc, ifile, frame, pkt, &packet_new) > 0);
              }
 +            if (only_show_first_video_frame) {
 +                int nb_checked_streams = 0, si = 0;
@@ -76,7 +76,7 @@ Index: FFmpeg/fftools/ffprobe.c
          }
          av_packet_unref(pkt);
      }
-@@ -3218,6 +3253,9 @@ static int read_interval_packets(WriterC
+@@ -1664,6 +1699,9 @@ static int read_interval_packets(AVTextF
  end:
      av_frame_free(&frame);
      av_packet_free(&pkt);
@@ -86,11 +86,11 @@ Index: FFmpeg/fftools/ffprobe.c
      if (ret < 0) {
          av_log(NULL, AV_LOG_ERROR, "Could not read packets in interval ");
          log_read_interval(interval, NULL, AV_LOG_ERROR);
-@@ -4609,6 +4647,7 @@ static const OptionDef real_options[] =
+@@ -3146,6 +3184,7 @@ static const OptionDef real_options[] =
      { "print_filename",        OPT_TYPE_FUNC, OPT_FUNC_ARG, {.func_arg = opt_print_filename}, "override the printed input filename", "print_file"},
      { "find_stream_info",      OPT_TYPE_BOOL, OPT_INPUT | OPT_EXPERT, { &find_stream_info },
          "read and decode the streams to fill missing information with heuristics" },
 +    { "only_first_vframe",     OPT_TYPE_BOOL,        0, { &only_show_first_video_frame }, "only show first video frame when show_frames is used" },
+     { "c",                     OPT_TYPE_FUNC, OPT_FUNC_ARG, { .func_arg = opt_codec}, "force decoder", "decoder_name" },
+     { "codec",                 OPT_TYPE_FUNC, OPT_FUNC_ARG, { .func_arg = opt_codec}, "alias for -c (force decoder)", "decoder_name" },
      { NULL, },
- };
- 
