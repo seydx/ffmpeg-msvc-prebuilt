@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -2319,6 +2319,9 @@ HEADERS_LIST="
+@@ -2374,6 +2374,9 @@ HEADERS_LIST="
  INTRINSICS_LIST="
      intrinsics_neon
      intrinsics_sse2
@@ -12,7 +12,7 @@ Index: FFmpeg/configure
  "
  
  MATH_FUNCS="
-@@ -2753,6 +2756,9 @@ armv8_deps="aarch64"
+@@ -2820,6 +2823,9 @@ armv8_deps="aarch64"
  neon_deps_any="aarch64 arm"
  intrinsics_neon_deps="neon"
  intrinsics_sse2_deps="sse2"
@@ -22,7 +22,7 @@ Index: FFmpeg/configure
  vfp_deps="arm"
  vfpv3_deps="vfp"
  setend_deps="arm"
-@@ -3984,6 +3990,7 @@ tinterlace_filter_deps="gpl"
+@@ -4125,6 +4131,7 @@ tinterlace_filter_deps="gpl"
  tinterlace_merge_test_deps="tinterlace_filter"
  tinterlace_pad_test_deps="tinterlace_filter"
  tonemap_filter_deps="const_nan"
@@ -30,7 +30,7 @@ Index: FFmpeg/configure
  tonemap_vaapi_filter_deps="vaapi VAProcFilterParameterBufferHDRToneMapping"
  tonemap_videotoolbox_filter_deps="metal corevideo videotoolbox const_nan"
  tonemap_opencl_filter_deps="opencl const_nan"
-@@ -6529,6 +6536,19 @@ fi
+@@ -6714,6 +6721,19 @@ fi
  check_cc intrinsics_neon arm_neon.h "int16x8_t test = vdupq_n_s16(0)"
  check_cc intrinsics_sse2 emmintrin.h "__m128i test = _mm_setzero_si128()"
  
@@ -50,8 +50,8 @@ Index: FFmpeg/configure
  check_ldflags -Wl,--as-needed
  check_ldflags -Wl,-z,noexecstack
  if [ $target_os = "darwin" ]; then
-@@ -7661,6 +7681,16 @@ elif enabled gcc; then
-             check_cflags -mpreferred-stack-boundary=4
+@@ -7911,6 +7931,16 @@ elif enabled gcc; then
+             check_allcflags -mpreferred-stack-boundary=4
              ;;
          esac
 +    elif enabled x86_64; then
@@ -66,12 +66,12 @@ Index: FFmpeg/configure
 +        esac
      fi
  elif enabled llvm_gcc; then
-     check_cflags -mllvm -stack-alignment=16
+     check_allcflags -mllvm -stack-alignment=16
 Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -532,6 +532,7 @@ OBJS-$(CONFIG_TMEDIAN_FILTER)
+@@ -544,6 +544,7 @@ OBJS-$(CONFIG_TMEDIAN_FILTER)
  OBJS-$(CONFIG_TMIDEQUALIZER_FILTER)          += vf_tmidequalizer.o
  OBJS-$(CONFIG_TMIX_FILTER)                   += vf_mix.o framesync.o
  OBJS-$(CONFIG_TONEMAP_FILTER)                += vf_tonemap.o
@@ -83,13 +83,14 @@ Index: FFmpeg/libavfilter/aarch64/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/aarch64/Makefile
 +++ FFmpeg/libavfilter/aarch64/Makefile
-@@ -1,5 +1,6 @@
+@@ -1,6 +1,7 @@
  OBJS-$(CONFIG_BWDIF_FILTER)                  += aarch64/vf_bwdif_init_aarch64.o
+ OBJS-$(CONFIG_COLORDETECT_FILTER)            += aarch64/vf_colordetect_init.o
  OBJS-$(CONFIG_NLMEANS_FILTER)                += aarch64/vf_nlmeans_init.o
 +OBJS-$(CONFIG_TONEMAPX_FILTER)               += aarch64/vf_tonemapx_intrin_neon.o
  
  NEON-OBJS-$(CONFIG_BWDIF_FILTER)             += aarch64/vf_bwdif_neon.o
- NEON-OBJS-$(CONFIG_NLMEANS_FILTER)           += aarch64/vf_nlmeans_neon.o
+ NEON-OBJS-$(CONFIG_COLORDETECT_FILTER)       += aarch64/vf_colordetect_neon.o
 Index: FFmpeg/libavfilter/aarch64/vf_tonemapx_intrin_neon.c
 ===================================================================
 --- /dev/null
@@ -2539,14 +2540,14 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -499,6 +499,7 @@ extern const AVFilter ff_vf_tmedian;
- extern const AVFilter ff_vf_tmidequalizer;
- extern const AVFilter ff_vf_tmix;
- extern const AVFilter ff_vf_tonemap;
-+extern const AVFilter ff_vf_tonemapx;
- extern const AVFilter ff_vf_tonemap_cuda;
- extern const AVFilter ff_vf_tonemap_opencl;
- extern const AVFilter ff_vf_tonemap_vaapi;
+@@ -509,6 +509,7 @@ extern const FFFilter ff_vf_tmedian;
+ extern const FFFilter ff_vf_tmidequalizer;
+ extern const FFFilter ff_vf_tmix;
+ extern const FFFilter ff_vf_tonemap;
++extern const FFFilter ff_vf_tonemapx;
+ extern const FFFilter ff_vf_tonemap_cuda;
+ extern const FFFilter ff_vf_tonemap_opencl;
+ extern const FFFilter ff_vf_tonemap_vaapi;
 Index: FFmpeg/libavfilter/colorspace.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/colorspace.c
@@ -4730,7 +4731,7 @@ Index: FFmpeg/libavfilter/x86/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/x86/Makefile
 +++ FFmpeg/libavfilter/x86/Makefile
-@@ -36,6 +36,8 @@ OBJS-$(CONFIG_STEREO3D_FILTER)
+@@ -39,6 +39,8 @@ OBJS-$(CONFIG_STEREO3D_FILTER)
  OBJS-$(CONFIG_TBLEND_FILTER)                 += x86/vf_blend_init.o
  OBJS-$(CONFIG_THRESHOLD_FILTER)              += x86/vf_threshold_init.o
  OBJS-$(CONFIG_TINTERLACE_FILTER)             += x86/vf_tinterlace_init.o
