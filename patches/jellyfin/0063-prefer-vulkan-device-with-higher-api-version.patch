@@ -2,7 +2,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
 ===================================================================
 --- FFmpeg.orig/libavutil/hwcontext_vulkan.c
 +++ FFmpeg/libavutil/hwcontext_vulkan.c
-@@ -968,7 +968,7 @@ static const char *vk_dev_type(enum VkPh
+@@ -1238,7 +1238,7 @@ static const char *vk_dev_type(enum VkPh
  static int find_device(AVHWDeviceContext *ctx, VulkanDeviceSelection *select)
  {
      int err = 0, choice = -1;
@@ -11,7 +11,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
      VkResult ret;
      VulkanDevicePriv *p = ctx->hwctx;
      AVVulkanDeviceContext *hwctx = &p->p;
-@@ -1035,63 +1035,78 @@ static int find_device(AVHWDeviceContext
+@@ -1314,63 +1314,78 @@ static int find_device(AVHWDeviceContext
  
      if (select->has_uuid) {
          for (int i = 0; i < num; i++) {

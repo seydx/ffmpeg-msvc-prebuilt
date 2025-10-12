@@ -10,7 +10,7 @@ Index: FFmpeg/configure
  "
  
  # options emitted with CONFIG_ prefix but not available on the command line
-@@ -7214,6 +7215,9 @@ elif enabled libvpl; then
+@@ -7213,6 +7214,9 @@ elif enabled libvpl; then
              die "ERROR: libvpl >= 2.6 not found"
      add_cppflags -DMFX_DEPRECATED_OFF
      check_type "vpl/mfxdefs.h vpl/mfxvideo.h" "struct mfxConfigInterface"

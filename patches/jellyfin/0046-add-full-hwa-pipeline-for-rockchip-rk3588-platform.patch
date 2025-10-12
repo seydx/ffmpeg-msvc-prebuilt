@@ -130,7 +130,7 @@ Index: FFmpeg/configure
  swresample_deps="avutil"
  swresample_suggest="libm libsoxr stdatomic"
  swscale_deps="avutil"
-@@ -7368,11 +7384,16 @@ enabled openssl           && { { check_p
+@@ -7367,11 +7383,16 @@ enabled openssl           && { { check_p
                                 check_lib openssl openssl/ssl.h OPENSSL_init_ssl -lssl -lcrypto -lws2_32 -lgdi32 ||
                                 die "ERROR: openssl (>= 1.1.1) not found"; }
  enabled pocketsphinx      && require_pkg_config pocketsphinx pocketsphinx pocketsphinx/pocketsphinx.h ps_init
@@ -149,7 +149,7 @@ Index: FFmpeg/configure
  enabled vapoursynth       && require_headers "vapoursynth/VSScript4.h vapoursynth/VapourSynth4.h"
  
  if enabled gcrypt; then
-@@ -7572,7 +7593,7 @@ fi
+@@ -7571,7 +7592,7 @@ fi
  if enabled_all opencl libdrm ; then
      check_type "CL/cl_intel.h" "clCreateImageFromFdINTEL_fn" &&
          enable opencl_drm_beignet
