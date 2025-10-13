@@ -125,6 +125,18 @@ Index: FFmpeg/configure
  swresample_deps="avutil"
  swresample_suggest="libm libsoxr stdatomic"
  swscale_deps="avutil"
+@@ -7372,6 +7387,11 @@ enabled rkmpp             && { require_p
+                                { enabled libdrm ||
+                                  die "ERROR: rkmpp requires --enable-libdrm"; }
+                              }
++enabled rkrga             && { require_pkg_config rkrga librga rga/RgaApi.h c_RkRgaBlit &&
++                               require_pkg_config rkrga librga rga/im2d.h querystring &&
++                               { enabled rkmpp ||
++                                 die "ERROR: rkrga requires --enable-rkmpp"; }
++                             }
+ enabled vapoursynth       && require_headers "vapoursynth/VSScript4.h vapoursynth/VapourSynth4.h"
+ 
+ if enabled gcrypt; then
 Index: FFmpeg/libavcodec/Makefile
 ===================================================================
 --- FFmpeg.orig/libavcodec/Makefile
