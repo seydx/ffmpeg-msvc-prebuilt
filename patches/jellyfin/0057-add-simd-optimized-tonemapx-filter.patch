@@ -22,7 +22,7 @@ Index: FFmpeg/configure
  vfp_deps="arm"
  vfpv3_deps="vfp"
  setend_deps="arm"
-@@ -4125,6 +4131,7 @@ tinterlace_filter_deps="gpl"
+@@ -4124,6 +4130,7 @@ tinterlace_filter_deps="gpl"
  tinterlace_merge_test_deps="tinterlace_filter"
  tinterlace_pad_test_deps="tinterlace_filter"
  tonemap_filter_deps="const_nan"
@@ -30,7 +30,7 @@ Index: FFmpeg/configure
  tonemap_vaapi_filter_deps="vaapi VAProcFilterParameterBufferHDRToneMapping"
  tonemap_videotoolbox_filter_deps="metal corevideo videotoolbox const_nan"
  tonemap_opencl_filter_deps="opencl const_nan"
-@@ -6714,6 +6721,19 @@ fi
+@@ -6713,6 +6720,19 @@ fi
  check_cc intrinsics_neon arm_neon.h "int16x8_t test = vdupq_n_s16(0)"
  check_cc intrinsics_sse2 emmintrin.h "__m128i test = _mm_setzero_si128()"
  
@@ -50,7 +50,7 @@ Index: FFmpeg/configure
  check_ldflags -Wl,--as-needed
  check_ldflags -Wl,-z,noexecstack
  if [ $target_os = "darwin" ]; then
-@@ -7911,6 +7931,16 @@ elif enabled gcc; then
+@@ -7905,6 +7925,16 @@ elif enabled gcc; then
              check_allcflags -mpreferred-stack-boundary=4
              ;;
          esac
@@ -4566,17 +4566,17 @@ Index: FFmpeg/libavfilter/vf_tonemapx.c
 +    },
 +};
 +
-+AVFilter ff_vf_tonemapx = {
-+    .name            = "tonemapx",
-+    .description     = NULL_IF_CONFIG_SMALL("SIMD optimized HDR to SDR tonemapping"),
++const FFFilter ff_vf_tonemapx = {
++    .p.name          = "tonemapx",
++    .p.description   = NULL_IF_CONFIG_SMALL("SIMD optimized HDR to SDR tonemapping"),
++    .p.priv_class    = &tonemapx_class,
++    .p.flags         = AVFILTER_FLAG_SLICE_THREADS,
 +    .init            = init,
 +    .uninit          = uninit,
 +    .priv_size       = sizeof(TonemapxContext),
-+    .priv_class      = &tonemapx_class,
 +    FILTER_INPUTS(tonemapx_inputs),
 +    FILTER_OUTPUTS(ff_video_default_filterpad),
 +    FILTER_QUERY_FUNC(query_formats),
-+    .flags           = AVFILTER_FLAG_SLICE_THREADS,
 +};
 Index: FFmpeg/libavfilter/vf_tonemapx.h
 ===================================================================

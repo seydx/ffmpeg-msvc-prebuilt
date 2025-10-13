@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4072,6 +4072,7 @@ overlay_opencl_filter_deps="opencl"
+@@ -4071,6 +4071,7 @@ overlay_opencl_filter_deps="opencl"
  overlay_qsv_filter_deps="libmfx"
  overlay_qsv_filter_select="qsvvpp"
  overlay_vaapi_filter_deps="vaapi VAProcPipelineCaps_blend_flags"
@@ -977,11 +977,11 @@ Index: FFmpeg/libavfilter/vf_overlay_videotoolbox.m
 +    },
 +};
 +
-+const AVFilter ff_vf_overlay_videotoolbox = {
-+    .name           = "overlay_videotoolbox",
-+    .description    = NULL_IF_CONFIG_SMALL("Overlay filter for VideoToolbox frames using Metal compute"),
++const FFFilter ff_vf_overlay_videotoolbox = {
++    .p.name         = "overlay_videotoolbox",
++    .p.description  = NULL_IF_CONFIG_SMALL("Overlay filter for VideoToolbox frames using Metal compute"),
++    .p.priv_class   = &overlay_videotoolbox_class,
 +    .priv_size      = OVERLAY_VT_CTX_SIZE,
-+    .priv_class     = &overlay_videotoolbox_class,
 +    .init           = overlay_videotoolbox_init,
 +    .uninit         = overlay_videotoolbox_uninit,
 +    .activate       = overlay_videotoolbox_activate,

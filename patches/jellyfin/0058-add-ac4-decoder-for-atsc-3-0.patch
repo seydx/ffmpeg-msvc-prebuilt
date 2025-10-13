@@ -5925,7 +5925,7 @@ Index: FFmpeg/libavcodec/ac4dec.c
 +    .version    = LIBAVUTIL_VERSION_INT,
 +};
 +
-+FFCodec ff_ac4_decoder = {
++const FFCodec ff_ac4_decoder = {
 +    .p.name           = "ac4",
 +    CODEC_LONG_NAME("Dolby AC-4"),
 +    .p.type           = AVMEDIA_TYPE_AUDIO,

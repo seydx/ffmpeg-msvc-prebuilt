@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3999,6 +3999,7 @@ boxblur_opencl_filter_deps="opencl gpl"
+@@ -4004,6 +4004,7 @@ boxblur_opencl_filter_deps="opencl gpl"
  bs2b_filter_deps="libbs2b"
  bwdif_cuda_filter_deps="ffnvcodec"
  bwdif_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
@@ -753,16 +753,16 @@ Index: FFmpeg/libavfilter/vf_bwdif_videotoolbox.m
 +    },
 +};
 +
-+const AVFilter ff_vf_bwdif_videotoolbox = {
-+    .name           = "bwdif_videotoolbox",
-+    .description    = NULL_IF_CONFIG_SMALL("BWDIF for VideoToolbox frames using Metal compute"),
-+    .priv_size      = BWDIF_VT_CTX_SIZE,
-+    .priv_class     = &bwdif_videotoolbox_class,
-+    .init           = bwdif_videotoolbox_init,
-+    .uninit         = bwdif_videotoolbox_uninit,
++const FFFilter ff_vf_bwdif_videotoolbox = {
++    .p.name           = "bwdif_videotoolbox",
++    .p.description    = NULL_IF_CONFIG_SMALL("BWDIF for VideoToolbox frames using Metal compute"),
++    .p.priv_class     = &bwdif_videotoolbox_class,
++    .p.flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
++    .priv_size        = BWDIF_VT_CTX_SIZE,
++    .init             = bwdif_videotoolbox_init,
++    .uninit           = bwdif_videotoolbox_uninit,
 +    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_VIDEOTOOLBOX),
 +    FILTER_INPUTS(bwdif_videotoolbox_inputs),
 +    FILTER_OUTPUTS(bwdif_videotoolbox_outputs),
-+    .flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
-+    .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
++    .flags_internal   = FF_FILTER_FLAG_HWFRAME_AWARE,
 +};

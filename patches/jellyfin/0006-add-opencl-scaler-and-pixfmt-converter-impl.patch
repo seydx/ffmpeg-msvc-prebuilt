@@ -1292,16 +1292,16 @@ Index: FFmpeg/libavfilter/vf_scale_opencl.c
 +    },
 +};
 +
-+const AVFilter ff_vf_scale_opencl = {
-+    .name           = "scale_opencl",
-+    .description    = NULL_IF_CONFIG_SMALL("Scale the input video size through OpenCL."),
++const FFFilter ff_vf_scale_opencl = {
++    .p.name         = "scale_opencl",
++    .p.description  = NULL_IF_CONFIG_SMALL("Scale the input video size through OpenCL."),
++    .p.priv_class   = &scale_opencl_class,
 +    .priv_size      = sizeof(ScaleOpenCLContext),
-+    .priv_class     = &scale_opencl_class,
 +    .init           = &ff_opencl_filter_init,
 +    .uninit         = &scale_opencl_uninit,
 +    FILTER_INPUTS(scale_opencl_inputs),
 +    FILTER_OUTPUTS(scale_opencl_outputs),
 +    FILTER_SINGLE_PIXFMT(AV_PIX_FMT_OPENCL),
 +    .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
-+    .flags          = AVFILTER_FLAG_HWDEVICE,
++    .p.flags        = AVFILTER_FLAG_HWDEVICE,
 +};

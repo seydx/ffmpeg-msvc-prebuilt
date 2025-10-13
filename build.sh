@@ -57,10 +57,10 @@ apply-patch FFmpeg ffmpeg-glslang-msvc.patch
 apply-patch harfbuzz harfbuzz.patch
 
 # Apply all Jellyfin patches
-# export QUILT_PATCHES="../patches/jellyfin"
-# cd FFmpeg
-# quilt push -a -v || echo "Note: Some patches could not be applied"
-# cd ..
+export QUILT_PATCHES="../patches/jellyfin"
+cd FFmpeg
+quilt push -a -v || echo "Note: Some patches could not be applied"
+cd ..
 
 # ========================================
 # Others

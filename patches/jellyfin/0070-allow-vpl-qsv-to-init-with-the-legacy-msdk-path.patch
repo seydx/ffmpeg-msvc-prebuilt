@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -2595,6 +2595,7 @@ HAVE_LIST="
+@@ -2598,6 +2598,7 @@ HAVE_LIST="
      xmllint
      zlib_gzip
      openvino2
@@ -10,7 +10,7 @@ Index: FFmpeg/configure
  "
  
  # options emitted with CONFIG_ prefix but not available on the command line
-@@ -7213,6 +7214,9 @@ elif enabled libvpl; then
+@@ -7232,6 +7233,9 @@ elif enabled libvpl; then
              die "ERROR: libvpl >= 2.6 not found"
      add_cppflags -DMFX_DEPRECATED_OFF
      check_type "vpl/mfxdefs.h vpl/mfxvideo.h" "struct mfxConfigInterface"

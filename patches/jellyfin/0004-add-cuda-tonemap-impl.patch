@@ -2002,7 +2002,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_cuda.c
 ===================================================================
 --- /dev/null
 +++ FFmpeg/libavfilter/vf_tonemap_cuda.c
-@@ -0,0 +1,1271 @@
+@@ -0,0 +1,1273 @@
 +/*
 + * This file is part of FFmpeg.
 + *
@@ -2042,6 +2042,7 @@ Index: FFmpeg/libavfilter/vf_tonemap_cuda.c
 +#include "cuda/load_helper.h"
 +#include "cuda/shared.h"
 +#include "cuda/tonemap.h"
++#include "filters.h"
 +#include "formats.h"
 +#include "scale_eval.h"
 +#include "video.h"
@@ -3256,16 +3257,17 @@ Index: FFmpeg/libavfilter/vf_tonemap_cuda.c
 +    },
 +};
 +
-+const AVFilter ff_vf_tonemap_cuda = {
-+    .name           = "tonemap_cuda",
-+    .description    = NULL_IF_CONFIG_SMALL("GPU accelerated HDR to SDR tonemapping"),
++const FFFilter ff_vf_tonemap_cuda = {
++    .p.name           = "tonemap_cuda",
++    .p.description    = NULL_IF_CONFIG_SMALL("GPU accelerated HDR to SDR tonemapping"),
++
++    .p.priv_class     = &tonemap_cuda_class,
 +
 +    .preinit        = preinit,
 +    .init           = init,
 +    .uninit         = uninit,
 +
 +    .priv_size      = sizeof(TonemapCUDAContext),
-+    .priv_class     = &tonemap_cuda_class,
 +
 +    FILTER_INPUTS(tonemap_cuda_inputs),
 +    FILTER_OUTPUTS(tonemap_cuda_outputs),
