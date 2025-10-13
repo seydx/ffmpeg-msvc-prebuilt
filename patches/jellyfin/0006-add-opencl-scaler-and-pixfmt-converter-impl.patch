@@ -956,7 +956,7 @@ Index: FFmpeg/libavfilter/vf_scale_opencl.c
 +        return ret;
 +
 +    ff_scale_adjust_dimensions(inlink, &ctx->dst_w, &ctx->dst_h,
-+                               ctx->force_original_aspect_ratio, ctx->force_divisible_by);
++                               ctx->force_original_aspect_ratio, ctx->force_divisible_by, 1.f);
 +
 +    if (((int64_t)ctx->dst_h * inlink->w) > INT_MAX ||
 +        ((int64_t)ctx->dst_w * inlink->h) > INT_MAX)

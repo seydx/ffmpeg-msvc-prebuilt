@@ -4,7 +4,7 @@
 0004-add-cuda-tonemap-impl.patch
 0005-add-amf-fixes-from-upstream-and-custom-tunings.patch
 0006-add-opencl-scaler-and-pixfmt-converter-impl.patch
-0007-add-bt2390-eetf-and-code-refactor-to-opencl-tonemap.patch
+# 0007-add-bt2390-eetf-and-code-refactor-to-opencl-tonemap.patch (needs rewrite for FFmpeg 8)
 0008-add-pgs-support-to-opencl-overlay.patch
 0009-add-d3d11-opencl-interop-for-amd.patch
 0010-add-a-hack-for-opencl-reverse-mapping.patch
@@ -29,7 +29,7 @@
 0029-remove-fdk-aac-from-nonfree.patch
 0030-pass-dovi-sidedata-to-hlsenc-and-mpegtsenc.patch
 0031-add-pause-support-for-ffmpeg-cli.patch
-# 0032-enable-gcc-vectorization-and-fix-cpuflags.patch (not for msvc)
+# 0032-enable-gcc-vectorization-and-fix-cpuflags.patch
 0033-tune-dxva-align-for-intel-to-avoid-copy-on-qsv.patch
 0034-add-10bit-support-for-cuda-overlay.patch
 0035-add-hdr-metadata-for-nvenc-hevc-encoder.patch
@@ -54,22 +54,22 @@
 0054-add-cuda-transpose-filter-impl.patch
 0055-add-flip-feat-to-opencl-transpose-filter.patch
 0056-opus-allow-5point1-side-inputs.patch
-# 0057-add-simd-optimized-tonemapx-filter.patch (not for msvc)
+# 0057-add-simd-optimized-tonemapx-filter.patch
 0058-add-ac4-decoder-for-atsc-3-0.patch
 0059-tune-the-default-inter-thread-queue-sizes.patch
 # 0060-backport-fixes-for-vulkan-from-upstream.patch (already in upstream)
-# 0061-revert-the-broken-vulkan-hwupload-rewrite.patch (not needed - hwupload works fine in master, tested successfully)
+# 0061-revert-the-broken-vulkan-hwupload-rewrite.patch (not needed)
 0062-use-linear-contiguous-vulkan-images-for-amd-encoder.patch
 0063-prefer-vulkan-device-with-higher-api-version.patch
-# 0064-add-pgs-support-to-vulkan-overlay.patch (FFmpeg 8 Vulkan API incompatible - would need complete rewrite)
-# 0065-fix-yuv420p-to-p01x-unscaled-conversion.patch (already in upstream - commit 0bb53948ac)
+# 0064-add-pgs-support-to-vulkan-overlay.patch (needs rewrite for FFmpeg 8)
+# 0065-fix-yuv420p-to-p01x-unscaled-conversion.patch (already in upstream)
 0066-allow-vt-sw-decoder-for-every-codec.patch
 0067-add-bwdif-videotoolbox-filter.patch
 0068-add-12bit-decoding-on-videotoolbox.patch
 0069-fix-the-sub2video-perf-regressions.patch
 0070-allow-vpl-qsv-to-init-with-the-legacy-msdk-path.patch
 0071-alway-set-videotoolboxenc-pixel-buffer-info.patch
-0072-add-remove-dovi-hdr10plus-bsf.patch
+# 0072-add-remove-dovi-hdr10plus-bsf.patch (needs rewrite for FFmpeg 8)
 0073-fix-atenc-layout-samplerate.patch
 0074-videotoolbox-remove-opengl-compatability.patch
 0075-use-dynamic-pool-for-vpl-qsv-hwupload.patch

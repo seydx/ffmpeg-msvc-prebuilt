@@ -64,7 +64,7 @@ Index: FFmpeg/libavfilter/opencl.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/opencl.c
 +++ FFmpeg/libavfilter/opencl.c
-@@ -86,9 +86,17 @@ int ff_opencl_filter_config_input(AVFilt
+@@ -85,9 +85,17 @@ int ff_opencl_filter_config_input(AVFilt
  
  int ff_opencl_filter_config_output(AVFilterLink *outlink)
  {
@@ -83,7 +83,7 @@ Index: FFmpeg/libavfilter/opencl.c
      AVBufferRef       *output_frames_ref = NULL;
      AVHWFramesContext *output_frames;
      int err;
-@@ -151,6 +159,13 @@ int ff_opencl_filter_init(AVFilterContex
+@@ -150,6 +158,13 @@ int ff_opencl_filter_init(AVFilterContex
  void ff_opencl_filter_uninit(AVFilterContext *avctx)
  {
      OpenCLFilterContext *ctx = avctx->priv;
@@ -97,7 +97,7 @@ Index: FFmpeg/libavfilter/opencl.c
      cl_int cle;
  
      if (ctx->program) {
-@@ -191,6 +206,16 @@ int ff_opencl_filter_load_program(AVFilt
+@@ -167,6 +182,16 @@ int ff_opencl_filter_load_program(AVFilt
                                    int nb_strings)
  {
      OpenCLFilterContext *ctx = avctx->priv;
@@ -118,7 +118,7 @@ Index: FFmpeg/libavfilter/opencl.h
 ===================================================================
 --- FFmpeg.orig/libavfilter/opencl.h
 +++ FFmpeg/libavfilter/opencl.h
-@@ -256,6 +256,9 @@ int ff_opencl_filter_config_input(AVFilt
+@@ -247,6 +247,9 @@ int ff_opencl_filter_config_input(AVFilt
   */
  int ff_opencl_filter_config_output(AVFilterLink *outlink);
  
@@ -128,7 +128,7 @@ Index: FFmpeg/libavfilter/opencl.h
  /**
   * Initialise an OpenCL filter context.
   */
-@@ -266,6 +269,9 @@ int ff_opencl_filter_init(AVFilterContex
+@@ -257,6 +260,9 @@ int ff_opencl_filter_init(AVFilterContex
   */
  void ff_opencl_filter_uninit(AVFilterContext *avctx);
  
@@ -138,7 +138,7 @@ Index: FFmpeg/libavfilter/opencl.h
  /**
   * Load a new OpenCL program from strings in memory.
   *
-@@ -276,6 +282,11 @@ int ff_opencl_filter_load_program(AVFilt
+@@ -267,6 +273,11 @@ int ff_opencl_filter_load_program(AVFilt
                                    const char **program_source_array,
                                    int nb_strings);
  
