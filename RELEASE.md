@@ -34,12 +34,6 @@ This release contains FFmpeg builds with Jellyfin patches, compiled with MSVC (M
 - **Windows**: DXVA2, D3D11VA, D3D12VA hardware decoding
 - **OpenCL**: Cross-vendor GPU acceleration
 
-#### AI/ML Features
-
-- **Whisper.cpp**: OpenAI Whisper speech-to-text via [whisper.cpp](https://github.com/ggml-org/whisper.cpp.git) (x64 only)
-  - Integrated with GGML backend for CPU, OpenCL, and Vulkan acceleration
-  - Available through FFmpeg's `af_whisper` audio filter
-
 #### Image Processing
 
 - [libjxl](https://github.com/libjxl/libjxl.git) - JPEG XL support

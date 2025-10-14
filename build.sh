@@ -18,7 +18,7 @@ shift 1 || true
 FF_ARGS=$@
 
 echo "Checking available dependencies in FFmpeg/configure..."
-for dep in libharfbuzz libfreetype libjxl libvpx libwebp libass libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl libzimg libx264 libx265 libglslang whisper; do
+for dep in libharfbuzz libfreetype libjxl libvpx libwebp libass libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl libzimg libx264 libx265 libglslang; do
     env_name="${dep//-/_}"
     env_var="ENABLE_${env_name^^}"
 
@@ -136,10 +136,10 @@ fi
 add_ffargs "--enable-opencl"
 
 # Whisper.cpp - Speech-to-Text (requires FFmpeg 8+)
-if [ -n "$ENABLE_WHISPER" ] && [ "$BUILD_ARCH" == "amd64" ]; then
-    ./build-whisper.sh
-    add_ffargs "--enable-whisper"
-fi
+# if [ -n "$ENABLE_WHISPER" ] && [ "$BUILD_ARCH" == "amd64" ]; then
+#     ./build-whisper.sh
+#     add_ffargs "--enable-whisper"
+# fi
 
 # AMD AMF
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then

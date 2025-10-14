@@ -77,12 +77,6 @@ The files are packaged into **.zip** archives for each configuration, making it 
 - [opencl-headers](https://github.com/KhronosGroup/OpenCL-Headers.git) - OpenCL
 - [opencl-icd-loader](https://github.com/KhronosGroup/OpenCL-ICD-Loader.git)
 
-#### AI/ML Features
-
-- [whisper.cpp](https://github.com/ggml-org/whisper.cpp.git) - OpenAI Whisper speech-to-text (x64 only)
-  - Includes GGML with OpenCL and Vulkan acceleration
-  - Static library integration for `af_whisper` audio filter
-
 #### Image Processing
 
 - [libjxl](https://github.com/libjxl/libjxl.git) - JPEG XL support
