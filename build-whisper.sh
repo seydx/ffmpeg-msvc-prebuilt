@@ -65,6 +65,17 @@ cmake --build . --config Release -j$(nproc)
 # Install
 cmake --install . --config Release
 
+# Fix ggml library names - MSVC builds them without 'lib' prefix (e.g., ggml.lib instead of libggml.lib)
+# FFmpeg's pkg-config expects the 'lib' prefix, so we create copies with the correct names
+cd "$INSTALL_PREFIX/lib"
+for libfile in ggml*.lib; do
+    if [ -f "$libfile" ] && [ ! -f "lib${libfile}" ]; then
+        echo "Creating lib${libfile} from ${libfile}"
+        cp "${libfile}" "lib${libfile}"
+    fi
+done
+cd "$BUILD_DIR"
+
 # Create pkg-config file for FFmpeg
 mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
 
@@ -72,10 +83,10 @@ mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
 GGML_LIBS="-lggml -lggml-base -lggml-cpu -lggml-opencl"
 
 # Add Vulkan if enabled (x64 only)
+# Note: Vulkan libs must be added to Libs line because Vulkan SDK doesn't provide a .pc file
 if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
     GGML_LIBS="$GGML_LIBS -lggml-vulkan"
-    # Add Vulkan library path directly instead of pkg-config (vulkan.pc not always available)
-    # Convert path using cygpath for proper Windows path handling (same as build-ffmpeg.sh)
+    # Convert path using cygpath for proper Windows path handling
     VULKAN_PATH_SHORT=$(cygpath -sw "$VULKAN_SDK")
     VULKAN_PATH_FIXED=$(cygpath -m "$VULKAN_PATH_SHORT")
     VULKAN_LIBS="-L\"${VULKAN_PATH_FIXED}/Lib\" -lvulkan-1"
@@ -92,9 +103,10 @@ includedir=\${prefix}/include
 Name: whisper
 Description: OpenAI Whisper speech recognition library
 Version: 1.7.6
+Requires: OpenCL
 Cflags: -I\${includedir}
 Libs: -L\${libdir} -lwhisper $VULKAN_LIBS
-Libs.private: $GGML_LIBS -lOpenCL
+Libs.private: $GGML_LIBS -lstdc++
 EOF
 
 echo "whisper.cpp built successfully"
