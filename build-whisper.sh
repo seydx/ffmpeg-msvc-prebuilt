@@ -46,10 +46,13 @@ WHISPER_CMAKE_ARGS=(
 
 # For ARM64 cross-compilation, tell CMake we're cross-compiling
 # This triggers the automatic host compiler detection for vulkan-shaders-gen
+# Also use clang-cl for ARM64 as MSVC is not supported for ARM CPU backend
 if [ "$BUILD_ARCH" == "arm64" ]; then
     WHISPER_CMAKE_ARGS+=(
         -DCMAKE_SYSTEM_NAME=Windows
         -DCMAKE_SYSTEM_PROCESSOR=ARM64
+        -DCMAKE_C_COMPILER=clang-cl
+        -DCMAKE_CXX_COMPILER=clang-cl
     )
 fi
 
