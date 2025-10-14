@@ -10,18 +10,8 @@ BUILD_DIR=build/whisper.cpp
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
-case $BUILD_ARCH in
-amd64)
-    ARCH=x64
-    ;;
-arm64)
-    ARCH=ARM64
-    ;;
-*)
-    echo "Unsupported architecture: $BUILD_ARCH"
-    exit 1
-    ;;
-esac
+# Note: This script is only called for amd64/x64 builds (see build.sh)
+# ARM64 is not supported due to MSVC/clang-cl compatibility issues
 
 # Build whisper.cpp with MSVC
 # - Static library for FFmpeg integration
@@ -29,7 +19,7 @@ esac
 # - Vulkan support (if available)
 # - Disable tests, examples, server
 # - Use internal ggml (not system-installed)
-# - Enable SIMD optimizations
+# - Enable SIMD optimizations for x64
 
 WHISPER_CMAKE_ARGS=(
     -G "NMake Makefiles"
@@ -44,36 +34,19 @@ WHISPER_CMAKE_ARGS=(
     -DWHISPER_USE_SYSTEM_GGML=OFF
 )
 
-# For ARM64 cross-compilation, tell CMake we're cross-compiling
-# This triggers the automatic host compiler detection for vulkan-shaders-gen
-# Also use clang-cl for ARM64 as MSVC is not supported for ARM CPU backend
-if [ "$BUILD_ARCH" == "arm64" ]; then
-    WHISPER_CMAKE_ARGS+=(
-        -DCMAKE_SYSTEM_NAME=Windows
-        -DCMAKE_SYSTEM_PROCESSOR=ARM64
-        -DCMAKE_C_COMPILER=clang-cl
-        -DCMAKE_CXX_COMPILER=clang-cl
-    )
-fi
-
-# GGML options
+# GGML options for x64
 GGML_ARGS=(
     -DGGML_CCACHE=OFF
     -DGGML_OPENCL=ON
     -DGGML_NATIVE=OFF
+    # SIMD optimizations for x86_64
+    -DGGML_SSE42=ON
+    -DGGML_AVX=ON
+    -DGGML_F16C=ON
+    -DGGML_AVX2=ON
+    -DGGML_BMI2=ON
+    -DGGML_FMA=ON
 )
-
-# SIMD optimizations for x86_64 (similar to MinGW script)
-if [ "$BUILD_ARCH" == "amd64" ]; then
-    GGML_ARGS+=(
-        -DGGML_SSE42=ON
-        -DGGML_AVX=ON
-        -DGGML_F16C=ON
-        -DGGML_AVX2=ON
-        -DGGML_BMI2=ON
-        -DGGML_FMA=ON
-    )
-fi
 
 # Vulkan support if available
 if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
@@ -98,21 +71,14 @@ mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
 # whisper.cpp uses multiple ggml libraries that need to be linked in correct order
 GGML_LIBS="-lggml -lggml-base -lggml-cpu -lggml-opencl"
 
-# Add Vulkan if enabled
-VULKAN_REQUIRES=""
+# Add Vulkan if enabled (x64 only)
 if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
     GGML_LIBS="$GGML_LIBS -lggml-vulkan"
     # Add Vulkan library path directly instead of pkg-config (vulkan.pc not always available)
     # Convert path using cygpath for proper Windows path handling (same as build-ffmpeg.sh)
     VULKAN_PATH_SHORT=$(cygpath -sw "$VULKAN_SDK")
     VULKAN_PATH_FIXED=$(cygpath -m "$VULKAN_PATH_SHORT")
-
-    # Use architecture-specific lib directory (Lib-ARM64 for ARM64, Lib for x64)
-    if [ "$BUILD_ARCH" == "arm64" ]; then
-        VULKAN_LIBS="-L\"${VULKAN_PATH_FIXED}/Lib-ARM64\" -lvulkan-1"
-    else
-        VULKAN_LIBS="-L\"${VULKAN_PATH_FIXED}/Lib\" -lvulkan-1"
-    fi
+    VULKAN_LIBS="-L\"${VULKAN_PATH_FIXED}/Lib\" -lvulkan-1"
 else
     VULKAN_LIBS=""
 fi

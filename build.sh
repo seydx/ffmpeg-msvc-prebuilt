@@ -130,7 +130,7 @@ fi
 add_ffargs "--enable-opencl"
 
 # Whisper.cpp - Speech-to-Text (requires FFmpeg 8+)
-if [ -n "$ENABLE_WHISPER" ]; then
+if [ -n "$ENABLE_WHISPER" ] && [ "$BUILD_ARCH" == "amd64" ]; then
     ./build-whisper.sh
     add_ffargs "--enable-whisper"
 fi
