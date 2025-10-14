@@ -67,6 +67,7 @@ cmake --install . --config Release
 
 # Fix ggml library names - MSVC builds them without 'lib' prefix (e.g., ggml.lib instead of libggml.lib)
 # FFmpeg's pkg-config expects the 'lib' prefix, so we create copies with the correct names
+ORIGINAL_DIR=$(pwd)
 cd "$INSTALL_PREFIX/lib"
 for libfile in ggml*.lib; do
     if [ -f "$libfile" ] && [ ! -f "lib${libfile}" ]; then
@@ -74,7 +75,7 @@ for libfile in ggml*.lib; do
         cp "${libfile}" "lib${libfile}"
     fi
 done
-cd "$BUILD_DIR"
+cd "$ORIGINAL_DIR"
 
 # Create pkg-config file for FFmpeg
 mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
