@@ -62,6 +62,12 @@ cd FFmpeg
 quilt push -a -v || echo "Note: Some patches could not be applied"
 cd ..
 
+# Copy FFMPEG_VERSION file to FFmpeg directory (used by patches)
+if [ -f "FFMPEG_VERSION" ]; then
+    echo "Copying FFMPEG_VERSION to FFmpeg directory..."
+    cp FFMPEG_VERSION FFmpeg/
+fi
+
 # ========================================
 # Others
 # ========================================
