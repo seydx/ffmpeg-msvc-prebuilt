@@ -44,6 +44,15 @@ WHISPER_CMAKE_ARGS=(
     -DWHISPER_USE_SYSTEM_GGML=OFF
 )
 
+# For ARM64 cross-compilation, tell CMake we're cross-compiling
+# This triggers the automatic host compiler detection for vulkan-shaders-gen
+if [ "$BUILD_ARCH" == "arm64" ]; then
+    WHISPER_CMAKE_ARGS+=(
+        -DCMAKE_SYSTEM_NAME=Windows
+        -DCMAKE_SYSTEM_PROCESSOR=ARM64
+    )
+fi
+
 # GGML options
 GGML_ARGS=(
     -DGGML_CCACHE=OFF
@@ -87,8 +96,22 @@ mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
 GGML_LIBS="-lggml -lggml-base -lggml-cpu -lggml-opencl"
 
 # Add Vulkan if enabled
+VULKAN_REQUIRES=""
 if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
     GGML_LIBS="$GGML_LIBS -lggml-vulkan"
+    # Add Vulkan library path directly instead of pkg-config (vulkan.pc not always available)
+    # Convert path using cygpath for proper Windows path handling (same as build-ffmpeg.sh)
+    VULKAN_PATH_SHORT=$(cygpath -sw "$VULKAN_SDK")
+    VULKAN_PATH_FIXED=$(cygpath -m "$VULKAN_PATH_SHORT")
+
+    # Use architecture-specific lib directory (Lib-ARM64 for ARM64, Lib for x64)
+    if [ "$BUILD_ARCH" == "arm64" ]; then
+        VULKAN_LIBS="-L\"${VULKAN_PATH_FIXED}/Lib-ARM64\" -lvulkan-1"
+    else
+        VULKAN_LIBS="-L\"${VULKAN_PATH_FIXED}/Lib\" -lvulkan-1"
+    fi
+else
+    VULKAN_LIBS=""
 fi
 
 cat > "$INSTALL_PREFIX/lib/pkgconfig/whisper.pc" << EOF
@@ -101,14 +124,8 @@ Name: whisper
 Description: OpenAI Whisper speech recognition library
 Version: 1.7.6
 Cflags: -I\${includedir}
-Libs: -L\${libdir} -lwhisper
-Libs.private: $GGML_LIBS
-Requires: OpenCL
+Libs: -L\${libdir} -lwhisper $VULKAN_LIBS
+Libs.private: $GGML_LIBS -lOpenCL
 EOF
-
-# If Vulkan is enabled, add it to pkg-config
-if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
-    echo "Requires: OpenCL vulkan" >> "$INSTALL_PREFIX/lib/pkgconfig/whisper.pc"
-fi
 
 echo "whisper.cpp built successfully"
