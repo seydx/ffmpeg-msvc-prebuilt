@@ -39,29 +39,29 @@ jobs:
           # Find the most recent autobuild-* tag (excluding the one we're about to create)
           LAST_TAG=$(git tag -l 'autobuild-*' | sort -V | tail -n 1)
 
-          # Build changelog content
+          # Generate commits list
+          if [ -z "$LAST_TAG" ]; then
+            COMMIT_LIST=$(git log -10 --pretty=format:"- %s (%h)" --no-merges)
+            TITLE="Showing last 10 commits:"
+          else
+            COMMIT_LIST=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+            TITLE="Changes since $LAST_TAG:"
+
+            if [ -z "$COMMIT_LIST" ]; then
+              COMMIT_LIST="No new commits since last tag"
+            fi
+          fi
+
+          # Save changelog to output with proper EOF handling
           {
             echo 'changelog<<EOF'
             echo "## Changes"
             echo ""
-
-            if [ -z "$LAST_TAG" ]; then
-              echo "Showing last 10 commits:"
-              echo ""
-              git log -10 --pretty=format:"- %s (%h)" --no-merges
-            else
-              echo "Changes since $LAST_TAG:"
-              echo ""
-              COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
-
-              if [ -z "$COMMITS" ]; then
-                echo "No new commits since last tag"
-              else
-                echo "$COMMITS"
-              fi
-            fi
-
-            echo EOF
+            echo "$TITLE"
+            echo ""
+            echo "$COMMIT_LIST"
+            echo ''
+            echo 'EOF'
           } >> $GITHUB_OUTPUT
 
       - name: Create and push tags
