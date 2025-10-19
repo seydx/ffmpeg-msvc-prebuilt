@@ -65,6 +65,8 @@ jobs:
           } >> $GITHUB_OUTPUT
 
       - name: Create and push tags
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           AUTOBUILD_TAG="${{ steps.create_metadata.outputs.autobuild_tag }}"
 
@@ -75,6 +77,9 @@ jobs:
           # Create and push autobuild tag
           git tag $AUTOBUILD_TAG
           git push origin $AUTOBUILD_TAG
+
+          # Delete old 'latest' release if it exists
+          gh release delete latest --yes 2>/dev/null || echo "No existing 'latest' release to delete"
 
           # Delete old 'latest' tag if it exists (both remote and local)
           git push origin :refs/tags/latest 2>/dev/null || echo "No existing remote 'latest' tag to delete"
