@@ -39,6 +39,7 @@ jobs:
     runs-on: windows-2022
     env:
       name: ffmpeg-${{ inputs.ref_name||github.ref_name }}-gpl-${{matrix.arch}}-static
+      release_name: ffmpeg-gpl-${{matrix.arch}}-static
       target: ${{contains(matrix.arch,'arm')&&format('amd64_{0}',matrix.arch)||matrix.arch}}
     steps:
       - uses: actions/checkout@v4
@@ -507,6 +508,14 @@ jobs:
             changelog
           retention-days: 30
 
+      - name: Prepare release files
+        if: ${{ inputs.release_name != '' }}
+        shell: bash
+        run: |
+          # Rename files for release
+          cp ${{env.name}}.zip ${{env.release_name}}.zip
+          cp ${{env.name}}.sha1 ${{env.release_name}}.sha1
+
       - name: Release
         if: ${{ inputs.release_name != '' }}
         uses: softprops/action-gh-release@v2
@@ -516,5 +525,5 @@ jobs:
           body_path: changelog
           prerelease: ${{contains(env.REF_NAME,'dev')}}
           files: |
-            ${{env.name}}.zip
-            ${{env.name}}.sha1
+            ${{env.release_name}}.zip
+            ${{env.release_name}}.sha1
