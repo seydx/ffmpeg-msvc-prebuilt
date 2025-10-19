@@ -1,0 +1,101 @@
+name: Automated Daily Build
+
+on:
+  schedule:
+    # Runs every day at 12:00 UTC (14:00 CEST/13:00 CET)
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    outputs:
+      autobuild_tag: ${{ steps.create_metadata.outputs.autobuild_tag }}
+      autobuild_release_name: ${{ steps.create_metadata.outputs.autobuild_release_name }}
+      latest_release_name: ${{ steps.create_metadata.outputs.latest_release_name }}
+      changelog: ${{ steps.create_metadata.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create metadata and changelog
+        id: create_metadata
+        run: |
+          # Create autobuild tag with timestamp
+          TIMESTAMP=$(date +'%Y-%m-%d %H:%M')
+          AUTOBUILD_TAG="autobuild-$(date +'%Y-%m-%d-%H-%M')"
+
+          echo "autobuild_tag=$AUTOBUILD_TAG" >> $GITHUB_OUTPUT
+          echo "autobuild_release_name=Auto-Build $TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "latest_release_name=Latest Auto-Build ($TIMESTAMP)" >> $GITHUB_OUTPUT
+
+          # Generate changelog: commits since last autobuild-* tag
+          echo "Generating changelog..."
+
+          # Find the most recent autobuild-* tag (excluding the one we're about to create)
+          LAST_TAG=$(git tag -l 'autobuild-*' | sort -V | tail -n 1)
+
+          # Build changelog content
+          {
+            echo 'changelog<<EOF'
+            echo "## Changes"
+            echo ""
+
+            if [ -z "$LAST_TAG" ]; then
+              echo "Showing last 10 commits:"
+              echo ""
+              git log -10 --pretty=format:"- %s (%h)" --no-merges
+            else
+              echo "Changes since $LAST_TAG:"
+              echo ""
+              COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+
+              if [ -z "$COMMITS" ]; then
+                echo "No new commits since last tag"
+              else
+                echo "$COMMITS"
+              fi
+            fi
+
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
+      - name: Create and push tags
+        run: |
+          AUTOBUILD_TAG="${{ steps.create_metadata.outputs.autobuild_tag }}"
+
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Create and push autobuild tag
+          git tag $AUTOBUILD_TAG
+          git push origin $AUTOBUILD_TAG
+
+          # Delete old 'latest' tag if it exists (both remote and local)
+          git push origin :refs/tags/latest 2>/dev/null || echo "No existing remote 'latest' tag to delete"
+          git tag -d latest 2>/dev/null || echo "No existing local 'latest' tag to delete"
+
+          # Create and push new 'latest' tag
+          git tag latest
+          git push origin latest
+
+  build-autobuild:
+    needs: prepare-release
+    uses: ./.github/workflows/build.yml
+    with:
+      ref_name: ${{ needs.prepare-release.outputs.autobuild_tag }}
+      release_name: ${{ needs.prepare-release.outputs.autobuild_release_name }}
+      changelog: ${{ needs.prepare-release.outputs.changelog }}
+
+  build-latest:
+    needs: prepare-release
+    uses: ./.github/workflows/build.yml
+    with:
+      ref_name: latest
+      release_name: ${{ needs.prepare-release.outputs.latest_release_name }}
+      changelog: ${{ needs.prepare-release.outputs.changelog }}

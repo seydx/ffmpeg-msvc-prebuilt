@@ -8,26 +8,22 @@ run-name: Build ${{inputs.ref_name||github.ref_name}}
 
 on:
   push:
-    tags:
-      - "*"
-  #   branches:
-  #     - main
-  # pull_request:
-  #   branches:
-  #     - main
+    branches:
+      - ffmpeg-master
   workflow_call:
     inputs:
       ref_name:
         description: "Tag"
         required: false
         type: string
-  workflow_dispatch:
-    inputs:
-      ref_name:
-        description: "Tag or Branch"
+      release_name:
+        description: "Custom release name"
         required: false
         type: string
-        default: "main"
+      changelog:
+        description: "Custom changelog content"
+        required: false
+        type: string
 
 jobs:
   prepare:
@@ -461,7 +457,45 @@ jobs:
           zip -9 ${CWD}/${{env.name}}.zip -r .
           cd ${CWD}
           sha1sum ${{env.name}}.zip >${{env.name}}.sha1
-          ./build-changelog.sh > changelog || echo "No changelog script found" > changelog
+
+      - name: Generate changelog
+        shell: bash
+        run: |
+          # Use custom changelog if provided, otherwise generate from git commits
+          if [ -n "${{ inputs.changelog }}" ]; then
+            echo "${{ inputs.changelog }}" > changelog
+          else
+            echo "Generating changelog from git commits..."
+
+            # For autobuild tags, find the previous autobuild tag
+            # For other tags, find the previous tag of any kind
+            if [[ "${{env.REF_NAME}}" == autobuild-* ]]; then
+              LAST_TAG=$(git tag -l 'autobuild-*' | grep -v "^${{env.REF_NAME}}$" | sort -V | tail -n 1)
+            else
+              LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            fi
+
+            {
+              echo "## Changes"
+              echo ""
+
+              if [ -z "$LAST_TAG" ]; then
+                echo "Showing last 10 commits:"
+                echo ""
+                git log -10 --pretty=format:"- %s (%h)" --no-merges
+              else
+                echo "Changes since $LAST_TAG:"
+                echo ""
+                CHANGELOG=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+
+                if [ -z "$CHANGELOG" ]; then
+                  echo "No new commits since last tag"
+                else
+                  echo "$CHANGELOG"
+                fi
+              fi
+            } > changelog
+          fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -478,6 +512,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{env.REF_NAME}}
+          name: ${{ inputs.release_name || env.REF_NAME }}
           body_path: changelog
           prerelease: ${{contains(env.REF_NAME,'dev')}}
           files: |
