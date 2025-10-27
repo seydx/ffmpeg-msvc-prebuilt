@@ -1,0 +1,68 @@
+Index: FFmpeg/libavformat/rtsp.c
+===================================================================
+--- FFmpeg.orig/libavformat/rtsp.c
++++ FFmpeg/libavformat/rtsp.c
+@@ -631,14 +631,47 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
+             if (rtsp_st->stream_index >= 0) {
+                 st = s->streams[rtsp_st->stream_index];
+                 sdp_parse_rtpmap(s, st, rtsp_st, payload_type, p);
++                // Store the complete MIME type from rtpmap line (e.g., "H264/90000" or "PCMA/8000/1")
++                // Skip leading whitespace
++                while (*p == ' ' || *p == '\t')
++                    p++;
++                av_strlcpy(rtsp_st->sdp_mime_type, p, sizeof(rtsp_st->sdp_mime_type));
+             }
+             s1->seen_rtpmap = 1;
+             if (s1->seen_fmtp) {
+                 parse_fmtp(s, rt, payload_type, s1->delayed_fmtp);
+             }
+-        } else if (av_strstart(p, "fmtp:", &p) ||
+-                   av_strstart(p, "framesize:", &p)) {
+-            // let dynamic protocol handlers have a stab at the line.
++        } else if (av_strstart(p, "fmtp:", &p)) {
++            int stream_idx;
++            // Parse FMTP line
++            get_word(buf1, sizeof(buf1), &p);
++            payload_type = atoi(buf1);
++
++            // Find the stream with matching payload type
++            rtsp_st = NULL;
++            for (stream_idx = 0; stream_idx < rt->nb_rtsp_streams; stream_idx++) {
++                if (rt->rtsp_streams[stream_idx]->sdp_payload_type == payload_type) {
++                    rtsp_st = rt->rtsp_streams[stream_idx];
++                    break;
++                }
++            }
++
++            // Store the raw FMTP parameters (everything after "a=fmtp:PT ")
++            if (rtsp_st) {
++                // Skip leading whitespace
++                while (*p == ' ' || *p == '\t')
++                    p++;
++                av_strlcpy(rtsp_st->sdp_fmtp, p, sizeof(rtsp_st->sdp_fmtp));
++            }
++
++            if (s1->seen_rtpmap) {
++                parse_fmtp(s, rt, payload_type, buf);
++            } else {
++                s1->seen_fmtp = 1;
++                av_strlcpy(s1->delayed_fmtp, buf, sizeof(s1->delayed_fmtp));
++            }
++        } else if (av_strstart(p, "framesize:", &p)) {
++            // Parse framesize line (for dynamic protocol handlers)
+             get_word(buf1, sizeof(buf1), &p);
+             payload_type = atoi(buf1);
+             if (s1->seen_rtpmap) {
+Index: FFmpeg/libavformat/rtsp.h
+===================================================================
+--- FFmpeg.orig/libavformat/rtsp.h
++++ FFmpeg/libavformat/rtsp.h
+@@ -486,6 +486,8 @@ typedef struct RTSPStream {
+     int sdp_ttl;              /**< IP Time-To-Live (from SDP content) */
+     int sdp_payload_type;     /**< payload type */
+     enum RTSPSDPDirection sdp_direction; /**< SDP direction attribute (from SDP content) */
++    char sdp_fmtp[2048];      /**< fmtp line from SDP (a=fmtp:PT ...) */
++    char sdp_mime_type[128];  /**< complete MIME type from rtpmap (e.g., "H264/90000" or "PCMA/8000/1") */
+     //@}
+ 
+     /** The following are used for dynamic protocols (rtpdec_*.c/rdt.c) */
