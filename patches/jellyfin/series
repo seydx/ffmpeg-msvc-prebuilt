@@ -103,3 +103,4 @@
 # 1011-backport-d3d11-scale-filter-from-upstream.patch (already in upstream)
 1012-change-ffmpeg-version-file.patch
 1013-fix-rtp-ssrc.patch
+1014-add-sdp-direction-attribute-support.patch

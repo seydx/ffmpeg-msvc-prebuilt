@@ -1,0 +1,76 @@
+Index: FFmpeg/libavformat/rtsp.c
+===================================================================
+--- FFmpeg.orig/libavformat/rtsp.c
++++ FFmpeg/libavformat/rtsp.c
+@@ -290,6 +290,7 @@ static int init_satip_stream(AVFormatContext *s)
+                  &rt->nb_rtsp_streams, rtsp_st);
+ 
+     rtsp_st->sdp_payload_type = 33; // MP2T
++    rtsp_st->sdp_direction = RTSP_DIRECTION_RECVONLY; /* Default direction */
+     av_strlcpy(rtsp_st->control_url,
+                rt->control_uri, sizeof(rtsp_st->control_url));
+ 
+@@ -530,6 +531,7 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
+ 
+         rtsp_st->sdp_ip = s1->default_ip;
+         rtsp_st->sdp_ttl = s1->default_ttl;
++        rtsp_st->sdp_direction = RTSP_DIRECTION_RECVONLY; /* Default direction */
+ 
+         copy_default_source_addrs(s1->default_include_source_addrs,
+                                   s1->nb_default_include_source_addrs,
+@@ -675,6 +677,26 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
+                 }
+             } else
+                 get_word(rt->default_lang, sizeof(rt->default_lang), &p);
++        } else if (!strcmp(p, "sendonly")) {
++            if (rt->nb_rtsp_streams > 0) {
++                rtsp_st = rt->rtsp_streams[rt->nb_rtsp_streams - 1];
++                rtsp_st->sdp_direction = RTSP_DIRECTION_SENDONLY;
++            }
++        } else if (!strcmp(p, "recvonly")) {
++            if (rt->nb_rtsp_streams > 0) {
++                rtsp_st = rt->rtsp_streams[rt->nb_rtsp_streams - 1];
++                rtsp_st->sdp_direction = RTSP_DIRECTION_RECVONLY;
++            }
++        } else if (!strcmp(p, "sendrecv")) {
++            if (rt->nb_rtsp_streams > 0) {
++                rtsp_st = rt->rtsp_streams[rt->nb_rtsp_streams - 1];
++                rtsp_st->sdp_direction = RTSP_DIRECTION_SENDRECV;
++            }
++        } else if (!strcmp(p, "inactive")) {
++            if (rt->nb_rtsp_streams > 0) {
++                rtsp_st = rt->rtsp_streams[rt->nb_rtsp_streams - 1];
++                rtsp_st->sdp_direction = RTSP_DIRECTION_INACTIVE;
++            }
+         } else if (av_strstart(p, "IsRealDataType:integer;",&p)) {
+             if (atoi(p) == 1)
+                 rt->transport = RTSP_TRANSPORT_RDT;
+Index: FFmpeg/libavformat/rtsp.h
+===================================================================
+--- FFmpeg.orig/libavformat/rtsp.h
++++ FFmpeg/libavformat/rtsp.h
+@@ -446,6 +446,16 @@ typedef struct RTSPSource {
+     char addr[128]; /**< Source-specific multicast include source IP address (from SDP content) */
+ } RTSPSource;
+ 
++/**
++ * SDP direction attribute (RFC 4566)
++ */
++enum RTSPSDPDirection {
++    RTSP_DIRECTION_RECVONLY = 0,  /**< Default: receive only (a=recvonly or no direction attribute) */
++    RTSP_DIRECTION_SENDONLY = 1,  /**< Send only (a=sendonly) - backchannel/talkback */
++    RTSP_DIRECTION_SENDRECV = 2,  /**< Send and receive (a=sendrecv) */
++    RTSP_DIRECTION_INACTIVE = 3,  /**< Inactive (a=inactive) */
++};
++
+ /**
+  * Describe a single stream, as identified by a single m= line block in the
+  * SDP content. In the case of RDT, one RTSPStream can represent multiple
+@@ -475,6 +485,7 @@ typedef struct RTSPStream {
+     struct RTSPSource **exclude_source_addrs; /**< Source-specific multicast exclude source IP addresses (from SDP content) */
+     int sdp_ttl;              /**< IP Time-To-Live (from SDP content) */
+     int sdp_payload_type;     /**< payload type */
++    enum RTSPSDPDirection sdp_direction; /**< SDP direction attribute (from SDP content) */
+     //@}
+ 
+     /** The following are used for dynamic protocols (rtpdec_*.c/rdt.c) */
