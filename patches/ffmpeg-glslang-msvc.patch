@@ -1,25 +1,12 @@
 diff --git a/configure b/configure
-index cd9bbe570c..20f2554aec 100755
+index db50dd1adc..63e1ebf0b6 100755
 --- a/configure
 +++ b/configure
-@@ -7167,6 +7167,7 @@ if enabled libglslang; then
+@@ -7194,6 +7194,7 @@ if enabled libglslang; then
      check_lib spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
                              -lglslang -lMachineIndependent -lGenericCodeGen \
-                             ${spvremap} -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ||
-+                        check_pkg_config spirv_compiler glslang "glslang/Include/glslang_c_interface.h glslang/build_info.h" glslang_initialize_process ||
+                             ${spvremap} -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lstdc++ $libm_extralibs $pthreads_extralibs ||
++                            check_pkg_config spirv_compiler glslang "glslang/Include/glslang_c_interface.h glslang/build_info.h" glslang_initialize_process ||
                          require spirv_compiler glslang/Include/glslang_c_interface.h glslang_initialize_process \
                              -lglslang -lMachineIndependent -lOSDependent -lHLSL -lOGLCompiler -lGenericCodeGen \
-                             ${spvremap} -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lpthread -lstdc++ -lm ;
-diff --git a/libavutil/vulkan_glslang.c b/libavutil/vulkan_glslang.c
-index 4cf54de854..ec73875c2a 100644
---- a/libavutil/vulkan_glslang.c
-+++ b/libavutil/vulkan_glslang.c
-@@ -16,7 +16,7 @@
-  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-  */
- 
--#include <pthread.h>
-+#include "thread.h"
- 
- #include <glslang/build_info.h>
- #include <glslang/Include/glslang_c_interface.h>
+                             ${spvremap} -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools -lstdc++ $libm_extralibs $pthreads_extralibs ;
