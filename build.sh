@@ -50,17 +50,17 @@ apply-patch() {
     fi
 }
 
-# Apply patches
-echo "Applying patches..."
-apply-patch zlib zlib.patch
-apply-patch FFmpeg ffmpeg-glslang-msvc.patch
-apply-patch harfbuzz harfbuzz.patch
-
 # Apply all Jellyfin patches
 export QUILT_PATCHES="../patches/jellyfin"
 cd FFmpeg
 quilt push -a -v || echo "Note: Some patches could not be applied"
 cd ..
+
+# Apply patches
+echo "Applying patches..."
+apply-patch zlib zlib.patch
+apply-patch FFmpeg ffmpeg-glslang-msvc.patch
+apply-patch harfbuzz harfbuzz.patch
 
 # Copy FFMPEG_VERSION file to FFmpeg directory (used by patches)
 if [ -f "FFMPEG_VERSION" ]; then
