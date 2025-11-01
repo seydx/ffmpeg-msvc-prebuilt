@@ -11,7 +11,7 @@ Index: FFmpeg/configure
  transpose_npp_filter_deps="ffnvcodec libnpp"
  overlay_cuda_filter_deps="ffnvcodec"
  overlay_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
-@@ -4850,8 +4852,10 @@ if enabled cuda_nvcc; then
+@@ -4852,8 +4854,10 @@ if enabled cuda_nvcc; then
      nvcc_default="nvcc"
      nvccflags_default="-gencode arch=compute_30,code=sm_30 -O2"
  else
@@ -23,7 +23,7 @@ Index: FFmpeg/configure
      NVCC_C=""
  fi
  
-@@ -4864,6 +4868,11 @@ if enabled cuda_nvcc; then
+@@ -4866,6 +4870,11 @@ if enabled cuda_nvcc; then
      if $nvcc $nvccflags_default 2>&1 | grep -qi unsupported; then
          nvccflags_default="-gencode arch=compute_75,code=sm_75 -O2"
      fi
@@ -35,7 +35,7 @@ Index: FFmpeg/configure
  fi
  
  set_default arch cc cxx doxygen pkg_config ranlib strip sysinclude \
-@@ -6982,7 +6991,7 @@ fi
+@@ -6984,7 +6993,7 @@ fi
  if enabled cuda_nvcc; then
      nvccflags="$nvccflags -ptx"
  else
@@ -60,7 +60,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -536,6 +536,8 @@ OBJS-$(CONFIG_TMEDIAN_FILTER)
+@@ -537,6 +537,8 @@ OBJS-$(CONFIG_TMEDIAN_FILTER)
  OBJS-$(CONFIG_TMIDEQUALIZER_FILTER)          += vf_tmidequalizer.o
  OBJS-$(CONFIG_TMIX_FILTER)                   += vf_mix.o framesync.o
  OBJS-$(CONFIG_TONEMAP_FILTER)                += vf_tonemap.o
@@ -73,7 +73,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -504,6 +504,7 @@ extern const FFFilter ff_vf_tmedian;
+@@ -505,6 +505,7 @@ extern const FFFilter ff_vf_tmedian;
  extern const FFFilter ff_vf_tmidequalizer;
  extern const FFFilter ff_vf_tmix;
  extern const FFFilter ff_vf_tonemap;

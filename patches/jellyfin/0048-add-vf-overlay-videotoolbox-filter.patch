@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4071,6 +4071,7 @@ overlay_opencl_filter_deps="opencl"
+@@ -4074,6 +4074,7 @@ overlay_opencl_filter_deps="opencl"
  overlay_qsv_filter_deps="libmfx"
  overlay_qsv_filter_select="qsvvpp"
  overlay_vaapi_filter_deps="vaapi VAProcPipelineCaps_blend_flags"
@@ -14,7 +14,7 @@ Index: FFmpeg/doc/filters.texi
 ===================================================================
 --- FFmpeg.orig/doc/filters.texi
 +++ FFmpeg/doc/filters.texi
-@@ -19108,6 +19108,58 @@ testsrc=s=100x100, split=4 [in0][in1][in
+@@ -19182,6 +19182,58 @@ testsrc=s=100x100, split=4 [in0][in1][in
  
  @end itemize
  
@@ -77,7 +77,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -424,6 +424,9 @@ OBJS-$(CONFIG_OVERLAY_OPENCL_FILTER)
+@@ -425,6 +425,9 @@ OBJS-$(CONFIG_OVERLAY_OPENCL_FILTER)
                                                  opencl/overlay.o framesync.o
  OBJS-$(CONFIG_OVERLAY_QSV_FILTER)            += vf_overlay_qsv.o framesync.o
  OBJS-$(CONFIG_OVERLAY_VAAPI_FILTER)          += vf_overlay_vaapi.o framesync.o vaapi_vpp.o
@@ -91,7 +91,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -394,6 +394,7 @@ extern const FFFilter ff_vf_overlay;
+@@ -395,6 +395,7 @@ extern const FFFilter ff_vf_overlay;
  extern const FFFilter ff_vf_overlay_opencl;
  extern const FFFilter ff_vf_overlay_qsv;
  extern const FFFilter ff_vf_overlay_vaapi;

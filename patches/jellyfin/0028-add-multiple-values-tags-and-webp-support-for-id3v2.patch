@@ -2,7 +2,7 @@ Index: FFmpeg/libavformat/id3v2.c
 ===================================================================
 --- FFmpeg.orig/libavformat/id3v2.c
 +++ FFmpeg/libavformat/id3v2.c
-@@ -328,39 +328,54 @@ static void read_ttag(AVFormatContext *s
+@@ -333,39 +333,54 @@ static void read_ttag(AVFormatContext *s
                        AVDictionary **metadata, const char *key)
  {
      uint8_t *dst;

@@ -15,7 +15,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -554,6 +554,8 @@ OBJS-$(CONFIG_TONEMAP_VIDEOTOOLBOX_FILTE
+@@ -555,6 +555,8 @@ OBJS-$(CONFIG_TONEMAP_VIDEOTOOLBOX_FILTE
                                                  metal/utils.o
  OBJS-$(CONFIG_TPAD_FILTER)                   += vf_tpad.o
  OBJS-$(CONFIG_TRANSPOSE_FILTER)              += vf_transpose.o
@@ -28,7 +28,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -515,6 +515,7 @@ extern const FFFilter ff_vf_tonemap_vaap
+@@ -516,6 +516,7 @@ extern const FFFilter ff_vf_tonemap_vaap
  extern const FFFilter ff_vf_tonemap_videotoolbox;
  extern const FFFilter ff_vf_tpad;
  extern const FFFilter ff_vf_transpose;

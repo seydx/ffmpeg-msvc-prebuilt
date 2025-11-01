@@ -15,7 +15,7 @@ Index: FFmpeg/libavfilter/opencl.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/opencl.c
 +++ FFmpeg/libavfilter/opencl.c
-@@ -78,6 +78,9 @@ int ff_opencl_filter_config_input(AVFilt
+@@ -77,6 +77,9 @@ int ff_opencl_filter_config_input(AVFilt
      if (!ctx->output_height)
          ctx->output_height = inlink->h;
  
@@ -25,7 +25,7 @@ Index: FFmpeg/libavfilter/opencl.c
      return 0;
  }
  
-@@ -127,6 +130,9 @@ int ff_opencl_filter_config_output(AVFil
+@@ -126,6 +129,9 @@ int ff_opencl_filter_config_output(AVFil
      outlink->w = ctx->output_width;
      outlink->h = ctx->output_height;
  

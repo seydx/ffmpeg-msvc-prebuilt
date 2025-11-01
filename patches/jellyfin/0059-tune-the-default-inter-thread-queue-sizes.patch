@@ -2,7 +2,7 @@ Index: FFmpeg/fftools/ffmpeg_sched.h
 ===================================================================
 --- FFmpeg.orig/fftools/ffmpeg_sched.h
 +++ FFmpeg/fftools/ffmpeg_sched.h
-@@ -257,7 +257,10 @@ int sch_add_mux(Scheduler *sch, SchThrea
+@@ -259,7 +259,10 @@ int sch_add_mux(Scheduler *sch, SchThrea
  /**
   * Default size of a frame thread queue.
   */

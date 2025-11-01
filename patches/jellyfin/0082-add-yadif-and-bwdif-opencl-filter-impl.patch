@@ -10,7 +10,7 @@ Index: FFmpeg/configure
  bwdif_videotoolbox_filter_deps="metal corevideo videotoolbox"
  bwdif_vulkan_filter_deps="vulkan spirv_compiler"
  chromaber_vulkan_filter_deps="vulkan spirv_compiler"
-@@ -4161,6 +4162,7 @@ xfade_opencl_filter_deps="opencl"
+@@ -4162,6 +4163,7 @@ xfade_opencl_filter_deps="opencl"
  xfade_vulkan_filter_deps="vulkan spirv_compiler"
  yadif_cuda_filter_deps="ffnvcodec"
  yadif_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
@@ -31,7 +31,7 @@ Index: FFmpeg/libavfilter/Makefile
  OBJS-$(CONFIG_BWDIF_VIDEOTOOLBOX_FILTER)     += vf_bwdif_videotoolbox.o \
                                                  metal/vf_bwdif_videotoolbox.metallib.o \
                                                  metal/utils.o \
-@@ -604,6 +606,8 @@ OBJS-$(CONFIG_XSTACK_FILTER)
+@@ -605,6 +607,8 @@ OBJS-$(CONFIG_XSTACK_FILTER)
  OBJS-$(CONFIG_YADIF_FILTER)                  += vf_yadif.o yadif_common.o
  OBJS-$(CONFIG_YADIF_CUDA_FILTER)             += vf_yadif_cuda.o vf_yadif_cuda.ptx.o \
                                                  yadif_common.o cuda/load_helper.o
@@ -52,7 +52,7 @@ Index: FFmpeg/libavfilter/allfilters.c
  extern const FFFilter ff_vf_bwdif_videotoolbox;
  extern const FFFilter ff_vf_bwdif_vulkan;
  extern const FFFilter ff_vf_cas;
-@@ -558,6 +559,7 @@ extern const FFFilter ff_vf_xpsnr;
+@@ -559,6 +560,7 @@ extern const FFFilter ff_vf_xpsnr;
  extern const FFFilter ff_vf_xstack;
  extern const FFFilter ff_vf_yadif;
  extern const FFFilter ff_vf_yadif_cuda;

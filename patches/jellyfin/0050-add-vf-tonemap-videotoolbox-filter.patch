@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4121,6 +4121,7 @@ tinterlace_merge_test_deps="tinterlace_f
+@@ -4124,6 +4124,7 @@ tinterlace_merge_test_deps="tinterlace_f
  tinterlace_pad_test_deps="tinterlace_filter"
  tonemap_filter_deps="const_nan"
  tonemap_vaapi_filter_deps="vaapi VAProcFilterParameterBufferHDRToneMapping"
@@ -14,7 +14,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -549,6 +549,9 @@ OBJS-$(CONFIG_TONEMAP_CUDA_FILTER)
+@@ -550,6 +550,9 @@ OBJS-$(CONFIG_TONEMAP_CUDA_FILTER)
  OBJS-$(CONFIG_TONEMAP_OPENCL_FILTER)         += vf_tonemap_opencl.o opencl.o \
                                                  opencl/tonemap.o opencl/colorspace_common.o
  OBJS-$(CONFIG_TONEMAP_VAAPI_FILTER)          += vf_tonemap_vaapi.o vaapi_vpp.o
@@ -28,7 +28,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -512,6 +512,7 @@ extern const FFFilter ff_vf_tonemap;
+@@ -513,6 +513,7 @@ extern const FFFilter ff_vf_tonemap;
  extern const FFFilter ff_vf_tonemap_cuda;
  extern const FFFilter ff_vf_tonemap_opencl;
  extern const FFFilter ff_vf_tonemap_vaapi;
