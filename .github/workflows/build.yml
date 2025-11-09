@@ -431,23 +431,20 @@ jobs:
           echo "Adding FFmpeg config headers..."
           mkdir -p include/ffmpeg
 
-          # Check and copy config.h
-          if [[ -f "${CWD}/FFmpeg/config.h" ]]; then
-            cp "${CWD}/FFmpeg/config.h" include/ffmpeg/
-            echo "Added config.h"
-          else
-            echo "ERROR: config.h not found at ${CWD}/FFmpeg/config.h"
+          # Copy all config*.h files
+          CONFIG_FILES=$(find "${CWD}/FFmpeg" -maxdepth 1 -name "config*.h" -type f)
+
+          if [[ -z "$CONFIG_FILES" ]]; then
+            echo "ERROR: No config*.h files found in ${CWD}/FFmpeg/"
             exit 1
           fi
 
-          # Check and copy config_components.h
-          if [[ -f "${CWD}/FFmpeg/config_components.h" ]]; then
-            cp "${CWD}/FFmpeg/config_components.h" include/ffmpeg/
-            echo "Added config_components.h"
-          else
-            echo "ERROR: config_components.h not found at ${CWD}/FFmpeg/config_components.h"
-            exit 1
-          fi
+          for config_file in $CONFIG_FILES; do
+            cp "$config_file" include/ffmpeg/
+            echo "Added $(basename $config_file)"
+          done
+
+          echo "Successfully added all config*.h files"
 
           # # Add SDK libraries to the package
           # mkdir -p sdk
