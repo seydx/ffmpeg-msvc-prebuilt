@@ -1,0 +1,9 @@
+{
+  "git.ignoreLimitWarning": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "files.eol": "\n",
+  "editor.codeLens": false,
+  "editor.formatOnSave": true,
+  "github.copilot.chat.localeOverride": "en",
+}

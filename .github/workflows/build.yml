@@ -427,6 +427,28 @@ jobs:
           CWD=$(pwd)
           cd /usr/local
 
+          # Add FFmpeg config headers to the package
+          echo "Adding FFmpeg config headers..."
+          mkdir -p include/ffmpeg
+
+          # Check and copy config.h
+          if [[ -f "${CWD}/FFmpeg/config.h" ]]; then
+            cp "${CWD}/FFmpeg/config.h" include/ffmpeg/
+            echo "Added config.h"
+          else
+            echo "ERROR: config.h not found at ${CWD}/FFmpeg/config.h"
+            exit 1
+          fi
+
+          # Check and copy config_components.h
+          if [[ -f "${CWD}/FFmpeg/config_components.h" ]]; then
+            cp "${CWD}/FFmpeg/config_components.h" include/ffmpeg/
+            echo "Added config_components.h"
+          else
+            echo "ERROR: config_components.h not found at ${CWD}/FFmpeg/config_components.h"
+            exit 1
+          fi
+
           # # Add SDK libraries to the package
           # mkdir -p sdk
 
