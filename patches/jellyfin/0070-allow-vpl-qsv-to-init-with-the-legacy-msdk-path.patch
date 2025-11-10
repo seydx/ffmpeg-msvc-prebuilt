@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -2598,6 +2598,7 @@ HAVE_LIST="
+@@ -2597,6 +2597,7 @@ HAVE_LIST="
      xmllint
      zlib_gzip
      openvino2
@@ -10,7 +10,7 @@ Index: FFmpeg/configure
  "
  
  # options emitted with CONFIG_ prefix but not available on the command line
-@@ -7234,6 +7235,9 @@ elif enabled libvpl; then
+@@ -7236,6 +7237,9 @@ elif enabled libvpl; then
              die "ERROR: libvpl >= 2.6 not found"
      add_cppflags -DMFX_DEPRECATED_OFF
      check_type "vpl/mfxdefs.h vpl/mfxvideo.h" "struct mfxConfigInterface"
@@ -84,7 +84,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/qsvenc.c
 +++ FFmpeg/libavcodec/qsvenc.c
-@@ -1192,7 +1192,7 @@ static int init_video_param(AVCodecConte
+@@ -1190,7 +1190,7 @@ static int init_video_param(AVCodecConte
  
  #if QSV_HAVE_EXT_AV1_PARAM
      if (avctx->codec_id == AV_CODEC_ID_AV1) {
@@ -93,7 +93,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
              q->extav1tileparam.Header.BufferId = MFX_EXTBUFF_AV1_TILE_PARAM;
              q->extav1tileparam.Header.BufferSz = sizeof(q->extav1tileparam);
              q->extav1tileparam.NumTileColumns  = q->tile_cols;
-@@ -1416,7 +1416,7 @@ static int qsv_retrieve_enc_av1_params(A
+@@ -1414,7 +1414,7 @@ static int qsv_retrieve_enc_av1_params(A
          (mfxExtBuffer*)&co3,
      };
  

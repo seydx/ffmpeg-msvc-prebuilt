@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -2374,6 +2374,9 @@ HEADERS_LIST="
+@@ -2373,6 +2373,9 @@ HEADERS_LIST="
  INTRINSICS_LIST="
      intrinsics_neon
      intrinsics_sse2
@@ -12,7 +12,7 @@ Index: FFmpeg/configure
  "
  
  MATH_FUNCS="
-@@ -2820,6 +2823,9 @@ armv8_deps="aarch64"
+@@ -2819,6 +2822,9 @@ armv8_deps="aarch64"
  neon_deps_any="aarch64 arm"
  intrinsics_neon_deps="neon"
  intrinsics_sse2_deps="sse2"
@@ -22,7 +22,7 @@ Index: FFmpeg/configure
  vfp_deps="arm"
  vfpv3_deps="vfp"
  setend_deps="arm"
-@@ -4124,6 +4130,7 @@ tinterlace_filter_deps="gpl"
+@@ -4126,6 +4132,7 @@ tinterlace_filter_deps="gpl"
  tinterlace_merge_test_deps="tinterlace_filter"
  tinterlace_pad_test_deps="tinterlace_filter"
  tonemap_filter_deps="const_nan"
@@ -30,7 +30,7 @@ Index: FFmpeg/configure
  tonemap_vaapi_filter_deps="vaapi VAProcFilterParameterBufferHDRToneMapping"
  tonemap_videotoolbox_filter_deps="metal corevideo videotoolbox const_nan"
  tonemap_opencl_filter_deps="opencl const_nan"
-@@ -6713,6 +6720,19 @@ fi
+@@ -6716,6 +6723,19 @@ fi
  check_cc intrinsics_neon arm_neon.h "int16x8_t test = vdupq_n_s16(0)"
  check_cc intrinsics_sse2 emmintrin.h "__m128i test = _mm_setzero_si128()"
  
@@ -50,7 +50,7 @@ Index: FFmpeg/configure
  check_ldflags -Wl,--as-needed
  check_ldflags -Wl,-z,noexecstack
  if [ $target_os = "darwin" ]; then
-@@ -7905,6 +7925,16 @@ elif enabled gcc; then
+@@ -7912,6 +7932,16 @@ elif enabled gcc; then
              check_allcflags -mpreferred-stack-boundary=4
              ;;
          esac
@@ -71,7 +71,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -544,6 +544,7 @@ OBJS-$(CONFIG_TMEDIAN_FILTER)
+@@ -545,6 +545,7 @@ OBJS-$(CONFIG_TMEDIAN_FILTER)
  OBJS-$(CONFIG_TMIDEQUALIZER_FILTER)          += vf_tmidequalizer.o
  OBJS-$(CONFIG_TMIX_FILTER)                   += vf_mix.o framesync.o
  OBJS-$(CONFIG_TONEMAP_FILTER)                += vf_tonemap.o
@@ -2540,7 +2540,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -509,6 +509,7 @@ extern const FFFilter ff_vf_tmedian;
+@@ -510,6 +510,7 @@ extern const FFFilter ff_vf_tmedian;
  extern const FFFilter ff_vf_tmidequalizer;
  extern const FFFilter ff_vf_tmix;
  extern const FFFilter ff_vf_tonemap;

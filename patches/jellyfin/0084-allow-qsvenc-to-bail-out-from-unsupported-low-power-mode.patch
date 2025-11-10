@@ -2,7 +2,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/qsvenc.c
 +++ FFmpeg/libavcodec/qsvenc.c
-@@ -701,6 +701,13 @@ static int check_enc_param(AVCodecContex
+@@ -699,6 +699,13 @@ static int check_enc_param(AVCodecContex
                av_log(avctx, AV_LOG_ERROR, "Current resolution is unsupported\n");
          if (UNMATCH(FrameInfo.FourCC))
                av_log(avctx, AV_LOG_ERROR, "Current pixel format is unsupported\n");

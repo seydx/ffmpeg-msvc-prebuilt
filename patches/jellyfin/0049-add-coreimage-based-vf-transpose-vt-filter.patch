@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4127,7 +4127,7 @@ tonemap_vaapi_filter_deps="vaapi VAProcF
+@@ -4126,7 +4126,7 @@ tonemap_vaapi_filter_deps="vaapi VAProcF
  tonemap_opencl_filter_deps="opencl const_nan"
  transpose_opencl_filter_deps="opencl"
  transpose_vaapi_filter_deps="vaapi VAProcPipelineCaps_rotation_flags"

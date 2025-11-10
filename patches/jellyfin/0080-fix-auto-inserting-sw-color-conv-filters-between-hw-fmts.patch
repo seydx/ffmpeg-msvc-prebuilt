@@ -2,7 +2,7 @@ Index: FFmpeg/fftools/ffmpeg_filter.c
 ===================================================================
 --- FFmpeg.orig/fftools/ffmpeg_filter.c
 +++ FFmpeg/fftools/ffmpeg_filter.c
-@@ -1706,8 +1706,21 @@ static int configure_output_video_filter
+@@ -1708,8 +1708,21 @@ static int configure_output_video_filter
                 ofp->format != AV_PIX_FMT_NONE || !ofp->formats);
      av_bprint_init(&bprint, 0, AV_BPRINT_SIZE_UNLIMITED);
      choose_pix_fmts(ofp, &bprint);

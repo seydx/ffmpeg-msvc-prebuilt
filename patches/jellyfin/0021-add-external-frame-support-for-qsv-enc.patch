@@ -14,7 +14,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/qsvenc.c
 +++ FFmpeg/libavcodec/qsvenc.c
-@@ -1900,6 +1900,10 @@ static void clear_unused_frames(QSVEncCo
+@@ -1898,6 +1898,10 @@ static void clear_unused_frames(QSVEncCo
              memset(&cur->enc_ctrl, 0, sizeof(cur->enc_ctrl));
              cur->enc_ctrl.Payload = cur->payloads;
              cur->enc_ctrl.ExtParam = cur->extparam;
@@ -25,7 +25,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
              if (cur->frame->format == AV_PIX_FMT_QSV) {
                  av_frame_unref(cur->frame);
              }
-@@ -2071,6 +2075,16 @@ static int submit_frame(QSVEncContext *q
+@@ -2069,6 +2073,16 @@ static int submit_frame(QSVEncContext *q
          return ret;
  
      if (frame->format == AV_PIX_FMT_QSV) {
@@ -42,7 +42,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
          ret = av_frame_ref(qf->frame, frame);
          if (ret < 0)
              return ret;
-@@ -2079,10 +2093,19 @@ static int submit_frame(QSVEncContext *q
+@@ -2077,10 +2091,19 @@ static int submit_frame(QSVEncContext *q
  
          if (q->frames_ctx.mids) {
              ret = ff_qsv_find_surface_idx(&q->frames_ctx, qf);

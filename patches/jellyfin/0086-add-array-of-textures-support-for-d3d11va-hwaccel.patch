@@ -232,7 +232,7 @@ Index: FFmpeg/libavcodec/dxva2.c
              av_log((void *)avctx, AV_LOG_ERROR, "get_buffer frame is invalid!\n");
              return NULL;
          }
-@@ -853,8 +932,10 @@ unsigned ff_dxva2_get_surface_index(cons
+@@ -852,8 +931,10 @@ unsigned ff_dxva2_get_surface_index(cons
      }
  #endif
  #if CONFIG_D3D11VA

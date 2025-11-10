@@ -98,7 +98,7 @@ Index: FFmpeg/libavformat/hlsenc.c
 ===================================================================
 --- FFmpeg.orig/libavformat/hlsenc.c
 +++ FFmpeg/libavformat/hlsenc.c
-@@ -883,7 +883,7 @@ static int hls_mux_init(AVFormatContext
+@@ -775,7 +775,7 @@ static int hls_mux_init(AVFormatContext
      AVFormatContext *vtt_oc = NULL;
      int byterange_mode = (hls->flags & HLS_SINGLE_FILE) || (hls->max_seg_size > 0);
      int remaining_options;
@@ -107,7 +107,7 @@ Index: FFmpeg/libavformat/hlsenc.c
  
      ret = avformat_alloc_output_context2(&vs->avf, vs->oformat, NULL, NULL);
      if (ret < 0)
-@@ -931,6 +931,20 @@ static int hls_mux_init(AVFormatContext
+@@ -823,6 +823,20 @@ static int hls_mux_init(AVFormatContext
              st->codecpar->codec_tag = 0;
          }
  
@@ -157,7 +157,7 @@ Index: FFmpeg/libavformat/movenc.c
          } else if (dovi) {
              av_log(mov->fc, AV_LOG_WARNING, "Not writing 'dvcC'/'dvvC' box. Requires -strict unofficial.\n");
          }
-@@ -8829,6 +8831,7 @@ static const AVCodecTag codec_mp4_tags[]
+@@ -8843,6 +8845,7 @@ static const AVCodecTag codec_mp4_tags[]
      { AV_CODEC_ID_HEVC,            MKTAG('h', 'e', 'v', '1') },
      { AV_CODEC_ID_HEVC,            MKTAG('h', 'v', 'c', '1') },
      { AV_CODEC_ID_HEVC,            MKTAG('d', 'v', 'h', '1') },
@@ -165,7 +165,7 @@ Index: FFmpeg/libavformat/movenc.c
      { AV_CODEC_ID_VVC,             MKTAG('v', 'v', 'c', '1') },
      { AV_CODEC_ID_VVC,             MKTAG('v', 'v', 'i', '1') },
      { AV_CODEC_ID_EVC,             MKTAG('e', 'v', 'c', '1') },
-@@ -8843,6 +8846,7 @@ static const AVCodecTag codec_mp4_tags[]
+@@ -8857,6 +8860,7 @@ static const AVCodecTag codec_mp4_tags[]
      { AV_CODEC_ID_TSCC2,           MKTAG('m', 'p', '4', 'v') },
      { AV_CODEC_ID_VP9,             MKTAG('v', 'p', '0', '9') },
      { AV_CODEC_ID_AV1,             MKTAG('a', 'v', '0', '1') },

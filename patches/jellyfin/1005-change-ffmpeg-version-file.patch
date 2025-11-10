@@ -2,7 +2,7 @@ Index: FFmpeg/ffbuild/version.sh
 ===================================================================
 --- FFmpeg.orig/ffbuild/version.sh
 +++ FFmpeg/ffbuild/version.sh
-@@ -35,7 +35,7 @@ test "$revision" || revision=$(cd "$1" && cat RELEASE 2> /dev/null)
+@@ -35,7 +35,7 @@ test "$revision" || revision=$(cd "$1" &
  test "$revision" && test "$git_hash" && revision="$revision-$git_hash"
  
  # releases extract the version number from the VERSION file

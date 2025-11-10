@@ -2,7 +2,7 @@ Index: FFmpeg/libavformat/rtsp.c
 ===================================================================
 --- FFmpeg.orig/libavformat/rtsp.c
 +++ FFmpeg/libavformat/rtsp.c
-@@ -631,14 +631,47 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
+@@ -631,14 +631,47 @@ static void sdp_parse_line(AVFormatConte
              if (rtsp_st->stream_index >= 0) {
                  st = s->streams[rtsp_st->stream_index];
                  sdp_parse_rtpmap(s, st, rtsp_st, payload_type, p);

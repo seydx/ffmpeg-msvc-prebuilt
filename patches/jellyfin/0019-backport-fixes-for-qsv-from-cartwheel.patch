@@ -218,7 +218,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/qsvenc.c
 +++ FFmpeg/libavcodec/qsvenc.c
-@@ -205,6 +205,7 @@ static void dump_video_param(AVCodecCont
+@@ -203,6 +203,7 @@ static void dump_video_param(AVCodecCont
  #endif
  
      const char *tmp_str = NULL;
@@ -226,7 +226,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
  
      if (q->co2_idx > 0)
          co2 = (mfxExtCodingOption2*)coding_opts[q->co2_idx];
-@@ -220,6 +221,8 @@ static void dump_video_param(AVCodecCont
+@@ -218,6 +219,8 @@ static void dump_video_param(AVCodecCont
          exthypermodeparam = (mfxExtHyperModeParam *)coding_opts[q->exthypermodeparam_idx];
  #endif
  
@@ -235,7 +235,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
      av_log(avctx, AV_LOG_VERBOSE, "profile: %s; level: %"PRIu16"\n",
             print_profile(avctx->codec_id, info->CodecProfile), info->CodecLevel);
  
-@@ -400,6 +403,11 @@ static void dump_video_param(AVCodecCont
+@@ -398,6 +401,11 @@ static void dump_video_param(AVCodecCont
          av_log(avctx, AV_LOG_VERBOSE, "\n");
      }
  #endif
@@ -247,7 +247,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
  }
  
  static void dump_video_vp9_param(AVCodecContext *avctx, QSVEncContext *q,
-@@ -1211,6 +1219,18 @@ static int init_video_param(AVCodecConte
+@@ -1209,6 +1217,18 @@ static int init_video_param(AVCodecConte
          q->extparam_internal[q->nb_extparam_internal++] = (mfxExtBuffer *)&q->exthevctiles;
      }
  
@@ -266,7 +266,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
      q->extvsi.VideoFullRange = (avctx->color_range == AVCOL_RANGE_JPEG);
      q->extvsi.ColourDescriptionPresent = 0;
  
-@@ -1463,12 +1483,17 @@ static int qsv_retrieve_enc_params(AVCod
+@@ -1461,12 +1481,17 @@ static int qsv_retrieve_enc_params(AVCod
      };
  #endif
  
@@ -285,7 +285,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
      ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&extradata;
      ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&co;
  
-@@ -1496,6 +1521,10 @@ static int qsv_retrieve_enc_params(AVCod
+@@ -1494,6 +1519,10 @@ static int qsv_retrieve_enc_params(AVCod
          ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&hyper_mode_param_buf;
      }
  #endif

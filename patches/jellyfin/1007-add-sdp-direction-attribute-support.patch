@@ -2,7 +2,7 @@ Index: FFmpeg/libavformat/rtsp.c
 ===================================================================
 --- FFmpeg.orig/libavformat/rtsp.c
 +++ FFmpeg/libavformat/rtsp.c
-@@ -290,6 +290,7 @@ static int init_satip_stream(AVFormatContext *s)
+@@ -290,6 +290,7 @@ static int init_satip_stream(AVFormatCon
                   &rt->nb_rtsp_streams, rtsp_st);
  
      rtsp_st->sdp_payload_type = 33; // MP2T
@@ -10,7 +10,7 @@ Index: FFmpeg/libavformat/rtsp.c
      av_strlcpy(rtsp_st->control_url,
                 rt->control_uri, sizeof(rtsp_st->control_url));
  
-@@ -530,6 +531,7 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
+@@ -530,6 +531,7 @@ static void sdp_parse_line(AVFormatConte
  
          rtsp_st->sdp_ip = s1->default_ip;
          rtsp_st->sdp_ttl = s1->default_ttl;
@@ -18,7 +18,7 @@ Index: FFmpeg/libavformat/rtsp.c
  
          copy_default_source_addrs(s1->default_include_source_addrs,
                                    s1->nb_default_include_source_addrs,
-@@ -675,6 +677,26 @@ static void sdp_parse_line(AVFormatContext *s, SDPParseState *s1,
+@@ -675,6 +677,26 @@ static void sdp_parse_line(AVFormatConte
                  }
              } else
                  get_word(rt->default_lang, sizeof(rt->default_lang), &p);
@@ -49,11 +49,10 @@ Index: FFmpeg/libavformat/rtsp.h
 ===================================================================
 --- FFmpeg.orig/libavformat/rtsp.h
 +++ FFmpeg/libavformat/rtsp.h
-@@ -446,6 +446,16 @@ typedef struct RTSPSource {
-     char addr[128]; /**< Source-specific multicast include source IP address (from SDP content) */
+@@ -447,6 +447,16 @@ typedef struct RTSPSource {
  } RTSPSource;
  
-+/**
+ /**
 + * SDP direction attribute (RFC 4566)
 + */
 +enum RTSPSDPDirection {
@@ -63,9 +62,10 @@ Index: FFmpeg/libavformat/rtsp.h
 +    RTSP_DIRECTION_INACTIVE = 3,  /**< Inactive (a=inactive) */
 +};
 +
- /**
++/**
   * Describe a single stream, as identified by a single m= line block in the
   * SDP content. In the case of RDT, one RTSPStream can represent multiple
+  * AVStreams. In this case, each AVStream in this set has similar content
 @@ -475,6 +485,7 @@ typedef struct RTSPStream {
      struct RTSPSource **exclude_source_addrs; /**< Source-specific multicast exclude source IP addresses (from SDP content) */
      int sdp_ttl;              /**< IP Time-To-Live (from SDP content) */

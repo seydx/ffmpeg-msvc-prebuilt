@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4124,6 +4124,7 @@ tinterlace_merge_test_deps="tinterlace_f
+@@ -4123,6 +4123,7 @@ tinterlace_merge_test_deps="tinterlace_f
  tinterlace_pad_test_deps="tinterlace_filter"
  tonemap_filter_deps="const_nan"
  tonemap_vaapi_filter_deps="vaapi VAProcFilterParameterBufferHDRToneMapping"

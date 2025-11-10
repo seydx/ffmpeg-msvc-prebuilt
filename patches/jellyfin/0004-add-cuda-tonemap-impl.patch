@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3418,6 +3418,8 @@ scale_cuda_filter_deps="ffnvcodec"
+@@ -3417,6 +3417,8 @@ scale_cuda_filter_deps="ffnvcodec"
  scale_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
  thumbnail_cuda_filter_deps="ffnvcodec"
  thumbnail_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
@@ -11,7 +11,7 @@ Index: FFmpeg/configure
  transpose_npp_filter_deps="ffnvcodec libnpp"
  overlay_cuda_filter_deps="ffnvcodec"
  overlay_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
-@@ -4852,8 +4854,10 @@ if enabled cuda_nvcc; then
+@@ -4851,8 +4853,10 @@ if enabled cuda_nvcc; then
      nvcc_default="nvcc"
      nvccflags_default="-gencode arch=compute_30,code=sm_30 -O2"
  else
@@ -23,7 +23,7 @@ Index: FFmpeg/configure
      NVCC_C=""
  fi
  
-@@ -4866,6 +4870,11 @@ if enabled cuda_nvcc; then
+@@ -4865,6 +4869,11 @@ if enabled cuda_nvcc; then
      if $nvcc $nvccflags_default 2>&1 | grep -qi unsupported; then
          nvccflags_default="-gencode arch=compute_75,code=sm_75 -O2"
      fi
