@@ -83,3 +83,4 @@
 1007-add-sdp-direction-attribute-support.patch
 1008-add-sdp-fmtp-and-mimetype-support.patch
 1009-hevc-parameter-sets.patch
+1010-fix-rkmpp-sidedata.patch
