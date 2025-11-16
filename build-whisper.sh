@@ -89,7 +89,7 @@ includedir=\${prefix}/include
 
 Name: whisper
 Description: OpenAI Whisper speech recognition library
-Version: 1.8.1
+Version: 1.8.2
 Requires: OpenCL
 Cflags: -I\${includedir}
 Libs: -L\${libdir} -lwhisper $VULKAN_LIBS
