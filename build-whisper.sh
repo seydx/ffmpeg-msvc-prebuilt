@@ -1,6 +1,4 @@
 #!/bin/bash
-# Build whisper.cpp for FFmpeg integration
-# Based on https://github.com/ggml-org/whisper.cpp
 
 set -e
 echo -e "\n[Build whisper.cpp]"
@@ -9,17 +7,6 @@ SRC_DIR=$(pwd)/whisper.cpp
 BUILD_DIR=build/whisper.cpp
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
-
-# Note: This script is only called for amd64/x64 builds (see build.sh)
-# ARM64 is not supported due to MSVC/clang-cl compatibility issues
-
-# Build whisper.cpp with MSVC
-# - Static library for FFmpeg integration
-# - OpenCL support (already built)
-# - Vulkan support (if available)
-# - Disable tests, examples, server
-# - Use internal ggml (not system-installed)
-# - Enable SIMD optimizations for x64
 
 WHISPER_CMAKE_ARGS=(
     -G "NMake Makefiles"
@@ -66,7 +53,6 @@ cmake --build . --config Release -j$(nproc)
 cmake --install . --config Release
 
 # Fix ggml library names - MSVC builds them without 'lib' prefix (e.g., ggml.lib instead of libggml.lib)
-# FFmpeg's pkg-config expects the 'lib' prefix, so we create copies with the correct names
 ORIGINAL_DIR=$(pwd)
 cd "$INSTALL_PREFIX/lib"
 for libfile in ggml*.lib; do
@@ -103,7 +89,7 @@ includedir=\${prefix}/include
 
 Name: whisper
 Description: OpenAI Whisper speech recognition library
-Version: 1.7.6
+Version: 1.8.1
 Requires: OpenCL
 Cflags: -I\${includedir}
 Libs: -L\${libdir} -lwhisper $VULKAN_LIBS

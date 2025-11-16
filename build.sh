@@ -135,12 +135,6 @@ fi
 ./build-opencl.sh
 add_ffargs "--enable-opencl"
 
-# Whisper.cpp - Speech-to-Text (requires FFmpeg 8+)
-# if [ -n "$ENABLE_WHISPER" ] && [ "$BUILD_ARCH" == "amd64" ]; then
-#     ./build-whisper.sh
-#     add_ffargs "--enable-whisper"
-# fi
-
 # AMD AMF
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     echo -e "\n[Build AMF headers]"
@@ -345,7 +339,7 @@ if [ -n "$ENABLE_LIBZIMG" ]; then
 fi
 
 # ========================================
-# TEXT/SUBTITLE RENDERING
+# Other Libraries
 # ========================================
 
 # FreeType - Font rendering
@@ -365,6 +359,12 @@ if [ -n "$ENABLE_LIBASS" ]; then
     # apply-patch fribidi fribidi.patch
     ./build-libass.sh
     add_ffargs "--enable-libass"
+fi
+
+# Whisper.cpp
+if [ -n "$ENABLE_WHISPER" ] && [ "$BUILD_ARCH" == "amd64" ]; then
+    ./build-whisper.sh
+    add_ffargs "--enable-whisper"
 fi
 
 # ========================================
