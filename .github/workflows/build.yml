@@ -235,15 +235,6 @@ jobs:
           rm $(which link)
           rm -rf /usr/local
 
-      - name: Setup clang-cl for whisper.cpp
-        shell: cmd
-        run: |
-          REM clang-cl is included with Visual Studio 2022
-          REM Required for whisper.cpp/GGML (especially ARM64)
-          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-          where clang-cl
-          clang-cl --version
-
       - name: Build OpenCL
         if: ${{ success() }}
         shell: cmd
