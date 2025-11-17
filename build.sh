@@ -199,7 +199,7 @@ libdir=\${prefix}/lib
 
 Name: glslang
 Description: Khronos reference compiler and validator for GLSL, ESSL, and HLSL
-Version: 1.4.328.1
+Version: 1.4.332
 Cflags: -I\${includedir}
 Libs: -L\${libdir} $GLSLANG_LIBS
 EOF
@@ -212,6 +212,14 @@ EOF
         add_ffargs "--enable-vulkan"
     else
         echo "Vulkan-Shim not found, disabling Vulkan support in FFmpeg"
+    fi
+
+    # Check for shaderc (built in workflow)
+    if pkg-config --exists shaderc 2>/dev/null; then
+        echo "shaderc found via pkg-config, enabling shaderc support in FFmpeg"
+        add_ffargs "--enable-libshaderc"
+    else
+        echo "shaderc not found, disabling shaderc support in FFmpeg"
     fi
 fi
 

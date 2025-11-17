@@ -103,3 +103,6 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "Vulkan-Shim-Loader"]
 	path = Vulkan-Shim-Loader
 	url = https://github.com/BtbN/Vulkan-Shim-Loader.git
+[submodule "shaderc"]
+	path = shaderc
+	url = https://github.com/google/shaderc.git
