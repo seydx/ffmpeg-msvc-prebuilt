@@ -323,22 +323,20 @@ jobs:
 
             REM Create host toolchain file for vulkan-shaders-gen (x64 tool that runs during build)
             REM This is needed because vcvarsall amd64_arm64 sets cl.exe to the ARM64 cross-compiler
-            set HOST_TOOLCHAIN=D:/a/ffmpeg-msvc-prebuilt/ffmpeg-msvc-prebuilt/whisper.cpp/build/host-toolchain-x64.cmake
-            set NATIVE_CL=${{steps.setup.outputs.installationPath}}\VC\Tools\MSVC\14.44.35207\bin\Hostx64\x64\cl.exe
-            echo set(CMAKE_SYSTEM_NAME Windows^) > "%HOST_TOOLCHAIN%"
-            echo set(CMAKE_SYSTEM_PROCESSOR AMD64^) >> "%HOST_TOOLCHAIN%"
-            echo set(CMAKE_C_COMPILER "%NATIVE_CL:/=\%"^) >> "%HOST_TOOLCHAIN%"
-            echo set(CMAKE_CXX_COMPILER "%NATIVE_CL:/=\%"^) >> "%HOST_TOOLCHAIN%"
-            echo set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE^) >> "%HOST_TOOLCHAIN%"
-            echo set(CMAKE_C_FLAGS_RELEASE "-O2" CACHE STRING "C flags" FORCE^) >> "%HOST_TOOLCHAIN%"
-            echo set(CMAKE_CXX_FLAGS_RELEASE "-O2 /EHsc" CACHE STRING "CXX flags" FORCE^) >> "%HOST_TOOLCHAIN%"
-            echo set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER^) >> "%HOST_TOOLCHAIN%"
-            echo set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER^) >> "%HOST_TOOLCHAIN%"
-            echo set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER^) >> "%HOST_TOOLCHAIN%"
-            echo set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE NEVER^) >> "%HOST_TOOLCHAIN%"
-            echo Created host toolchain: %HOST_TOOLCHAIN%
-            type "%HOST_TOOLCHAIN%"
-            set VULKAN_TOOLCHAIN_FLAG=-DGGML_VULKAN_SHADERS_GEN_TOOLCHAIN=%HOST_TOOLCHAIN%
+            echo set(CMAKE_SYSTEM_NAME Windows^) > host-toolchain-x64.cmake
+            echo set(CMAKE_SYSTEM_PROCESSOR AMD64^) >> host-toolchain-x64.cmake
+            echo set(CMAKE_C_COMPILER "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe"^) >> host-toolchain-x64.cmake
+            echo set(CMAKE_CXX_COMPILER "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/cl.exe"^) >> host-toolchain-x64.cmake
+            echo set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE^) >> host-toolchain-x64.cmake
+            echo set(CMAKE_C_FLAGS_RELEASE "-O2" CACHE STRING "C flags" FORCE^) >> host-toolchain-x64.cmake
+            echo set(CMAKE_CXX_FLAGS_RELEASE "-O2 /EHsc" CACHE STRING "CXX flags" FORCE^) >> host-toolchain-x64.cmake
+            echo set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER^) >> host-toolchain-x64.cmake
+            echo set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER^) >> host-toolchain-x64.cmake
+            echo set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER^) >> host-toolchain-x64.cmake
+            echo set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE NEVER^) >> host-toolchain-x64.cmake
+            echo Created host toolchain file:
+            type host-toolchain-x64.cmake
+            set VULKAN_TOOLCHAIN_FLAG=-DGGML_VULKAN_SHADERS_GEN_TOOLCHAIN=%CD%/host-toolchain-x64.cmake
           ) else (
             set GGML_NEON=
             set GGML_X64_FLAGS=-DGGML_SSE42=ON -DGGML_AVX=ON -DGGML_F16C=ON -DGGML_AVX2=ON -DGGML_BMI2=ON -DGGML_FMA=ON
