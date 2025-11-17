@@ -428,6 +428,14 @@ jobs:
             set VULKAN_LIB_PATH=%VULKAN_SDK%\Lib
           )
 
+          REM Set OpenMP library path
+          if "${{matrix.arch}}" == "arm64" (
+            set OMP_LIB_PATH=${{steps.setup.outputs.installationPath}}\VC\Tools\Llvm\ARM64\lib
+          ) else (
+            set OMP_LIB_PATH=${{steps.setup.outputs.installationPath}}\VC\Tools\Llvm\x64\lib
+          )
+          set OMP_LIBS=-L"%OMP_LIB_PATH%" -lomp
+
           if exist "%VULKAN_LIB_PATH%" (
             set GGML_LIBS=-lggml -lggml-base -lggml-cpu -lggml-opencl -lggml-vulkan
             set VULKAN_LIBS=-L"%VULKAN_LIB_PATH%" -lvulkan-1
@@ -448,7 +456,7 @@ jobs:
             echo Requires: OpenCL
             echo Cflags: -I${includedir}
             echo Libs: -L${libdir} -lwhisper %VULKAN_LIBS%
-            echo Libs.private: %GGML_LIBS% -lstdc++
+            echo Libs.private: %GGML_LIBS% %OMP_LIBS% -lstdc++
           ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\whisper.pc
 
       - name: Build dav1d
