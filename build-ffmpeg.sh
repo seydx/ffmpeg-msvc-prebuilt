@@ -26,8 +26,8 @@ CFLAGS="$CFLAGS -I${SRC_DIR}/compat/stdbit"
 CFLAGS="$CFLAGS -DLZMA_API_STATIC"
 
 # Add library paths for MSVC
-EXTRA_CFLAGS=""
-EXTRA_LDFLAGS="-LIBPATH:D:/a/_temp/msys64/usr/local/lib"
+EXTRA_CFLAGS="/MT"
+EXTRA_LDFLAGS="-LIBPATH:D:/a/_temp/msys64/usr/local/lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcrtd.lib"
 EXTRA_LIBS=""
 
 EX_BUILD_ARGS="$TYPE_ARGS $CROSS_ARGS $LICENSE_ARGS $DISABLE_ARGS"
