@@ -281,6 +281,24 @@ jobs:
           cmake --install . --config Release
           if %errorlevel% neq 0 exit /b %errorlevel%
 
+          REM Remove shared library files to force static linking
+          echo Removing shaderc shared library files...
+          del /Q D:\a\_temp\msys64\usr\local\bin\shaderc_shared.dll 2>nul
+          del /Q D:\a\_temp\msys64\usr\local\lib\shaderc_shared.lib 2>nul
+          del /Q D:\a\_temp\msys64\usr\local\lib\libshaderc_shared.lib 2>nul
+
+          REM Manually copy libshaderc_util if it wasn't installed (same as Linux script does)
+          if exist libshaderc_util\shaderc_util.lib (
+            echo Copying libshaderc_util.lib...
+            copy libshaderc_util\shaderc_util.lib D:\a\_temp\msys64\usr\local\lib\
+          )
+
+          REM Create shaderc.pc alias from shaderc_combined.pc (same as Linux script does)
+          if exist D:\a\_temp\msys64\usr\local\lib\pkgconfig\shaderc_combined.pc (
+            echo Creating shaderc.pc from shaderc_combined.pc...
+            copy D:\a\_temp\msys64\usr\local\lib\pkgconfig\shaderc_combined.pc D:\a\_temp\msys64\usr\local\lib\pkgconfig\shaderc.pc
+          )
+
           cd ..
 
           REM Build glslc natively (x64) so it can run during whisper.cpp build
@@ -426,8 +444,8 @@ jobs:
             set GGML_NEON=
             set GGML_X64_FLAGS=-DGGML_SSE42=ON -DGGML_AVX=ON -DGGML_F16C=ON -DGGML_AVX2=ON -DGGML_BMI2=ON -DGGML_FMA=ON
             set CMAKE_SYSTEM_PROCESSOR=
-            set CMAKE_C_FLAGS=
-            set CMAKE_CXX_FLAGS=-DCMAKE_CXX_FLAGS="/EHsc"
+            set CMAKE_C_FLAGS=-DCMAKE_C_FLAGS="/MT"
+            set CMAKE_CXX_FLAGS=-DCMAKE_CXX_FLAGS="/MT /EHsc"
             set VULKAN_TOOLCHAIN_FLAG=
           )
 
@@ -457,6 +475,7 @@ jobs:
             -DWHISPER_BUILD_SERVER=OFF ^
             -DWHISPER_USE_SYSTEM_GGML=OFF ^
             -DGGML_CCACHE=OFF ^
+            -DGGML_OPENMP=OFF ^
             -DGGML_OPENCL=ON ^
             -DOpenCL_LIBRARY=D:/a/_temp/msys64/usr/local/lib/OpenCL.lib ^
             -DOpenCL_LIBRARIES=D:/a/_temp/msys64/usr/local/lib/OpenCL.lib ^
@@ -488,14 +507,6 @@ jobs:
           REM Create pkg-config file for whisper.cpp
           if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
 
-          REM Set OpenMP library path
-          if "${{matrix.arch}}" == "arm64" (
-            set OMP_LIB_PATH=C:/PROGRA~1/MICROS~2/2022/ENTERP~1/VC/Tools/Llvm/ARM64/lib
-          ) else (
-            set OMP_LIB_PATH=C:/PROGRA~1/MICROS~2/2022/ENTERP~1/VC/Tools/Llvm/x64/lib
-          )
-          set OMP_LIBS=-L%OMP_LIB_PATH% -llibomp
-
           REM Check if Vulkan-Shim was built (indicates Vulkan support is enabled)
           if exist "D:\a\_temp\msys64\usr\local\lib\vulkan-1.lib" (
             set GGML_LIBS=-lggml -lggml-base -lggml-cpu -lggml-opencl -lggml-vulkan
@@ -517,7 +528,7 @@ jobs:
             echo Requires: OpenCL
             echo Cflags: -I${includedir}
             echo Libs: -L${libdir} -lwhisper %VULKAN_LIBS%
-            echo Libs.private: %GGML_LIBS% %OMP_LIBS% -lstdc++
+            echo Libs.private: %GGML_LIBS% -lstdc++
           ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\whisper.pc
 
       - name: Build dav1d
