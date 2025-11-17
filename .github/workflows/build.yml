@@ -430,11 +430,11 @@ jobs:
 
           REM Set OpenMP library path
           if "${{matrix.arch}}" == "arm64" (
-            set OMP_LIB_PATH=${{steps.setup.outputs.installationPath}}\VC\Tools\Llvm\ARM64\lib
+            set OMP_LIB_PATH=C:/PROGRA~1/MICROS~2/2022/ENTERP~1/VC/Tools/Llvm/ARM64/lib
           ) else (
-            set OMP_LIB_PATH=${{steps.setup.outputs.installationPath}}\VC\Tools\Llvm\x64\lib
+            set OMP_LIB_PATH=C:/PROGRA~1/MICROS~2/2022/ENTERP~1/VC/Tools/Llvm/x64/lib
           )
-          set OMP_LIBS=-L"%OMP_LIB_PATH%" -lomp
+          set OMP_LIBS=-L%OMP_LIB_PATH% -lomp
 
           if exist "%VULKAN_LIB_PATH%" (
             set GGML_LIBS=-lggml -lggml-base -lggml-cpu -lggml-opencl -lggml-vulkan
