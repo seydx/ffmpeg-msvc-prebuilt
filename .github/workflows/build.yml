@@ -334,14 +334,14 @@ jobs:
             echo set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY NEVER^) >> host-toolchain-x64.cmake
             echo set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE NEVER^) >> host-toolchain-x64.cmake
             echo set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE NEVER^) >> host-toolchain-x64.cmake
-            REM Set x64 library and include paths (vcvarsall amd64_arm64 sets ARM64 paths)
-            echo set(CMAKE_LIBRARY_PATH "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/lib/x64"^) >> host-toolchain-x64.cmake
-            echo list(APPEND CMAKE_LIBRARY_PATH "C:/Program Files (x86^)/Windows Kits/10/Lib/10.0.22621.0/um/x64"^) >> host-toolchain-x64.cmake
-            echo list(APPEND CMAKE_LIBRARY_PATH "C:/Program Files (x86^)/Windows Kits/10/Lib/10.0.22621.0/ucrt/x64"^) >> host-toolchain-x64.cmake
-            echo set(CMAKE_INCLUDE_PATH "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/include"^) >> host-toolchain-x64.cmake
-            echo list(APPEND CMAKE_INCLUDE_PATH "C:/Program Files (x86^)/Windows Kits/10/Include/10.0.22621.0/um"^) >> host-toolchain-x64.cmake
-            echo list(APPEND CMAKE_INCLUDE_PATH "C:/Program Files (x86^)/Windows Kits/10/Include/10.0.22621.0/ucrt"^) >> host-toolchain-x64.cmake
-            echo list(APPEND CMAKE_INCLUDE_PATH "C:/Program Files (x86^)/Windows Kits/10/Include/10.0.22621.0/shared"^) >> host-toolchain-x64.cmake
+            REM Set x64 link directories (vcvarsall amd64_arm64 sets ARM64 in LIB environment variable)
+            echo link_directories("C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/lib/x64"^) >> host-toolchain-x64.cmake
+            echo link_directories("C:/Program Files (x86)/Windows Kits/10/Lib/10.0.22621.0/um/x64"^) >> host-toolchain-x64.cmake
+            echo link_directories("C:/Program Files (x86)/Windows Kits/10/Lib/10.0.22621.0/ucrt/x64"^) >> host-toolchain-x64.cmake
+            echo include_directories("C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/include"^) >> host-toolchain-x64.cmake
+            echo include_directories("C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/um"^) >> host-toolchain-x64.cmake
+            echo include_directories("C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/ucrt"^) >> host-toolchain-x64.cmake
+            echo include_directories("C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/shared"^) >> host-toolchain-x64.cmake
             echo Created host toolchain file:
             type host-toolchain-x64.cmake
             set VULKAN_TOOLCHAIN_FLAG=-DGGML_VULKAN_SHADERS_GEN_TOOLCHAIN=%CD%/host-toolchain-x64.cmake
