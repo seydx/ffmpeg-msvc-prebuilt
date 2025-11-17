@@ -327,10 +327,14 @@ jobs:
             set GGML_NEON=-DGGML_NEON=ON
             set GGML_X64_FLAGS=
             set CMAKE_SYSTEM_PROCESSOR=-DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=ARM64
+            set CMAKE_C_FLAGS=-DCMAKE_C_FLAGS="--target=arm64-pc-windows-msvc"
+            set CMAKE_CXX_FLAGS=-DCMAKE_CXX_FLAGS="--target=arm64-pc-windows-msvc"
           ) else (
             set GGML_NEON=
             set GGML_X64_FLAGS=-DGGML_SSE42=ON -DGGML_AVX=ON -DGGML_F16C=ON -DGGML_AVX2=ON -DGGML_BMI2=ON -DGGML_FMA=ON
             set CMAKE_SYSTEM_PROCESSOR=
+            set CMAKE_C_FLAGS=
+            set CMAKE_CXX_FLAGS=
           )
 
           REM Check for Vulkan SDK and set appropriate library path
@@ -356,6 +360,8 @@ jobs:
             -DCMAKE_C_COMPILER="%CLANG_CL_PATH%" ^
             -DCMAKE_CXX_COMPILER="%CLANG_CL_PATH%" ^
             %CMAKE_SYSTEM_PROCESSOR% ^
+            %CMAKE_C_FLAGS% ^
+            %CMAKE_CXX_FLAGS% ^
             -DCMAKE_PREFIX_PATH=D:\a\_temp\msys64\usr\local ^
             -DCMAKE_INSTALL_PREFIX=D:\a\_temp\msys64\usr\local ^
             -DCMAKE_BUILD_TYPE=Release ^
