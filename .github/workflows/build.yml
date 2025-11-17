@@ -232,7 +232,6 @@ jobs:
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-          set PATH=D:\a\_temp\msys64\usr\bin;%PATH%
 
           echo Building Vulkan-Shim-Loader...
 
