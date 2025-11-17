@@ -332,16 +332,20 @@ jobs:
           if "${{matrix.arch}}" == "arm64" (
             set CMAKE_SYSTEM_ARGS=-DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=ARM64
             set CMAKE_C_FLAGS=-DCMAKE_C_FLAGS="--target=arm64-pc-windows-msvc /MT"
+            set CMAKE_CXX_FLAGS=-DCMAKE_CXX_FLAGS="--target=arm64-pc-windows-msvc /MT"
           ) else (
             set CMAKE_SYSTEM_ARGS=
             set CMAKE_C_FLAGS=-DCMAKE_C_FLAGS="/MT"
+            set CMAKE_CXX_FLAGS=-DCMAKE_CXX_FLAGS="/MT"
           )
 
           cmake -G Ninja ^
             -DCMAKE_BUILD_TYPE=Release ^
             -DCMAKE_C_COMPILER="%CC%" ^
+            -DCMAKE_CXX_COMPILER="%CXX%" ^
             %CMAKE_SYSTEM_ARGS% ^
             %CMAKE_C_FLAGS% ^
+            %CMAKE_CXX_FLAGS% ^
             -DCMAKE_INSTALL_PREFIX=D:/a/_temp/msys64/usr/local ^
             -DVULKAN_SHIM_IMPERSONATE=ON ^
             ..

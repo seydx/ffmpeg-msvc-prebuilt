@@ -18,7 +18,7 @@ shift 1 || true
 FF_ARGS=$@
 
 echo "Checking available dependencies in FFmpeg/configure..."
-for dep in libharfbuzz libfreetype libjxl libvpx libwebp libass libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl libzimg libx264 libx265 libglslang whisper; do
+for dep in libharfbuzz libfreetype libjxl libvpx libwebp libass libopus libvorbis libdav1d libsvtav1 libmp3lame libfdk-aac libvpl libzimg libx264 libx265 whisper; do
     env_name="${dep//-/_}"
     env_var="ENABLE_${env_name^^}"
 
@@ -59,7 +59,6 @@ cd ..
 # Apply patches
 echo "Applying patches..."
 apply-patch zlib zlib.patch
-apply-patch FFmpeg ffmpeg-glslang-msvc.patch
 apply-patch harfbuzz harfbuzz.patch
 
 # Copy FFMPEG_VERSION file to FFmpeg directory (used by patches)
@@ -150,77 +149,21 @@ if [ -n "$ENABLE_LIBVPL" ] && [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" !=
     add_ffargs "--enable-libvpl"
 fi
 
-# Vulkan/glslang
-if [ -n "$ENABLE_LIBGLSLANG" ]; then
-    # Vulkan support
-    echo -e "\n[Build Vulkan]"
+# Vulkan/Shaderc (built in workflow)
+# Check for Vulkan-Shim (built in workflow)
+if pkg-config --exists vulkan 2>/dev/null; then
+    echo "Vulkan-Shim found via pkg-config, enabling Vulkan support in FFmpeg"
+    add_ffargs "--enable-vulkan"
+else
+    echo "Vulkan-Shim not found, disabling Vulkan support in FFmpeg"
+fi
 
-    # Install Vulkan headers
-    mkdir -p "$INSTALL_PREFIX/include"
-    cp -r vulkan-headers/include/* "$INSTALL_PREFIX/include/"
-
-    # Build SPIRV-Headers
-    mkdir -p "$INSTALL_PREFIX/include/spirv"
-    cp -r spirv-headers/include/spirv/* "$INSTALL_PREFIX/include/spirv/"
-
-    # Build SPIRV-Tools
-    ./build-cmake-dep.sh spirv-tools \
-        -DSPIRV-Headers_SOURCE_DIR=$(pwd)/spirv-headers \
-        -DSPIRV_SKIP_TESTS=ON \
-        -DSPIRV_SKIP_EXECUTABLES=ON
-
-    # Build glslang
-    ./build-cmake-dep.sh glslang \
-        -DBUILD_EXTERNAL=OFF \
-        -DALLOW_EXTERNAL_SPIRV_TOOLS=ON \
-        -DSPIRV-Tools-opt_DIR="$INSTALL_PREFIX/SPIRV-Tools-opt/cmake" \
-        -DSPIRV-Tools_DIR="$INSTALL_PREFIX/SPIRV-Tools/cmake" \
-        -DBUILD_TESTING=OFF \
-        -DENABLE_GLSLANG_BINARIES=OFF \
-        -DENABLE_HLSL=ON \
-        -DENABLE_CTEST=OFF \
-        -DENABLE_OPT=ON \
-        -DBUILD_SHARED_LIBS=OFF
-
-    # Create pkg-config file for glslang so FFmpeg can find it with our patch
-    mkdir -p "$INSTALL_PREFIX/lib/pkgconfig"
-
-    # Note: glslang 14.0.0+ removed separate HLSL, OGLCompiler, and SPVRemapper libraries
-    # - HLSL sources are now compiled directly into glslang when ENABLE_HLSL=ON
-    # - OGLCompiler and SPVRemapper were stub libraries that have been removed
-    # - MachineIndependent, GenericCodeGen, OSDependent are stub libraries (contain only stub.cpp)
-    #   but we include them for completeness since they exist and some build systems may expect them
-    GLSLANG_LIBS="-lglslang -lMachineIndependent -lGenericCodeGen -lOSDependent -lSPIRV -lSPIRV-Tools-opt -lSPIRV-Tools"
-
-    cat > "$INSTALL_PREFIX/lib/pkgconfig/glslang.pc" << EOF
-prefix=$INSTALL_PREFIX
-includedir=\${prefix}/include
-libdir=\${prefix}/lib
-
-Name: glslang
-Description: Khronos reference compiler and validator for GLSL, ESSL, and HLSL
-Version: 1.4.332
-Cflags: -I\${includedir}
-Libs: -L\${libdir} $GLSLANG_LIBS
-EOF
-
-    add_ffargs "--enable-libglslang"
-
-    # Check for Vulkan-Shim (built in workflow)
-    if pkg-config --exists vulkan 2>/dev/null; then
-        echo "Vulkan-Shim found via pkg-config, enabling Vulkan support in FFmpeg"
-        add_ffargs "--enable-vulkan"
-    else
-        echo "Vulkan-Shim not found, disabling Vulkan support in FFmpeg"
-    fi
-
-    # Check for shaderc (built in workflow)
-    if pkg-config --exists shaderc 2>/dev/null; then
-        echo "shaderc found via pkg-config, enabling shaderc support in FFmpeg"
-        add_ffargs "--enable-libshaderc"
-    else
-        echo "shaderc not found, disabling shaderc support in FFmpeg"
-    fi
+# Check for shaderc (built in workflow)
+if pkg-config --exists shaderc 2>/dev/null; then
+    echo "shaderc found via pkg-config, enabling shaderc support in FFmpeg"
+    add_ffargs "--enable-libshaderc"
+else
+    echo "shaderc not found, disabling shaderc support in FFmpeg"
 fi
 
 # ========================================
