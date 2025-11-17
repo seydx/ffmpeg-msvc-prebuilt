@@ -254,7 +254,7 @@ fi
 
 # Opus audio codec
 if [ -n "$ENABLE_LIBOPUS" ]; then
-    ./build-cmake-dep.sh opus -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF
+    ./build-cmake-dep.sh opus -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF -DOPUS_STATIC_RUNTIME=ON
     add_ffargs "--enable-libopus"
 fi
 
