@@ -395,8 +395,8 @@ jobs:
             set GGML_NEON=-DGGML_NEON=ON
             set GGML_X64_FLAGS=
             set CMAKE_SYSTEM_PROCESSOR=-DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=ARM64
-            set CMAKE_C_FLAGS=-DCMAKE_C_FLAGS="--target=arm64-pc-windows-msvc"
-            set CMAKE_CXX_FLAGS=-DCMAKE_CXX_FLAGS="--target=arm64-pc-windows-msvc /EHsc"
+            set CMAKE_C_FLAGS=-DCMAKE_C_FLAGS="--target=arm64-pc-windows-msvc /MT"
+            set CMAKE_CXX_FLAGS=-DCMAKE_CXX_FLAGS="--target=arm64-pc-windows-msvc /MT /EHsc"
 
             REM Create host toolchain file for vulkan-shaders-gen (x64 tool that runs during build)
             REM This is needed because vcvarsall amd64_arm64 sets paths for ARM64, not x64
