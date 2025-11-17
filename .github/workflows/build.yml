@@ -434,7 +434,7 @@ jobs:
           ) else (
             set OMP_LIB_PATH=C:/PROGRA~1/MICROS~2/2022/ENTERP~1/VC/Tools/Llvm/x64/lib
           )
-          set OMP_LIBS=-L%OMP_LIB_PATH% -lomp
+          set OMP_LIBS=-L%OMP_LIB_PATH% -llibomp
 
           if exist "%VULKAN_LIB_PATH%" (
             set GGML_LIBS=-lggml -lggml-base -lggml-cpu -lggml-opencl -lggml-vulkan
