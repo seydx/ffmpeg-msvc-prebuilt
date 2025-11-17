@@ -320,13 +320,15 @@ jobs:
           if not exist build mkdir build
           cd build
 
-          REM Set architecture-specific GGML flags
+          REM Set architecture-specific GGML flags and CMake system processor
           if "${{matrix.arch}}" == "arm64" (
             set GGML_NEON=-DGGML_NEON=ON
             set GGML_X64_FLAGS=
+            set CMAKE_SYSTEM_PROCESSOR=-DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=ARM64
           ) else (
             set GGML_NEON=
             set GGML_X64_FLAGS=-DGGML_SSE42=ON -DGGML_AVX=ON -DGGML_F16C=ON -DGGML_AVX2=ON -DGGML_BMI2=ON -DGGML_FMA=ON
+            set CMAKE_SYSTEM_PROCESSOR=
           )
 
           REM Check for Vulkan SDK and set appropriate library path
@@ -351,6 +353,8 @@ jobs:
           cmake .. -G "NMake Makefiles" ^
             -DCMAKE_C_COMPILER=clang-cl ^
             -DCMAKE_CXX_COMPILER=clang-cl ^
+            %CMAKE_SYSTEM_PROCESSOR% ^
+            -DCMAKE_PREFIX_PATH=D:\a\_temp\msys64\usr\local ^
             -DCMAKE_INSTALL_PREFIX=D:\a\_temp\msys64\usr\local ^
             -DCMAKE_BUILD_TYPE=Release ^
             -DCMAKE_POLICY_DEFAULT_CMP0091=NEW ^
