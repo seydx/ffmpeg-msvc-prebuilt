@@ -320,7 +320,9 @@ jobs:
           if not exist build mkdir build
           cd build
 
-          REM Set architecture-specific GGML flags and CMake system processor
+          REM Set architecture-specific GGML flags and CMake configuration
+          set CLANG_CL_PATH=${{steps.setup.outputs.installationPath}}\VC\Tools\Llvm\x64\bin\clang-cl.exe
+
           if "${{matrix.arch}}" == "arm64" (
             set GGML_NEON=-DGGML_NEON=ON
             set GGML_X64_FLAGS=
@@ -351,8 +353,8 @@ jobs:
           )
 
           cmake .. -G "NMake Makefiles" ^
-            -DCMAKE_C_COMPILER=clang-cl ^
-            -DCMAKE_CXX_COMPILER=clang-cl ^
+            -DCMAKE_C_COMPILER="%CLANG_CL_PATH%" ^
+            -DCMAKE_CXX_COMPILER="%CLANG_CL_PATH%" ^
             %CMAKE_SYSTEM_PROCESSOR% ^
             -DCMAKE_PREFIX_PATH=D:\a\_temp\msys64\usr\local ^
             -DCMAKE_INSTALL_PREFIX=D:\a\_temp\msys64\usr\local ^
