@@ -368,6 +368,10 @@ jobs:
             -DWHISPER_USE_SYSTEM_GGML=OFF ^
             -DGGML_CCACHE=OFF ^
             -DGGML_OPENCL=ON ^
+            -DOpenCL_LIBRARY=D:/a/_temp/msys64/usr/local/lib/OpenCL.lib ^
+            -DOpenCL_LIBRARIES=D:/a/_temp/msys64/usr/local/lib/OpenCL.lib ^
+            -DOpenCL_INCLUDE_DIR=D:/a/_temp/msys64/usr/local/include ^
+            -DOpenCL_INCLUDE_DIRS=D:/a/_temp/msys64/usr/local/include ^
             -DGGML_NATIVE=OFF ^
             %GGML_NEON% ^
             %GGML_X64_FLAGS% ^
