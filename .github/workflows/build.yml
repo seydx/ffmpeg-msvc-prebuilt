@@ -408,9 +408,9 @@ jobs:
           if %errorlevel% neq 0 exit /b %errorlevel%
           cd ..\..
 
-          REM Fix ggml library names
+          REM Fix library names (add lib prefix for pkg-config compatibility)
           cd D:\a\_temp\msys64\usr\local\lib
-          for %%f in (ggml*.lib) do (
+          for %%f in (ggml*.lib whisper.lib) do (
             if not exist lib%%f (
               echo Creating lib%%f from %%f
               copy %%f lib%%f
