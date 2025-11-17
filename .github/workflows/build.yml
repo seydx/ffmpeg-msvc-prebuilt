@@ -338,14 +338,11 @@ jobs:
           )
 
           REM Check for Vulkan SDK and set appropriate library path
+          REM Note: Vulkan disabled for ARM64 cross-compilation due to build tool issues
+          REM (vulkan-shaders-gen.exe is built for ARM64 but needs to run on x64 host)
           if "${{matrix.arch}}" == "arm64" (
-            if exist "%VULKAN_SDK%\Lib-ARM64" (
-              echo Vulkan SDK ARM64 found, enabling Vulkan support
-              set VULKAN_FLAGS=-DGGML_VULKAN=ON
-            ) else (
-              echo Vulkan SDK ARM64 not found, disabling Vulkan support
-              set VULKAN_FLAGS=-DGGML_VULKAN=OFF
-            )
+            echo Disabling Vulkan for ARM64 cross-compilation (build tool incompatibility)
+            set VULKAN_FLAGS=-DGGML_VULKAN=OFF
           ) else (
             if exist "%VULKAN_SDK%\Lib" (
               echo Vulkan SDK x64 found, enabling Vulkan support
