@@ -332,7 +332,7 @@ jobs:
           REM Note: Vulkan disabled for ARM64 cross-compilation due to build tool issues
           REM (vulkan-shaders-gen.exe is built for ARM64 but needs to run on x64 host)
           if "${{matrix.arch}}" == "arm64" (
-            echo Disabling Vulkan for ARM64 cross-compilation (build tool incompatibility)
+            echo Disabling Vulkan for ARM64 cross-compilation - build tool incompatibility
             set VULKAN_FLAGS=-DGGML_VULKAN=OFF
           ) else (
             if exist "%VULKAN_SDK%\Lib" (
