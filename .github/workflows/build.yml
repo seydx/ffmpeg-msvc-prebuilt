@@ -235,6 +235,188 @@ jobs:
           rm $(which link)
           rm -rf /usr/local
 
+      - name: Setup clang-cl for whisper.cpp
+        shell: cmd
+        run: |
+          REM clang-cl is included with Visual Studio 2022
+          REM Required for whisper.cpp/GGML (especially ARM64)
+          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
+          where clang-cl
+          clang-cl --version
+
+      - name: Build OpenCL
+        if: ${{ success() }}
+        shell: cmd
+        run: |
+          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
+
+          REM Add MSYS2 tools to PATH
+          set PATH=D:\a\_temp\msys64\usr\bin;%PATH%
+
+          REM Build OpenCL headers
+          echo Building OpenCL headers...
+          cd opencl-headers
+          if not exist build mkdir build
+          cd build
+          cmake .. -G "NMake Makefiles" ^
+            --install-prefix=D:\a\_temp\msys64\usr\local ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DBUILD_TESTING=OFF
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          cmake --build . --config Release
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          cmake --install . --config Release
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          cd ..\..
+
+          REM Build OpenCL ICD Loader
+          echo Building OpenCL ICD Loader...
+          cd opencl-icd-loader
+          if not exist build mkdir build
+          cd build
+          cmake .. -G "NMake Makefiles" ^
+            --install-prefix=D:\a\_temp\msys64\usr\local ^
+            -DCMAKE_POLICY_DEFAULT_CMP0091=NEW ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DBUILD_SHARED_LIBS=OFF ^
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
+            -DOPENCL_ICD_LOADER_DISABLE_OPENCLON12=ON ^
+            -DOPENCL_ICD_LOADER_REQUIRE_WDK=OFF ^
+            -DOPENCL_ICD_LOADER_HEADERS_DIR=D:/a/_temp/msys64/usr/local/include ^
+            -DBUILD_TESTING=OFF
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          cmake --build . --config Release
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          cmake --install . --config Release
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          cd ..\..
+
+          REM Create pkg-config file
+          if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
+          (
+            echo prefix=/usr/local
+            echo exec_prefix=${prefix}
+            echo libdir=${exec_prefix}/lib
+            echo includedir=${prefix}/include
+            echo.
+            echo Name: OpenCL
+            echo Description: OpenCL ICD Loader
+            echo Version: 3.0
+            echo Libs: -L${libdir} -lOpenCL -ladvapi32 -lole32 -lcfgmgr32
+            echo Cflags: -I${includedir}
+          ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\OpenCL.pc
+
+      - name: Build whisper.cpp
+        if: ${{ success() }}
+        shell: cmd
+        run: |
+          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
+
+          REM Add MSYS2 tools to PATH
+          set PATH=D:\a\_temp\msys64\usr\bin;%PATH%
+
+          echo Building whisper.cpp with clang-cl...
+          cd whisper.cpp
+          if not exist build mkdir build
+          cd build
+
+          REM Set architecture-specific GGML flags
+          if "${{matrix.arch}}" == "arm64" (
+            set GGML_NEON=-DGGML_NEON=ON
+            set GGML_X64_FLAGS=
+          ) else (
+            set GGML_NEON=
+            set GGML_X64_FLAGS=-DGGML_SSE42=ON -DGGML_AVX=ON -DGGML_F16C=ON -DGGML_AVX2=ON -DGGML_BMI2=ON -DGGML_FMA=ON
+          )
+
+          REM Check for Vulkan SDK and set appropriate library path
+          if "${{matrix.arch}}" == "arm64" (
+            if exist "%VULKAN_SDK%\Lib-ARM64" (
+              echo Vulkan SDK ARM64 found, enabling Vulkan support
+              set VULKAN_FLAGS=-DGGML_VULKAN=ON
+            ) else (
+              echo Vulkan SDK ARM64 not found, disabling Vulkan support
+              set VULKAN_FLAGS=-DGGML_VULKAN=OFF
+            )
+          ) else (
+            if exist "%VULKAN_SDK%\Lib" (
+              echo Vulkan SDK x64 found, enabling Vulkan support
+              set VULKAN_FLAGS=-DGGML_VULKAN=ON
+            ) else (
+              echo Vulkan SDK x64 not found, disabling Vulkan support
+              set VULKAN_FLAGS=-DGGML_VULKAN=OFF
+            )
+          )
+
+          cmake .. -G "NMake Makefiles" ^
+            -DCMAKE_C_COMPILER=clang-cl ^
+            -DCMAKE_CXX_COMPILER=clang-cl ^
+            -DCMAKE_INSTALL_PREFIX=D:\a\_temp\msys64\usr\local ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DCMAKE_POLICY_DEFAULT_CMP0091=NEW ^
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
+            -DBUILD_SHARED_LIBS=OFF ^
+            -DWHISPER_BUILD_TESTS=OFF ^
+            -DWHISPER_BUILD_EXAMPLES=OFF ^
+            -DWHISPER_BUILD_SERVER=OFF ^
+            -DWHISPER_USE_SYSTEM_GGML=OFF ^
+            -DGGML_CCACHE=OFF ^
+            -DGGML_OPENCL=ON ^
+            -DGGML_NATIVE=OFF ^
+            %GGML_NEON% ^
+            %GGML_X64_FLAGS% ^
+            %VULKAN_FLAGS%
+
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          cmake --build . --config Release
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          cmake --install . --config Release
+          if %errorlevel% neq 0 exit /b %errorlevel%
+          cd ..\..
+
+          REM Fix ggml library names
+          cd D:\a\_temp\msys64\usr\local\lib
+          for %%f in (ggml*.lib) do (
+            if not exist lib%%f (
+              echo Creating lib%%f from %%f
+              copy %%f lib%%f
+            )
+          )
+          cd %GITHUB_WORKSPACE%
+
+          REM Create pkg-config file for whisper.cpp
+          if not exist D:\a\_temp\msys64\usr\local\lib\pkgconfig mkdir D:\a\_temp\msys64\usr\local\lib\pkgconfig
+
+          REM Determine Vulkan library path and flags
+          if "${{matrix.arch}}" == "arm64" (
+            set VULKAN_LIB_PATH=%VULKAN_SDK%\Lib-ARM64
+          ) else (
+            set VULKAN_LIB_PATH=%VULKAN_SDK%\Lib
+          )
+
+          if exist "%VULKAN_LIB_PATH%" (
+            set GGML_LIBS=-lggml -lggml-base -lggml-cpu -lggml-opencl -lggml-vulkan
+            set VULKAN_LIBS=-L"%VULKAN_LIB_PATH%" -lvulkan-1
+          ) else (
+            set GGML_LIBS=-lggml -lggml-base -lggml-cpu -lggml-opencl
+            set VULKAN_LIBS=
+          )
+
+          (
+            echo prefix=/usr/local
+            echo exec_prefix=${prefix}
+            echo libdir=${exec_prefix}/lib
+            echo includedir=${prefix}/include
+            echo.
+            echo Name: whisper
+            echo Description: OpenAI Whisper speech recognition library
+            echo Version: 1.8.2
+            echo Requires: OpenCL
+            echo Cflags: -I${includedir}
+            echo Libs: -L${libdir} -lwhisper %VULKAN_LIBS%
+            echo Libs.private: %GGML_LIBS% -lstdc++
+          ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\whisper.pc
+
       - name: Build dav1d
         if: ${{ success() }}
         shell: cmd

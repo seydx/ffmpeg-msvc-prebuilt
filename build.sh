@@ -132,7 +132,6 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
 fi
 
 # OpenCL
-./build-opencl.sh
 add_ffargs "--enable-opencl"
 
 # AMD AMF
@@ -362,8 +361,7 @@ if [ -n "$ENABLE_LIBASS" ]; then
 fi
 
 # Whisper.cpp
-if [ -n "$ENABLE_WHISPER" ] && [ "$BUILD_ARCH" == "amd64" ]; then
-    ./build-whisper.sh
+if [ -n "$ENABLE_WHISPER" ]; then
     add_ffargs "--enable-whisper"
 fi
 
