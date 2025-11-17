@@ -206,9 +206,12 @@ EOF
 
     add_ffargs "--enable-libglslang"
 
-    if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
-        echo "VULKAN_SDK is set, enabling Vulkan support in FFmpeg"
+    # Check for Vulkan-Shim (built in workflow)
+    if pkg-config --exists vulkan 2>/dev/null; then
+        echo "Vulkan-Shim found via pkg-config, enabling Vulkan support in FFmpeg"
         add_ffargs "--enable-vulkan"
+    else
+        echo "Vulkan-Shim not found, disabling Vulkan support in FFmpeg"
     fi
 fi
 

@@ -32,18 +32,8 @@ EXTRA_LIBS=""
 
 EX_BUILD_ARGS="$TYPE_ARGS $CROSS_ARGS $LICENSE_ARGS $DISABLE_ARGS"
 
-if [ -n "$VULKAN_SDK" ] && [ -d "$VULKAN_SDK" ]; then
-    VULKAN_PATH_SHORT=$(cygpath -sw "$VULKAN_SDK")
-    VULKAN_PATH_FIXED=$(cygpath -m "$VULKAN_PATH_SHORT")
-    EXTRA_CFLAGS="$EXTRA_CFLAGS -I${VULKAN_PATH_FIXED}/Include"
-
-    # Use architecture-specific lib directory
-    if [ "$BUILD_ARCH" == "arm64" ]; then
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -LIBPATH:${VULKAN_PATH_FIXED}/Lib-ARM64"
-    else
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -LIBPATH:${VULKAN_PATH_FIXED}/Lib"
-    fi
-fi
+# Note: Vulkan headers and library come from Vulkan-Shim-Loader in /usr/local
+# (already in EXTRA_CFLAGS and EXTRA_LDFLAGS via default paths)
 
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ] && [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
     CUDA_PATH_SHORT=$(cygpath -sw "$CUDA_PATH")
