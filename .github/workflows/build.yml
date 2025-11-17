@@ -243,16 +243,22 @@ jobs:
           if not exist build mkdir build
           cd build
 
+          set CC=${{steps.setup.outputs.installationPath}}\VC\Tools\Llvm\x64\bin\clang-cl.exe
+          set CXX=${{steps.setup.outputs.installationPath}}\VC\Tools\Llvm\x64\bin\clang-cl.exe
+
           if "${{matrix.arch}}" == "arm64" (
             set CMAKE_SYSTEM_ARGS=-DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=ARM64
+            set CMAKE_C_FLAGS=-DCMAKE_C_FLAGS="--target=arm64-pc-windows-msvc /MT"
           ) else (
             set CMAKE_SYSTEM_ARGS=
+            set CMAKE_C_FLAGS=-DCMAKE_C_FLAGS="/MT"
           )
 
           cmake -G Ninja ^
             -DCMAKE_BUILD_TYPE=Release ^
-            -DCMAKE_C_FLAGS="/MT" ^
+            -DCMAKE_C_COMPILER="%CC%" ^
             %CMAKE_SYSTEM_ARGS% ^
+            %CMAKE_C_FLAGS% ^
             -DCMAKE_INSTALL_PREFIX=D:/a/_temp/msys64/usr/local ^
             -DVULKAN_SHIM_IMPERSONATE=ON ^
             ..
