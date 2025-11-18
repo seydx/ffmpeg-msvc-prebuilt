@@ -27,8 +27,8 @@ CFLAGS="$CFLAGS -DLZMA_API_STATIC"
 
 # Add library paths for MSVC
 EXTRA_CFLAGS=""
-EXTRA_LDFLAGS="-LIBPATH:D:/a/_temp/msys64/usr/local/lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcrtd.lib"
-EXTRA_LIBS=""
+EXTRA_LDFLAGS="-LIBPATH:D:/a/_temp/msys64/usr/local/lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcrtd.lib /NODEFAULTLIB:msvcprt.lib /NODEFAULTLIB:msvcprtd.lib"
+EXTRA_LIBS="libcmt.lib libvcruntime.lib libucrt.lib"
 
 EX_BUILD_ARGS="$TYPE_ARGS $CROSS_ARGS $LICENSE_ARGS $DISABLE_ARGS"
 
