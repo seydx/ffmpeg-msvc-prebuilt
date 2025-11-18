@@ -477,6 +477,7 @@ jobs:
             -DGGML_CCACHE=OFF ^
             -DGGML_OPENMP=OFF ^
             -DGGML_OPENCL=ON ^
+            -DGGML_OPENCL_USE_ADRENO_KERNELS=OFF ^
             -DOpenCL_LIBRARY=D:/a/_temp/msys64/usr/local/lib/OpenCL.lib ^
             -DOpenCL_LIBRARIES=D:/a/_temp/msys64/usr/local/lib/OpenCL.lib ^
             -DOpenCL_INCLUDE_DIR=D:/a/_temp/msys64/usr/local/include ^
