@@ -237,8 +237,13 @@ jobs:
           echo Building shaderc...
           cd shaderc
 
-          REM Sync dependencies using Python script
-          python utils\git-sync-deps
+          REM Use pinned top-level submodules instead of git-sync-deps (avoids dynamic fetches)
+          if exist third_party\spirv-tools rd /s /q third_party\spirv-tools
+          if exist third_party\spirv-headers rd /s /q third_party\spirv-headers
+          if exist third_party\glslang rd /s /q third_party\glslang
+          xcopy /E /I /Y /Q ..\spirv-tools third_party\spirv-tools
+          xcopy /E /I /Y /Q ..\spirv-headers third_party\spirv-headers
+          xcopy /E /I /Y /Q ..\glslang third_party\glslang
 
           REM Build shaderc libraries for target architecture
           if not exist build mkdir build
