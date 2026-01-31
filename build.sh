@@ -324,6 +324,7 @@ fi
 # ========================================
 
 add_ffargs "--enable-schannel"
+add_ffargs "--enable-indev=dshow --enable-indev=gdigrab"
 
 # ========================================
 # Build FFmpeg
