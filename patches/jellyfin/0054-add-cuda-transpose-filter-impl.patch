@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3422,6 +3422,8 @@ thumbnail_cuda_filter_deps="ffnvcodec"
+@@ -3478,6 +3478,8 @@ thumbnail_cuda_filter_deps="ffnvcodec"
  thumbnail_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
  tonemap_cuda_filter_deps="ffnvcodec const_nan"
  tonemap_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
@@ -15,7 +15,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -555,6 +555,8 @@ OBJS-$(CONFIG_TONEMAP_VIDEOTOOLBOX_FILTE
+@@ -557,6 +557,8 @@ OBJS-$(CONFIG_TONEMAP_VIDEOTOOLBOX_FILTE
                                                  metal/utils.o
  OBJS-$(CONFIG_TPAD_FILTER)                   += vf_tpad.o
  OBJS-$(CONFIG_TRANSPOSE_FILTER)              += vf_transpose.o
@@ -28,7 +28,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -516,6 +516,7 @@ extern const FFFilter ff_vf_tonemap_vaap
+@@ -518,6 +518,7 @@ extern const FFFilter ff_vf_tonemap_vaap
  extern const FFFilter ff_vf_tonemap_videotoolbox;
  extern const FFFilter ff_vf_tpad;
  extern const FFFilter ff_vf_transpose;

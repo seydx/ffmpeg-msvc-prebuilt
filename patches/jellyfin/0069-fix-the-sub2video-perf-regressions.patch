@@ -2,7 +2,7 @@ Index: FFmpeg/fftools/ffmpeg_filter.c
 ===================================================================
 --- FFmpeg.orig/fftools/ffmpeg_filter.c
 +++ FFmpeg/fftools/ffmpeg_filter.c
-@@ -2921,7 +2921,8 @@ static void sub2video_heartbeat(InputFil
+@@ -2948,7 +2948,8 @@ static void sub2video_heartbeat(InputFil
             or if we need to initialize the system, update the
             overlaid subpicture and its start/end times */
          sub2video_update(ifp, pts2 + 1, NULL);

@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -5790,7 +5790,7 @@ elif enabled x86; then
+@@ -5859,7 +5859,7 @@ elif enabled x86; then
          ;;
          # everything else should support nopl and conditional mov (cmov)
          *)

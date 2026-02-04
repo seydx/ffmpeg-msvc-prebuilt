@@ -1,0 +1,97 @@
+Index: FFmpeg/libavutil/hwcontext_vaapi.c
+===================================================================
+--- FFmpeg.orig/libavutil/hwcontext_vaapi.c
++++ FFmpeg/libavutil/hwcontext_vaapi.c
+@@ -33,6 +33,9 @@ typedef HRESULT (WINAPI *PFN_CREATE_DXGI
+ #if HAVE_VAAPI_DRM
+ #   include <va/va_drm.h>
+ #endif
++#if (HAVE_VAAPI_DRM || HAVE_VAAPI_X11) && !defined(_WIN32)
++#   include <dlfcn.h>
++#endif
+ 
+ #if CONFIG_LIBDRM
+ #   include <va/va_drmcommon.h>
+@@ -60,6 +63,45 @@ typedef HRESULT (WINAPI *PFN_CREATE_DXGI
+ #include "pixdesc.h"
+ #include "pixfmt.h"
+ 
++#if HAVE_VAAPI_DRM && !defined(_WIN32)
++static int vaapi_drm_checked = 0;
++static int vaapi_drm_available = 0;
++
++static int check_vaapi_drm_available(void *logctx)
++{
++    if (!vaapi_drm_checked) {
++        void *handle = dlopen("libva-drm.so.2", RTLD_LAZY | RTLD_LOCAL);
++        if (handle) {
++            vaapi_drm_available = (dlsym(handle, "vaGetDisplayDRM") != NULL);
++            dlclose(handle);
++        }
++        vaapi_drm_checked = 1;
++        if (!vaapi_drm_available && logctx)
++            av_log(logctx, AV_LOG_ERROR, "Cannot load libva-drm.so.2\n");
++    }
++    return vaapi_drm_available;
++}
++#endif
++
++#if HAVE_VAAPI_X11 && !defined(_WIN32)
++static int vaapi_x11_checked = 0;
++static int vaapi_x11_available = 0;
++
++static int check_vaapi_x11_available(void *logctx)
++{
++    if (!vaapi_x11_checked) {
++        void *handle = dlopen("libva-x11.so.2", RTLD_LAZY | RTLD_LOCAL);
++        if (handle) {
++            vaapi_x11_available = (dlsym(handle, "vaGetDisplay") != NULL);
++            dlclose(handle);
++        }
++        vaapi_x11_checked = 1;
++        if (!vaapi_x11_available && logctx)
++            av_log(logctx, AV_LOG_ERROR, "Cannot load libva-x11.so.2\n");
++    }
++    return vaapi_x11_available;
++}
++#endif
+ 
+ typedef struct VAAPIDevicePriv {
+ #if HAVE_VAAPI_X11
+@@ -1755,6 +1797,11 @@ static int vaapi_device_create(AVHWDevic
+     }
+ 
+ #if HAVE_VAAPI_DRM
++#if !defined(_WIN32)
++    // Check if libva-drm is available at runtime before trying to use it
++    if (!check_vaapi_drm_available(ctx))
++        try_drm = 0;
++#endif
+     while (!display && try_drm) {
+         // If the device is specified, try to open it as a DRM device node.
+         // If not, look for a usable render node, possibly restricted to those
+@@ -1882,6 +1929,11 @@ static int vaapi_device_create(AVHWDevic
+ #endif
+ 
+ #if HAVE_VAAPI_X11
++#if !defined(_WIN32)
++    // Check if libva-x11 is available at runtime before trying to use it
++    if (!check_vaapi_x11_available(ctx))
++        try_x11 = 0;
++#endif
+     if (!display && try_x11) {
+         // Try to open the device as an X11 display.
+         priv->x11_display = XOpenDisplay(device);
+@@ -2005,6 +2057,12 @@ static int vaapi_device_derive(AVHWDevic
+         VAAPIDevicePriv *priv;
+         int fd;
+ 
++#if !defined(_WIN32)
++        // Check if libva-drm is available at runtime before trying to use it
++        if (!check_vaapi_drm_available(ctx))
++            return AVERROR(ENOSYS);
++#endif
++
+         if (src_hwctx->fd < 0) {
+             av_log(ctx, AV_LOG_ERROR, "DRM instance requires an associated "
+                    "device to derive a VA display from.\n");

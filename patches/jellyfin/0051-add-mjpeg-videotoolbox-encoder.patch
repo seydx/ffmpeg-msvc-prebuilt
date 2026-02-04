@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3655,6 +3655,8 @@ h264_videotoolbox_encoder_deps="pthreads
+@@ -3716,6 +3716,8 @@ h264_videotoolbox_encoder_deps="pthreads
  h264_videotoolbox_encoder_select="atsc_a53 videotoolbox_encoder"
  hevc_videotoolbox_encoder_deps="pthreads"
  hevc_videotoolbox_encoder_select="atsc_a53 videotoolbox_encoder"
@@ -27,7 +27,7 @@ Index: FFmpeg/libavcodec/allcodecs.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/allcodecs.c
 +++ FFmpeg/libavcodec/allcodecs.c
-@@ -908,6 +908,7 @@ extern const FFCodec ff_mjpeg_cuvid_deco
+@@ -913,6 +913,7 @@ extern const FFCodec ff_mjpeg_cuvid_deco
  extern const FFCodec ff_mjpeg_qsv_encoder;
  extern const FFCodec ff_mjpeg_qsv_decoder;
  extern const FFCodec ff_mjpeg_vaapi_encoder;
@@ -74,7 +74,7 @@ Index: FFmpeg/libavcodec/videotoolboxenc.c
          status = VTSessionSetProperty(vtctx->session,
                                        kVTCompressionPropertyKey_AllowFrameReordering,
                                        kCFBooleanFalse);
-@@ -2908,6 +2909,13 @@ static const enum AVPixelFormat prores_p
+@@ -2769,6 +2770,13 @@ static const enum AVPixelFormat prores_p
      AV_PIX_FMT_NONE
  };
  
@@ -88,7 +88,7 @@ Index: FFmpeg/libavcodec/videotoolboxenc.c
  #define VE AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_ENCODING_PARAM
  #define COMMON_OPTIONS \
      { "allow_sw", "Allow software encoding", OFFSET(allow_sw), AV_OPT_TYPE_BOOL, \
-@@ -3083,4 +3091,36 @@ const FFCodec ff_prores_videotoolbox_enc
+@@ -2944,4 +2952,36 @@ const FFCodec ff_prores_videotoolbox_enc
      .caps_internal    = FF_CODEC_CAP_INIT_CLEANUP,
      .p.wrapper_name   = "videotoolbox",
      .hw_configs       = vt_encode_hw_configs,

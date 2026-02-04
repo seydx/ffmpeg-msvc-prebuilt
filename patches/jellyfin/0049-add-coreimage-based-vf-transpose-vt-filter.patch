@@ -2,13 +2,13 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4126,7 +4126,7 @@ tonemap_vaapi_filter_deps="vaapi VAProcF
+@@ -4190,7 +4190,7 @@ tonemap_vaapi_filter_deps="vaapi VAProcF
  tonemap_opencl_filter_deps="opencl const_nan"
  transpose_opencl_filter_deps="opencl"
  transpose_vaapi_filter_deps="vaapi VAProcPipelineCaps_rotation_flags"
 -transpose_vt_filter_deps="videotoolbox VTPixelRotationSessionCreate"
 +transpose_vt_filter_deps="coreimage videotoolbox"
- transpose_vulkan_filter_deps="vulkan spirv_compiler"
+ transpose_vulkan_filter_deps="vulkan spirv_library"
  unsharp_opencl_filter_deps="opencl"
  uspp_filter_deps="gpl avcodec"
 Index: FFmpeg/libavfilter/vf_transpose_vt.c

@@ -2,7 +2,7 @@ Index: FFmpeg/libavcodec/avcodec.h
 ===================================================================
 --- FFmpeg.orig/libavcodec/avcodec.h
 +++ FFmpeg/libavcodec/avcodec.h
-@@ -2029,6 +2029,13 @@ typedef struct AVHWAccel {
+@@ -2037,6 +2037,13 @@ typedef struct AVHWAccel {
  #define AV_HWACCEL_FLAG_UNSAFE_OUTPUT (1 << 3)
  
  /**

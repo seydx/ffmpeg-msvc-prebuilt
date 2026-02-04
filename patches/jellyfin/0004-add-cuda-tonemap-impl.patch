@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3417,6 +3417,8 @@ scale_cuda_filter_deps="ffnvcodec"
+@@ -3473,6 +3473,8 @@ scale_cuda_filter_deps="ffnvcodec"
  scale_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
  thumbnail_cuda_filter_deps="ffnvcodec"
  thumbnail_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
@@ -11,7 +11,7 @@ Index: FFmpeg/configure
  transpose_npp_filter_deps="ffnvcodec libnpp"
  overlay_cuda_filter_deps="ffnvcodec"
  overlay_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
-@@ -4851,8 +4853,10 @@ if enabled cuda_nvcc; then
+@@ -4920,8 +4922,10 @@ if enabled cuda_nvcc; then
      nvcc_default="nvcc"
      nvccflags_default="-gencode arch=compute_30,code=sm_30 -O2"
  else
@@ -23,7 +23,7 @@ Index: FFmpeg/configure
      NVCC_C=""
  fi
  
-@@ -4865,6 +4869,11 @@ if enabled cuda_nvcc; then
+@@ -4934,6 +4938,11 @@ if enabled cuda_nvcc; then
      if $nvcc $nvccflags_default 2>&1 | grep -qi unsupported; then
          nvccflags_default="-gencode arch=compute_75,code=sm_75 -O2"
      fi
@@ -35,7 +35,7 @@ Index: FFmpeg/configure
  fi
  
  set_default arch cc cxx doxygen pkg_config ranlib strip sysinclude \
-@@ -6984,7 +6993,7 @@ fi
+@@ -7061,7 +7070,7 @@ fi
  if enabled cuda_nvcc; then
      nvccflags="$nvccflags -ptx"
  else
@@ -60,7 +60,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -537,6 +537,8 @@ OBJS-$(CONFIG_TMEDIAN_FILTER)
+@@ -539,6 +539,8 @@ OBJS-$(CONFIG_TMEDIAN_FILTER)
  OBJS-$(CONFIG_TMIDEQUALIZER_FILTER)          += vf_tmidequalizer.o
  OBJS-$(CONFIG_TMIX_FILTER)                   += vf_mix.o framesync.o
  OBJS-$(CONFIG_TONEMAP_FILTER)                += vf_tonemap.o
@@ -73,7 +73,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -505,6 +505,7 @@ extern const FFFilter ff_vf_tmedian;
+@@ -507,6 +507,7 @@ extern const FFFilter ff_vf_tmedian;
  extern const FFFilter ff_vf_tmidequalizer;
  extern const FFFilter ff_vf_tmix;
  extern const FFFilter ff_vf_tonemap;
@@ -823,76 +823,36 @@ Index: FFmpeg/libavfilter/cuda/load_helper.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/cuda/load_helper.c
 +++ FFmpeg/libavfilter/cuda/load_helper.c
-@@ -32,11 +32,9 @@
- 
- #define CHECK_CU(x) FF_CUDA_CHECK_DL(avctx, cu, x)
- 
--int ff_cuda_load_module(void *avctx, AVCUDADeviceContext *hwctx, CUmodule *cu_module,
--                        const unsigned char *data, const unsigned int length)
-+static int decompress_cuda_ptx(void *avctx, uint8_t **data_out, uint64_t *length_out,
-+                               const unsigned char *data, const unsigned int length)
- {
--    CudaFunctions *cu = hwctx->internal->cuda_dl;
--
- #if CONFIG_PTX_COMPRESSION
-     z_stream stream = { 0 };
-     uint8_t *buf, *tmp;
-@@ -88,10 +86,51 @@ int ff_cuda_load_module(void *avctx, AVC
- 
-     inflateEnd(&stream);
- 
--    ret = CHECK_CU(cu->cuModuleLoadData(cu_module, buf));
--    av_free(buf);
--    return ret;
-+    *data_out   = buf;
-+    *length_out = stream.total_out;
- #else
--    return CHECK_CU(cu->cuModuleLoadData(cu_module, data));
-+    *data_out   = NULL;
-+    *length_out = 0;
+@@ -51,3 +51,29 @@ int ff_cuda_load_module(void *avctx, AVC
+     return CHECK_CU(cu->cuModuleLoadData(cu_module, data));
  #endif
-+    return 0;
-+}
-+
-+int ff_cuda_load_module(void *avctx, AVCUDADeviceContext *hwctx, CUmodule *cu_module,
-+                        const unsigned char *data, const unsigned int length)
-+{
-+    CudaFunctions *cu = hwctx->internal->cuda_dl;
-+    uint8_t *data_out = NULL;
-+    uint64_t length_out = 0;
-+    int ret;
-+
-+    if ((ret = decompress_cuda_ptx(avctx, &data_out, &length_out, data, length)) < 0)
-+        goto exit;
-+
-+    ret = CHECK_CU(cu->cuModuleLoadData(cu_module, (data_out ? data_out : data)));
-+exit:
-+    if (data_out)
-+        av_free(data_out);
-+    return ret;
-+}
+ }
 +
 +int ff_cuda_link_add_data(void *avctx, AVCUDADeviceContext *hwctx,
 +                          CUlinkState state, const char* name,
 +                          const unsigned char *data, const unsigned int length)
 +{
 +    CudaFunctions *cu = hwctx->internal->cuda_dl;
-+    uint8_t *data_out = NULL;
-+    uint64_t length_out = 0;
-+    int ret;
 +
-+    if ((ret = decompress_cuda_ptx(avctx, &data_out, &length_out, data, length)) < 0)
-+        goto exit;
++#if CONFIG_SHADER_COMPRESSION
++    uint8_t *out;
++    size_t out_len;
++    int ret = ff_zlib_expand(avctx, &out, &out_len,
++                             data, length);
++    if (ret < 0)
++        return ret;
 +
 +    ret = CHECK_CU(cu->cuLinkAddData(state, CU_JIT_INPUT_PTX,
-+                                     (void *)(data_out ? data_out : data),
-+                                     (size_t)(data_out ? length_out : length),
++                                     (void *)out, out_len,
 +                                     name, 0, NULL, NULL));
-+exit:
-+    if (data_out)
-+        av_free(data_out);
++    av_free(out);
 +    return ret;
- }
++#else
++    return CHECK_CU(cu->cuLinkAddData(state, CU_JIT_INPUT_PTX,
++                                     (void *)data, (size_t)length,
++                                     name, 0, NULL, NULL));
++#endif
++}
 Index: FFmpeg/libavfilter/cuda/load_helper.h
 ===================================================================
 --- FFmpeg.orig/libavfilter/cuda/load_helper.h

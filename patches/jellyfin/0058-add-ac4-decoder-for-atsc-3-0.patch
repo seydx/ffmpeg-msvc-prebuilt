@@ -2,7 +2,7 @@ Index: FFmpeg/libavcodec/Makefile
 ===================================================================
 --- FFmpeg.orig/libavcodec/Makefile
 +++ FFmpeg/libavcodec/Makefile
-@@ -219,6 +219,7 @@ OBJS-$(CONFIG_AC3_ENCODER)             +
+@@ -218,6 +218,7 @@ OBJS-$(CONFIG_AC3_ENCODER)             +
                                            ac3.o kbdwin.o
  OBJS-$(CONFIG_AC3_FIXED_ENCODER)       += ac3enc_fixed.o ac3enc.o ac3tab.o ac3.o kbdwin.o
  OBJS-$(CONFIG_AC3_MF_ENCODER)          += mfenc.o mf_utils.o
@@ -7613,7 +7613,7 @@ Index: FFmpeg/libavcodec/allcodecs.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/allcodecs.c
 +++ FFmpeg/libavcodec/allcodecs.c
-@@ -437,6 +437,7 @@ extern const FFCodec ff_ac3_encoder;
+@@ -439,6 +439,7 @@ extern const FFCodec ff_ac3_encoder;
  extern const FFCodec ff_ac3_decoder;
  extern const FFCodec ff_ac3_fixed_encoder;
  extern const FFCodec ff_ac3_fixed_decoder;

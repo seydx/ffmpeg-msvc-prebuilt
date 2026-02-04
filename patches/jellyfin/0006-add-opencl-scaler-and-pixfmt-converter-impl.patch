@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4078,6 +4078,7 @@ rubberband_filter_deps="librubberband"
+@@ -4144,6 +4144,7 @@ rubberband_filter_deps="librubberband"
  sab_filter_deps="gpl swscale"
  scale2ref_filter_deps="swscale"
  scale_filter_deps="swscale"
@@ -14,7 +14,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -472,6 +472,7 @@ OBJS-$(CONFIG_SCALE_D3D11_FILTER)
+@@ -474,6 +474,7 @@ OBJS-$(CONFIG_SCALE_D3D12_FILTER)
  OBJS-$(CONFIG_SCALE_CUDA_FILTER)             += vf_scale_cuda.o scale_eval.o \
                                                  vf_scale_cuda.ptx.o cuda/load_helper.o
  OBJS-$(CONFIG_SCALE_NPP_FILTER)              += vf_scale_npp.o scale_eval.o
@@ -26,9 +26,9 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -443,6 +443,7 @@ extern const FFFilter ff_vf_sr_amf;
- extern const FFFilter ff_vf_scale_cuda;
+@@ -445,6 +445,7 @@ extern const FFFilter ff_vf_scale_cuda;
  extern const FFFilter ff_vf_scale_d3d11;
+ extern const FFFilter ff_vf_scale_d3d12;
  extern const FFFilter ff_vf_scale_npp;
 +extern const FFFilter ff_vf_scale_opencl;
  extern const FFFilter ff_vf_scale_qsv;
@@ -1049,7 +1049,7 @@ Index: FFmpeg/libavfilter/vf_scale_opencl.c
 +        global_work[1] = output->height / y_subsample;
 +
 +        av_log(avctx, AV_LOG_DEBUG, "Run kernel conv_yuv "
-+               "(%"SIZE_SPECIFIER"x%"SIZE_SPECIFIER").\n",
++               "(%zux%zu).\n",
 +               global_work[0], global_work[1]);
 +
 +        cle = clEnqueueNDRangeKernel(ctx->command_queue, kernel, 2, NULL,
@@ -1091,7 +1091,7 @@ Index: FFmpeg/libavfilter/vf_scale_opencl.c
 +        global_work[1] = output->height;
 +
 +        av_log(avctx, AV_LOG_DEBUG, "Run kernel %s "
-+               "(%"SIZE_SPECIFIER"x%"SIZE_SPECIFIER").\n",
++               "(%zux%zu).\n",
 +               ctx->kernel_name, global_work[0], global_work[1]);
 +
 +        cle = clEnqueueNDRangeKernel(ctx->command_queue, ctx->kernel, 2, NULL,
@@ -1103,7 +1103,7 @@ Index: FFmpeg/libavfilter/vf_scale_opencl.c
 +        global_work[1] = output->height / y_subsample;
 +
 +        av_log(avctx, AV_LOG_DEBUG, "Run kernel %s "
-+               "(%"SIZE_SPECIFIER"x%"SIZE_SPECIFIER").\n",
++               "(%zux%zu).\n",
 +               ctx->kernel_name_uv, global_work[0], global_work[1]);
 +
 +        cle = clEnqueueNDRangeKernel(ctx->command_queue, ctx->kernel_uv, 2, NULL,

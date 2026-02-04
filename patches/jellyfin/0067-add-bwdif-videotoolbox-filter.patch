@@ -2,14 +2,14 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4005,6 +4005,7 @@ boxblur_opencl_filter_deps="opencl gpl"
+@@ -4069,6 +4069,7 @@ boxblur_opencl_filter_deps="opencl gpl"
  bs2b_filter_deps="libbs2b"
  bwdif_cuda_filter_deps="ffnvcodec"
  bwdif_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
 +bwdif_videotoolbox_filter_deps="metal corevideo videotoolbox"
  bwdif_vulkan_filter_deps="vulkan spirv_compiler"
- chromaber_vulkan_filter_deps="vulkan spirv_compiler"
- color_vulkan_filter_deps="vulkan spirv_compiler"
+ chromaber_vulkan_filter_deps="vulkan spirv_library"
+ color_vulkan_filter_deps="vulkan spirv_library"
 Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile

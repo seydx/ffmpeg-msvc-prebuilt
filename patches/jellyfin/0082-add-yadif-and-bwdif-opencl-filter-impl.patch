@@ -2,16 +2,16 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4006,6 +4006,7 @@ boxblur_opencl_filter_deps="opencl gpl"
+@@ -4070,6 +4070,7 @@ boxblur_opencl_filter_deps="opencl gpl"
  bs2b_filter_deps="libbs2b"
  bwdif_cuda_filter_deps="ffnvcodec"
  bwdif_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
 +bwdif_opencl_filter_deps="opencl"
  bwdif_videotoolbox_filter_deps="metal corevideo videotoolbox"
  bwdif_vulkan_filter_deps="vulkan spirv_compiler"
- chromaber_vulkan_filter_deps="vulkan spirv_compiler"
-@@ -4163,6 +4164,7 @@ xfade_opencl_filter_deps="opencl"
- xfade_vulkan_filter_deps="vulkan spirv_compiler"
+ chromaber_vulkan_filter_deps="vulkan spirv_library"
+@@ -4227,6 +4228,7 @@ xfade_opencl_filter_deps="opencl"
+ xfade_vulkan_filter_deps="vulkan spirv_library"
  yadif_cuda_filter_deps="ffnvcodec"
  yadif_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
 +yadif_opencl_filter_deps="opencl"
@@ -31,7 +31,7 @@ Index: FFmpeg/libavfilter/Makefile
  OBJS-$(CONFIG_BWDIF_VIDEOTOOLBOX_FILTER)     += vf_bwdif_videotoolbox.o \
                                                  metal/vf_bwdif_videotoolbox.metallib.o \
                                                  metal/utils.o \
-@@ -605,6 +607,8 @@ OBJS-$(CONFIG_XSTACK_FILTER)
+@@ -607,6 +609,8 @@ OBJS-$(CONFIG_XSTACK_FILTER)
  OBJS-$(CONFIG_YADIF_FILTER)                  += vf_yadif.o yadif_common.o
  OBJS-$(CONFIG_YADIF_CUDA_FILTER)             += vf_yadif_cuda.o vf_yadif_cuda.ptx.o \
                                                  yadif_common.o cuda/load_helper.o
@@ -52,7 +52,7 @@ Index: FFmpeg/libavfilter/allfilters.c
  extern const FFFilter ff_vf_bwdif_videotoolbox;
  extern const FFFilter ff_vf_bwdif_vulkan;
  extern const FFFilter ff_vf_cas;
-@@ -559,6 +560,7 @@ extern const FFFilter ff_vf_xpsnr;
+@@ -561,6 +562,7 @@ extern const FFFilter ff_vf_xpsnr;
  extern const FFFilter ff_vf_xstack;
  extern const FFFilter ff_vf_yadif;
  extern const FFFilter ff_vf_yadif_cuda;

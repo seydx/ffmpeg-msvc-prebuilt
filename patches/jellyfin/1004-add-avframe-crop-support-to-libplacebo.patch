@@ -2,7 +2,7 @@ Index: FFmpeg/libavfilter/vf_libplacebo.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/vf_libplacebo.c
 +++ FFmpeg/libavfilter/vf_libplacebo.c
-@@ -894,24 +894,33 @@ static void update_crops(AVFilterContext
+@@ -902,24 +902,33 @@ static void update_crops(AVFilterContext
          s->var_values[VAR_POS_W]  = s->var_values[VAR_PW] = NAN;
          s->var_values[VAR_POS_H]  = s->var_values[VAR_PH] = NAN;
  
@@ -51,5 +51,5 @@ Index: FFmpeg/libavfilter/vf_libplacebo.c
 +            image->crop.y1 = image->crop.y0 + s->var_values[VAR_CROP_H];
 +        }
  
-         const pl_rotation rot_total = image->rotation - target->rotation;
-         if ((rot_total + PL_ROTATION_360) % PL_ROTATION_180 == PL_ROTATION_90) {
+         const pl_rect2df crop_orig = image->crop;
+         pl_rotation rot_total = PL_ROTATION_360 + image->rotation - target->rotation;

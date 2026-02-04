@@ -261,7 +261,7 @@ Index: FFmpeg/libavutil/hwcontext_d3d11va.c
 ===================================================================
 --- FFmpeg.orig/libavutil/hwcontext_d3d11va.c
 +++ FFmpeg/libavutil/hwcontext_d3d11va.c
-@@ -326,7 +326,8 @@ static int d3d11va_frames_init(AVHWFrame
+@@ -329,7 +329,8 @@ static int d3d11va_frames_init(AVHWFrame
          ctx->initial_pool_size = texDesc2.ArraySize;
          hwctx->BindFlags = texDesc2.BindFlags;
          hwctx->MiscFlags = texDesc2.MiscFlags;
@@ -275,7 +275,7 @@ Index: FFmpeg/libavutil/hwcontext_d3d11va.h
 ===================================================================
 --- FFmpeg.orig/libavutil/hwcontext_d3d11va.h
 +++ FFmpeg/libavutil/hwcontext_d3d11va.h
-@@ -188,6 +188,11 @@ typedef struct AVD3D11VAFramesContext {
+@@ -202,6 +202,11 @@ typedef struct AVD3D11VAFramesContext {
       * Whether the frames require extra sync when exporting as external memory.
       */
      int require_sync;

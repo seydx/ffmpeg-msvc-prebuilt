@@ -145,7 +145,7 @@ Index: FFmpeg/libavutil/hwcontext_d3d11va.c
      };
  
      hr = ID3D11Device_CreateTexture2D(device_hwctx->device, &texDesc, NULL, &tex);
-@@ -301,9 +301,17 @@ static int d3d11va_frames_init(AVHWFrame
+@@ -304,9 +304,17 @@ static int d3d11va_frames_init(AVHWFrame
          .ArraySize  = ctx->initial_pool_size,
          .Usage      = D3D11_USAGE_DEFAULT,
          .BindFlags  = hwctx->BindFlags,
