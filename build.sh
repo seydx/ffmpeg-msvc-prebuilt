@@ -232,7 +232,7 @@ fi
 # FDK-AAC - AAC encoder
 if [ -n "$ENABLE_LIBFDK_AAC" ]; then
     ./build-cmake-dep.sh fdk-aac -DBUILD_PROGRAMS=OFF
-    add_ffargs "--enable-libfdk-aac --enable-nonfree"
+    add_ffargs "--enable-libfdk-aac"
 fi
 
 # ========================================
