@@ -55,9 +55,6 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "lame"]
 	path = lame
 	url = https://github.com/lameproject/lame.git
-[submodule "fdk-aac"]
-	path = fdk-aac
-	url = https://github.com/mstorsjo/fdk-aac.git
 [submodule "libvpl"]
 	path = libvpl
 	url = https://github.com/intel/libvpl.git
@@ -106,3 +103,7 @@ url = https://github.com/webmproject/libvpx.git
 [submodule "shaderc"]
 	path = shaderc
 	url = https://github.com/google/shaderc.git
+[submodule "fdk-aac"]
+	path = fdk-aac
+	url = https://gitlab.freedesktop.org/wtaymans/fdk-aac-stripped.git
+	branch = stripped4
