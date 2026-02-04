@@ -592,7 +592,7 @@ jobs:
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
           echo Applying zimg patch (ignoring errors if already applied)...
-          git apply --ignore-whitespace "%CD%\patches\zimg.patch" || ver > nul
+          git -C zimg apply --ignore-whitespace "%CD%\patches\zimg.patch" || ver > nul
 
           REM Build zimg using MSBuild
           echo Building zimg...
@@ -637,7 +637,7 @@ jobs:
             echo Name: zimg
             echo Description: Scaling, colorspace conversion, and dithering library
             echo Version: 3.0
-            echo Libs: -L${libdir} -lzimg -lstdc++
+            echo Libs: -L${libdir} -lzimg -llibcpmt
             echo Cflags: -I${includedir}/zimg
           ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\zimg.pc
 
