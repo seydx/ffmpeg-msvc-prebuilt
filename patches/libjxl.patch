@@ -1,26 +1,25 @@
 diff --git a/lib/jxl.cmake b/lib/jxl.cmake
-index c407e61..5414284 100644
+index 59b2cca4..94481f21 100644
 --- a/lib/jxl.cmake
 +++ b/lib/jxl.cmake
-@@ -299,9 +299,10 @@ endif()
- set(JPEGXL_LIBRARY_MAIN jxl)
+@@ -271,10 +271,10 @@ set(JPEGXL_LIBRARY_REQUIRES
  
- # Fix pkg-config file on MSVC when building static libraries.
--if (MSVC AND NOT BUILD_SHARED_LIBS)
--  set(JPEGXL_LIBRARY_MAIN jxl-static)
--endif()
-+# Disabled: CMake builds jxl.lib, not jxl-static.lib
-+#if (MSVC AND NOT BUILD_SHARED_LIBS)
-+#  set(JPEGXL_LIBRARY_MAIN jxl-static)
-+#endif()
+ if (BUILD_SHARED_LIBS)
+   set(JPEGXL_REQUIRES_TYPE "Requires.private")
+-  set(JPEGXL_PRIVATE_LIBS "-lm ${PKGCONFIG_CXX_LIB}")
++  set(JPEGXL_PRIVATE_LIBS "${PKGCONFIG_CXX_LIB}")
+ else()
+   set(JPEGXL_REQUIRES_TYPE "Requires")
+-  set(JPEGXL_PUBLIC_LIBS "-lm ${PKGCONFIG_CXX_LIB}")
++  set(JPEGXL_PUBLIC_LIBS "${PKGCONFIG_CXX_LIB}")
+ endif()
  
  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/jxl/libjxl.pc.in"
-                "libjxl.pc" @ONLY)
 diff --git a/lib/jxl_cms.cmake b/lib/jxl_cms.cmake
-index e8ed879..4c8eebb 100644
+index 62d5b651..e8e4f368 100644
 --- a/lib/jxl_cms.cmake
 +++ b/lib/jxl_cms.cmake
-@@ -68,10 +68,10 @@ install(TARGETS jxl_cms
+@@ -62,10 +62,10 @@ install(TARGETS jxl_cms
  
  if (BUILD_SHARED_LIBS)
    set(JPEGXL_REQUIRES_TYPE "Requires.private")
@@ -34,7 +33,7 @@ index e8ed879..4c8eebb 100644
  
  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/jxl/libjxl_cms.pc.in"
 diff --git a/lib/threads/libjxl_threads.pc.in b/lib/threads/libjxl_threads.pc.in
-index dfbaa3f..0af6239 100644
+index dfbaa3ff..0af6239d 100644
 --- a/lib/threads/libjxl_threads.pc.in
 +++ b/lib/threads/libjxl_threads.pc.in
 @@ -8,6 +8,5 @@ Description: JPEG XL multi-thread runner using std::threads.

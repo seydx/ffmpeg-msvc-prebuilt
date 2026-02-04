@@ -58,7 +58,6 @@ cd ..
 
 # Apply patches
 echo "Applying patches..."
-apply-patch zlib zlib.patch
 apply-patch harfbuzz harfbuzz.patch
 
 # Copy FFMPEG_VERSION file to FFmpeg directory (used by patches)
@@ -72,7 +71,12 @@ fi
 # ========================================
 
 # zlib
-./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF
+./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_STATIC=ON
+# New zlib names static lib "zs.lib" on Windows, FFmpeg expects "z.lib"
+if [ -f "$INSTALL_PREFIX/lib/zs.lib" ] && [ ! -f "$INSTALL_PREFIX/lib/z.lib" ]; then
+    cp "$INSTALL_PREFIX/lib/zs.lib" "$INSTALL_PREFIX/lib/z.lib"
+    cp "$INSTALL_PREFIX/lib/zs.lib" "$INSTALL_PREFIX/lib/zlib.lib"
+fi
 add_ffargs "--enable-zlib"
 
 # XZ/LZMA
