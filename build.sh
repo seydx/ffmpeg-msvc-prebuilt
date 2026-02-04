@@ -127,10 +127,10 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     # Check if CUDA SDK is available (installed via GitHub Action)
     if [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
         echo "CUDA SDK found, enabling CUDA NVCC support in FFmpeg"
-        add_ffargs "--enable-cuda-nvcc"
+        add_ffargs "--enable-cuda-nvcc --enable-nonfree"
 
         # Enable libnpp for CUDA-accelerated filters (not static?)
-        # add_ffargs "--enable-libnpp --enable-nonfree"
+        # add_ffargs "--enable-libnpp"
     fi
 fi
 
