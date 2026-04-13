@@ -84,3 +84,4 @@
 1009-hevc-parameter-sets.patch
 1011-check-vaapi-drm-availability.patch
 1012-avfoundation-device-capture.patch
+1013-fix-whisper-skip-gpu-backends-when-disabled.patch

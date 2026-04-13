@@ -1,0 +1,23 @@
+Index: FFmpeg/libavfilter/af_whisper.c
+===================================================================
+--- FFmpeg.orig/libavfilter/af_whisper.c
++++ FFmpeg/libavfilter/af_whisper.c
+@@ -92,8 +92,16 @@ static int init(AVFilterContext *ctx)
+ {
+     WhisperContext *wctx = ctx->priv;
+ 
+-    static AVOnce init_static_once = AV_ONCE_INIT;
+-    ff_thread_once(&init_static_once, ggml_backend_load_all);
++    // When GPU is disabled, skip ggml_backend_load_all() to prevent crashes
++    // on systems without GPU hardware (e.g. CPU-only containers where
++    // Vulkan/OpenCL initialization may segfault or throw uncaught exceptions
++    // during device enumeration).  The CPU backend is always available via
++    // static linking (GGML_USE_CPU) or dynamic loading (GGML_BACKEND_DL).
++    // When GPU is enabled, load all backends so GPU devices are discoverable.
++    if (wctx->use_gpu) {
++        static AVOnce gpu_backends_loaded = AV_ONCE_INIT;
++        ff_thread_once(&gpu_backends_loaded, ggml_backend_load_all);
++    }
+ 
+     whisper_log_set(cb_log, ctx);
+ 
