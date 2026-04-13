@@ -57,7 +57,7 @@ Index: FFmpeg/libavformat/rtsp.h
 ===================================================================
 --- FFmpeg.orig/libavformat/rtsp.h
 +++ FFmpeg/libavformat/rtsp.h
-@@ -486,6 +486,8 @@ typedef struct RTSPStream {
+@@ -508,6 +508,8 @@ typedef struct RTSPStream {
      int sdp_ttl;              /**< IP Time-To-Live (from SDP content) */
      int sdp_payload_type;     /**< payload type */
      enum RTSPSDPDirection sdp_direction; /**< SDP direction attribute (from SDP content) */

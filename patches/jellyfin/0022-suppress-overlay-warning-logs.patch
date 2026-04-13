@@ -2,7 +2,7 @@ Index: FFmpeg/libavfilter/buffersrc.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/buffersrc.c
 +++ FFmpeg/libavfilter/buffersrc.c
-@@ -76,7 +76,7 @@ typedef struct BufferSourceContext {
+@@ -77,7 +77,7 @@ typedef struct BufferSourceContext {
      c->prev_delta = c->prev_w != width || c->prev_h != height || c->prev_pix_fmt != format ||\
                      c->prev_color_space != csp || c->prev_color_range != range || c->prev_alpha_mode != alpha;\
      if (c->link_delta) {\

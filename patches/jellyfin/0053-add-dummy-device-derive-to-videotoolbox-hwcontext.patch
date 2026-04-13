@@ -2,7 +2,7 @@ Index: FFmpeg/libavutil/hwcontext_videotoolbox.c
 ===================================================================
 --- FFmpeg.orig/libavutil/hwcontext_videotoolbox.c
 +++ FFmpeg/libavutil/hwcontext_videotoolbox.c
-@@ -825,6 +825,14 @@ static int vt_device_create(AVHWDeviceCo
+@@ -831,6 +831,14 @@ static int vt_device_create(AVHWDeviceCo
      return 0;
  }
  
@@ -17,7 +17,7 @@ Index: FFmpeg/libavutil/hwcontext_videotoolbox.c
  const HWContextType ff_hwcontext_type_videotoolbox = {
      .type                 = AV_HWDEVICE_TYPE_VIDEOTOOLBOX,
      .name                 = "videotoolbox",
-@@ -832,6 +840,7 @@ const HWContextType ff_hwcontext_type_vi
+@@ -838,6 +846,7 @@ const HWContextType ff_hwcontext_type_vi
      .frames_hwctx_size    = sizeof(VTFramesContext),
  
      .device_create        = vt_device_create,

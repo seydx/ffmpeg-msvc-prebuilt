@@ -575,7 +575,7 @@ Index: FFmpeg/libavfilter/vf_scale_cuda.cu
      float px = floor(xi);
      float py = floor(yi);
      float fx = xi - px;
-@@ -1194,7 +1233,9 @@ __device__ static inline T Subsample_Bic
+@@ -1197,7 +1236,9 @@ __device__ static inline T Subsample_Bic
          params.dst_width, params.dst_height, params.dst_pitch, \
          params.src_left, params.src_top,                \
          params.src_width, params.src_height,            \

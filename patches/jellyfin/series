@@ -79,7 +79,6 @@
 1003-add-avframe-crop-support-to-rkrga-scale.patch
 1004-add-avframe-crop-support-to-libplacebo.patch
 1005-change-ffmpeg-version-file.patch
-1006-fix-rtp-ssrc.patch
 1007-add-sdp-direction-attribute-support.patch
 1008-add-sdp-fmtp-and-mimetype-support.patch
 1009-hevc-parameter-sets.patch

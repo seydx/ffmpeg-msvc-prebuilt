@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3716,6 +3716,8 @@ h264_videotoolbox_encoder_deps="pthreads
+@@ -3821,6 +3821,8 @@ h264_videotoolbox_encoder_deps="pthreads
  h264_videotoolbox_encoder_select="atsc_a53 videotoolbox_encoder"
  hevc_videotoolbox_encoder_deps="pthreads"
  hevc_videotoolbox_encoder_select="atsc_a53 videotoolbox_encoder"
@@ -15,7 +15,7 @@ Index: FFmpeg/libavcodec/Makefile
 ===================================================================
 --- FFmpeg.orig/libavcodec/Makefile
 +++ FFmpeg/libavcodec/Makefile
-@@ -541,6 +541,7 @@ OBJS-$(CONFIG_MJPEGB_DECODER)          +
+@@ -542,6 +542,7 @@ OBJS-$(CONFIG_MJPEGB_DECODER)          +
  OBJS-$(CONFIG_MJPEG_CUVID_DECODER)     += cuviddec.o
  OBJS-$(CONFIG_MJPEG_QSV_ENCODER)       += qsvenc_jpeg.o
  OBJS-$(CONFIG_MJPEG_VAAPI_ENCODER)     += vaapi_encode_mjpeg.o
@@ -27,7 +27,7 @@ Index: FFmpeg/libavcodec/allcodecs.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/allcodecs.c
 +++ FFmpeg/libavcodec/allcodecs.c
-@@ -913,6 +913,7 @@ extern const FFCodec ff_mjpeg_cuvid_deco
+@@ -917,6 +917,7 @@ extern const FFCodec ff_mjpeg_cuvid_deco
  extern const FFCodec ff_mjpeg_qsv_encoder;
  extern const FFCodec ff_mjpeg_qsv_decoder;
  extern const FFCodec ff_mjpeg_vaapi_encoder;
