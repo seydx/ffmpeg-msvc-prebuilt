@@ -313,7 +313,7 @@ fi
 
 # libass - ASS/SSA subtitle rendering
 if [ -n "$ENABLE_LIBASS" ]; then
-    # apply-patch fribidi fribidi.patch
+    apply-patch fribidi fribidi.patch
     ./build-libass.sh
     add_ffargs "--enable-libass"
 fi
