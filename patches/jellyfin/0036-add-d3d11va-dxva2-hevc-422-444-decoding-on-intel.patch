@@ -366,7 +366,7 @@ Index: FFmpeg/libavcodec/hevc/hevcdec.c
         *fmt++ = AV_PIX_FMT_VAAPI;
  #endif
 @@ -686,6 +700,13 @@ static enum AVPixelFormat get_format(HEV
-     /* NOTE: fallthrough */
+         av_fallthrough;
      case AV_PIX_FMT_YUV420P12:
      case AV_PIX_FMT_YUV444P12:
 +#if CONFIG_HEVC_DXVA2_HWACCEL

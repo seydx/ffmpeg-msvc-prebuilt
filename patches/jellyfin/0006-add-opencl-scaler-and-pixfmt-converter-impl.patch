@@ -2,14 +2,14 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4252,6 +4252,7 @@ rubberband_filter_deps="librubberband"
+@@ -4259,6 +4259,7 @@ rubberband_filter_deps="librubberband"
  sab_filter_deps="gpl swscale"
  scale2ref_filter_deps="swscale"
  scale_filter_deps="swscale"
 +scale_opencl_filter_deps="opencl"
  sr_amf_filter_deps="amf"
  vpp_amf_filter_deps="amf"
- scale_qsv_filter_deps="libmfx"
+ frc_amf_filter_deps="amf windows_h"
 Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
@@ -26,7 +26,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -447,6 +447,7 @@ extern const FFFilter ff_vf_scale_cuda;
+@@ -448,6 +448,7 @@ extern const FFFilter ff_vf_scale_cuda;
  extern const FFFilter ff_vf_scale_d3d11;
  extern const FFFilter ff_vf_scale_d3d12;
  extern const FFFilter ff_vf_scale_npp;

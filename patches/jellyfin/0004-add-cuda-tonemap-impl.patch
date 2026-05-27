@@ -2,16 +2,16 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3576,6 +3576,8 @@ scale_cuda_filter_deps="ffnvcodec"
+@@ -3581,6 +3581,8 @@ scale_cuda_filter_deps="ffnvcodec"
  scale_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
  thumbnail_cuda_filter_deps="ffnvcodec"
  thumbnail_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
 +tonemap_cuda_filter_deps="ffnvcodec const_nan"
 +tonemap_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
+ transpose_cuda_filter_deps="ffnvcodec"
+ transpose_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
  transpose_npp_filter_deps="ffnvcodec libnpp"
- overlay_cuda_filter_deps="ffnvcodec"
- overlay_cuda_filter_deps_any="cuda_nvcc cuda_llvm"
-@@ -5040,8 +5042,10 @@ if enabled cuda_nvcc; then
+@@ -5048,8 +5050,10 @@ if enabled cuda_nvcc; then
      nvcc_default="nvcc"
      nvccflags_default="-gencode arch=compute_30,code=sm_30 -O2"
  else
@@ -23,7 +23,7 @@ Index: FFmpeg/configure
      NVCC_C=""
  fi
  
-@@ -5054,6 +5058,11 @@ if enabled cuda_nvcc; then
+@@ -5062,6 +5066,11 @@ if enabled cuda_nvcc; then
      if $nvcc $nvccflags_default 2>&1 | grep -qi unsupported; then
          nvccflags_default="-gencode arch=compute_75,code=sm_75 -O2"
      fi
@@ -35,7 +35,7 @@ Index: FFmpeg/configure
  fi
  
  set_default arch cc cxx doxygen pkg_config ranlib strip sysinclude \
-@@ -7183,7 +7192,7 @@ fi
+@@ -7192,7 +7201,7 @@ fi
  if enabled cuda_nvcc; then
      nvccflags="$nvccflags -ptx"
  else
@@ -73,7 +73,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -509,6 +509,7 @@ extern const FFFilter ff_vf_tmedian;
+@@ -510,6 +510,7 @@ extern const FFFilter ff_vf_tmedian;
  extern const FFFilter ff_vf_tmidequalizer;
  extern const FFFilter ff_vf_tmix;
  extern const FFFilter ff_vf_tonemap;

@@ -16,7 +16,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
  #endif
  
  #if CONFIG_CUDA
-@@ -1793,6 +1800,7 @@ static void vulkan_device_uninit(AVHWDev
+@@ -1818,6 +1825,7 @@ static void vulkan_device_uninit(AVHWDev
  
  static int vulkan_device_create_internal(AVHWDeviceContext *ctx,
                                           VulkanDeviceSelection *dev_select,
@@ -24,7 +24,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
                                           int disable_multiplane,
                                           AVDictionary *opts, int flags)
  {
-@@ -1865,10 +1873,14 @@ static int vulkan_device_create_internal
+@@ -1890,10 +1898,14 @@ static int vulkan_device_create_internal
          goto end;
      }
  
@@ -43,7 +43,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
  
      /* The disable_multiplane argument takes precedent over the option */
      p->disable_multiplane = disable_multiplane;
-@@ -2166,7 +2178,7 @@ static int vulkan_device_create(AVHWDevi
+@@ -2196,7 +2208,7 @@ static int vulkan_device_create(AVHWDevi
          }
      }
  
@@ -52,7 +52,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
  }
  
  static int vulkan_device_derive(AVHWDeviceContext *ctx,
-@@ -2190,6 +2202,7 @@ static int vulkan_device_derive(AVHWDevi
+@@ -2220,6 +2232,7 @@ static int vulkan_device_derive(AVHWDevi
          };
  #endif
          const char *vendor;
@@ -60,7 +60,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
  
  #if VA_CHECK_VERSION(1, 15, 0)
          vas = vaGetDisplayAttributes(dpy, &attr, 1);
-@@ -2204,11 +2217,14 @@ static int vulkan_device_derive(AVHWDevi
+@@ -2234,11 +2247,14 @@ static int vulkan_device_derive(AVHWDevi
                  return AVERROR_EXTERNAL;
              }
  
@@ -77,7 +77,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
      }
  #endif
  #if CONFIG_LIBDRM
-@@ -2217,6 +2233,7 @@ static int vulkan_device_derive(AVHWDevi
+@@ -2247,6 +2263,7 @@ static int vulkan_device_derive(AVHWDevi
          struct stat drm_node_info;
          drmDevice *drm_dev_info;
          AVDRMDeviceContext *src_hwctx = src_ctx->hwctx;
@@ -85,7 +85,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
  
          err = fstat(src_hwctx->fd, &drm_node_info);
          if (err) {
-@@ -2236,12 +2253,15 @@ static int vulkan_device_derive(AVHWDevi
+@@ -2266,12 +2283,15 @@ static int vulkan_device_derive(AVHWDevi
              return AVERROR_EXTERNAL;
          }
  
@@ -103,7 +103,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
      }
  #endif
  #if CONFIG_CUDA
-@@ -2264,7 +2284,7 @@ static int vulkan_device_derive(AVHWDevi
+@@ -2294,7 +2314,7 @@ static int vulkan_device_derive(AVHWDevi
           * CUDA is not able to import multiplane images, so always derive a
           * Vulkan device with multiplane disabled.
           */
@@ -112,7 +112,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
      }
  #endif
      default:
-@@ -3331,6 +3351,7 @@ static int vulkan_map_from_drm_frame_des
+@@ -3361,6 +3381,7 @@ static int vulkan_map_from_drm_frame_des
      const AVDRMFrameDescriptor *desc = (AVDRMFrameDescriptor *)src->data[0];
      VkBindImageMemoryInfo bind_info[AV_DRM_MAX_PLANES];
      VkBindImagePlaneMemoryInfo plane_info[AV_DRM_MAX_PLANES];
@@ -120,7 +120,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
  
      for (int i = 0; i < desc->nb_layers; i++) {
          if (drm_to_vulkan_fmt(desc->layers[i].format) == VK_FORMAT_UNDEFINED) {
-@@ -3340,13 +3361,21 @@ static int vulkan_map_from_drm_frame_des
+@@ -3370,13 +3391,21 @@ static int vulkan_map_from_drm_frame_des
          }
      }
  
@@ -143,7 +143,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
  
      for (int i = 0; i < desc->nb_layers; i++) {
          const int planes = desc->layers[i].nb_planes;
-@@ -3384,7 +3413,7 @@ static int vulkan_map_from_drm_frame_des
+@@ -3414,7 +3443,7 @@ static int vulkan_map_from_drm_frame_des
              .mipLevels             = 1,
              .arrayLayers           = 1,
              .flags                 = 0x0,
@@ -152,7 +152,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
              .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED, /* specs say so */
              .usage                 = 0x0, /* filled in below */
              .samples               = VK_SAMPLE_COUNT_1_BIT,
-@@ -3425,7 +3454,7 @@ static int vulkan_map_from_drm_frame_des
+@@ -3455,7 +3484,7 @@ static int vulkan_map_from_drm_frame_des
  
          fmt_props = (VkPhysicalDeviceImageFormatInfo2) {
              .sType  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,
@@ -161,7 +161,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
              .format = create_info.format,
              .type   = create_info.imageType,
              .tiling = create_info.tiling,
-@@ -3598,7 +3627,7 @@ static int vulkan_map_from_drm_frame_syn
+@@ -3628,7 +3657,7 @@ static int vulkan_map_from_drm_frame_syn
      AVVulkanDeviceContext *hwctx = &p->p;
      FFVulkanFunctions *vk = &p->vkctx.vkfn;
  
@@ -170,7 +170,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
      if (p->vkctx.extensions & FF_VK_EXT_EXTERNAL_FD_SEM) {
          VkCommandBuffer cmd_buf;
          FFVkExecContext *exec;
-@@ -3624,8 +3653,10 @@ static int vulkan_map_from_drm_frame_syn
+@@ -3654,8 +3683,10 @@ static int vulkan_map_from_drm_frame_syn
              if (ioctl(desc->objects[i].fd, DMA_BUF_IOCTL_EXPORT_SYNC_FILE,
                        &implicit_fd_info)) {
                  err = AVERROR(errno);
@@ -182,7 +182,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
                  for (; i >= 0; i--)
                      vk->DestroySemaphore(hwctx->act_dev, drm_sync_sem[i], hwctx->alloc);
                  return err;
-@@ -3701,10 +3732,12 @@ static int vulkan_map_from_drm_frame_syn
+@@ -3731,10 +3762,12 @@ static int vulkan_map_from_drm_frame_syn
      } else
  #endif
      {
@@ -199,7 +199,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
          if (err)
              return err;
      }
-@@ -4105,22 +4138,14 @@ fail:
+@@ -4135,22 +4168,14 @@ fail:
  static int vulkan_map_to(AVHWFramesContext *hwfc, AVFrame *dst,
                           const AVFrame *src, int flags)
  {
@@ -224,7 +224,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
  #endif
      default:
          return AVERROR(ENOSYS);
-@@ -4244,6 +4269,7 @@ static int vulkan_map_to_drm(AVHWFramesC
+@@ -4274,6 +4299,7 @@ static int vulkan_map_to_drm(AVHWFramesC
      VulkanFramesPriv *fp = hwfc->hwctx;
      const int planes = av_pix_fmt_count_planes(hwfc->sw_format);
      const int nb_images = ff_vk_count_images(f);
@@ -232,7 +232,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
      VkImageDrmFormatModifierPropertiesEXT drm_mod = {
          .sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT,
      };
-@@ -4275,7 +4301,7 @@ static int vulkan_map_to_drm(AVHWFramesC
+@@ -4305,7 +4331,7 @@ static int vulkan_map_to_drm(AVHWFramesC
          VkSemaphoreWaitInfo wait_info = {
              .sType          = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
              .flags          = 0x0,
@@ -241,7 +241,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
              .pSemaphores    = f->sem,
              .pValues        = f->sem_value,
          };
-@@ -4289,10 +4315,16 @@ static int vulkan_map_to_drm(AVHWFramesC
+@@ -4319,10 +4345,16 @@ static int vulkan_map_to_drm(AVHWFramesC
      /* It will be freed in ff_hwframe_map_create callback */
      free_drm_desc_on_err = 0;
  
@@ -262,7 +262,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
          err = AVERROR_EXTERNAL;
          goto end;
      }
-@@ -4331,7 +4363,7 @@ static int vulkan_map_to_drm(AVHWFramesC
+@@ -4361,7 +4393,7 @@ static int vulkan_map_to_drm(AVHWFramesC
  
          drm_desc->nb_objects++;
          drm_desc->objects[i].size = f->size[i];
@@ -271,7 +271,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
      }
  
      /* NV12 has 2 planes but 1 image/semaphore */
-@@ -4427,21 +4459,13 @@ fail:
+@@ -4457,21 +4489,13 @@ fail:
  static int vulkan_map_from(AVHWFramesContext *hwfc, AVFrame *dst,
                             const AVFrame *src, int flags)
  {

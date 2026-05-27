@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -2507,6 +2507,9 @@ HEADERS_LIST="
+@@ -2505,6 +2505,9 @@ HEADERS_LIST="
  INTRINSICS_LIST="
      intrinsics_neon
      intrinsics_sse2
@@ -22,7 +22,7 @@ Index: FFmpeg/configure
  vfp_deps="arm"
  vfpv3_deps="vfp"
  setend_deps="arm"
-@@ -4298,6 +4304,7 @@ tinterlace_filter_deps="gpl"
+@@ -4304,6 +4310,7 @@ tinterlace_filter_deps="gpl"
  tinterlace_merge_test_deps="tinterlace_filter"
  tinterlace_pad_test_deps="tinterlace_filter"
  tonemap_filter_deps="const_nan"
@@ -30,7 +30,7 @@ Index: FFmpeg/configure
  tonemap_vaapi_filter_deps="vaapi VAProcFilterParameterBufferHDRToneMapping"
  tonemap_videotoolbox_filter_deps="metal corevideo videotoolbox const_nan"
  tonemap_opencl_filter_deps="opencl const_nan"
-@@ -6906,6 +6913,19 @@ fi
+@@ -6913,6 +6920,19 @@ fi
  
  check_cc intrinsics_neon arm_neon.h "int16x8_t test = vdupq_n_s16(0)"
  
@@ -50,7 +50,7 @@ Index: FFmpeg/configure
  check_ldflags -Wl,--as-needed
  check_ldflags -Wl,-z,noexecstack
  if [ $target_os = "darwin" ]; then
-@@ -8182,6 +8202,16 @@ elif enabled gcc; then
+@@ -8195,6 +8215,16 @@ elif enabled gcc; then
              check_allcflags -mpreferred-stack-boundary=4
              ;;
          esac
@@ -2540,7 +2540,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -514,6 +514,7 @@ extern const FFFilter ff_vf_tmedian;
+@@ -515,6 +515,7 @@ extern const FFFilter ff_vf_tmedian;
  extern const FFFilter ff_vf_tmidequalizer;
  extern const FFFilter ff_vf_tmix;
  extern const FFFilter ff_vf_tonemap;

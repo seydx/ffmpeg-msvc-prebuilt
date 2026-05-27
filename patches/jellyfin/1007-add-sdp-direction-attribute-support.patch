@@ -18,7 +18,7 @@ Index: FFmpeg/libavformat/rtsp.c
  
          copy_default_source_addrs(s1->default_include_source_addrs,
                                    s1->nb_default_include_source_addrs,
-@@ -675,6 +677,26 @@ static void sdp_parse_line(AVFormatConte
+@@ -676,6 +678,26 @@ static void sdp_parse_line(AVFormatConte
                  }
              } else
                  get_word(rt->default_lang, sizeof(rt->default_lang), &p);

@@ -2,7 +2,7 @@ Index: FFmpeg/libavfilter/Makefile
 ===================================================================
 --- FFmpeg.orig/libavfilter/Makefile
 +++ FFmpeg/libavfilter/Makefile
-@@ -612,6 +612,7 @@ OBJS-$(CONFIG_DRAWBOX_VAAPI_FILTER)
+@@ -615,6 +615,7 @@ OBJS-$(CONFIG_DRAWBOX_VAAPI_FILTER)
  
  OBJS-$(CONFIG_ALLRGB_FILTER)                 += vsrc_testsrc.o
  OBJS-$(CONFIG_ALLYUV_FILTER)                 += vsrc_testsrc.o
@@ -14,7 +14,7 @@ Index: FFmpeg/libavfilter/allfilters.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/allfilters.c
 +++ FFmpeg/libavfilter/allfilters.c
-@@ -572,6 +572,7 @@ extern const FFFilter ff_vf_drawbox_vaap
+@@ -574,6 +574,7 @@ extern const FFFilter ff_vf_drawbox_vaap
  
  extern const FFFilter ff_vsrc_allrgb;
  extern const FFFilter ff_vsrc_allyuv;

@@ -47,7 +47,6 @@
 0051-add-mjpeg-videotoolbox-encoder.patch
 0052-add-vt-low-priority-keyframe-decoding.patch
 0053-add-dummy-device-derive-to-videotoolbox-hwcontext.patch
-0054-add-cuda-transpose-filter-impl.patch
 0055-add-flip-feat-to-opencl-transpose-filter.patch
 0056-opus-allow-5point1-side-inputs.patch
 # 0057-add-simd-optimized-tonemapx-filter.patch

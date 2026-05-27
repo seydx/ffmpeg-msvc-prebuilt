@@ -247,7 +247,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
  }
  
  static void dump_video_vp9_param(AVCodecContext *avctx, QSVEncContext *q,
-@@ -1209,6 +1217,18 @@ static int init_video_param(AVCodecConte
+@@ -1211,6 +1219,18 @@ static int init_video_param(AVCodecConte
          q->extparam_internal[q->nb_extparam_internal++] = (mfxExtBuffer *)&q->exthevctiles;
      }
  
@@ -266,7 +266,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
      q->extvsi.VideoFullRange = (avctx->color_range == AVCOL_RANGE_JPEG);
      q->extvsi.ColourDescriptionPresent = 0;
  
-@@ -1461,12 +1481,17 @@ static int qsv_retrieve_enc_params(AVCod
+@@ -1463,12 +1483,17 @@ static int qsv_retrieve_enc_params(AVCod
      };
  #endif
  
@@ -285,7 +285,7 @@ Index: FFmpeg/libavcodec/qsvenc.c
      ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&extradata;
      ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&co;
  
-@@ -1494,6 +1519,10 @@ static int qsv_retrieve_enc_params(AVCod
+@@ -1496,6 +1521,10 @@ static int qsv_retrieve_enc_params(AVCod
          ext_buffers[ext_buf_num++] = (mfxExtBuffer*)&hyper_mode_param_buf;
      }
  #endif
