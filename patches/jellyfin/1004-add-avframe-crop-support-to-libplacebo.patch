@@ -2,7 +2,7 @@ Index: FFmpeg/libavfilter/vf_libplacebo.c
 ===================================================================
 --- FFmpeg.orig/libavfilter/vf_libplacebo.c
 +++ FFmpeg/libavfilter/vf_libplacebo.c
-@@ -911,24 +911,33 @@ static void update_crops(AVFilterContext
+@@ -910,24 +910,33 @@ static void update_crops(AVFilterContext
          s->var_values[VAR_POS_W]  = s->var_values[VAR_PW] = NAN;
          s->var_values[VAR_POS_H]  = s->var_values[VAR_PH] = NAN;
  

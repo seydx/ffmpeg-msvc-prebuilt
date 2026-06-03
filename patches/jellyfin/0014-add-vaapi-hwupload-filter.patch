@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4205,6 +4205,7 @@ gblur_vulkan_filter_deps="vulkan spirv_c
+@@ -4209,6 +4209,7 @@ gblur_vulkan_filter_deps="vulkan spirv_c
  hflip_vulkan_filter_deps="vulkan spirv_compiler"
  histeq_filter_deps="gpl"
  hqdn3d_filter_deps="gpl"
