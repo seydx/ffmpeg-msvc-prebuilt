@@ -590,7 +590,7 @@ Index: FFmpeg/libavfilter/vf_scale_cuda.h
 ===================================================================
 --- FFmpeg.orig/libavfilter/vf_scale_cuda.h
 +++ FFmpeg/libavfilter/vf_scale_cuda.h
-@@ -45,6 +45,9 @@ typedef struct {
+@@ -44,6 +44,9 @@ typedef struct {
      int src_height;
      float param;
      int mpeg_range;
