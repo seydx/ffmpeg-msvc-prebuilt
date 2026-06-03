@@ -2,15 +2,24 @@ Index: FFmpeg/compat/cuda/cuda_runtime.h
 ===================================================================
 --- FFmpeg.orig/compat/cuda/cuda_runtime.h
 +++ FFmpeg/compat/cuda/cuda_runtime.h
-@@ -24,6 +24,7 @@
+@@ -23,7 +23,16 @@
+ #ifndef COMPAT_CUDA_CUDA_RUNTIME_H
  #define COMPAT_CUDA_CUDA_RUNTIME_H
  
++// On MinGW (clangarm64), msys2's _mingw.h defines __prefetch as an inline
++// function, but clang treats __prefetch as a builtin on ARM64 -> redefinition
++// error during .cu compilation (this header is force-included before stdint.h
++// pulls in _mingw.h). Renaming the mingw inline keeps clang's builtin intact.
++#ifdef __MINGW32__
++#define __prefetch __ff_cuda_skipped_prefetch
++#endif
++
  // Common macros
 +#define __constant__ __attribute__((constant))
  #define __global__ __attribute__((global))
  #define __device__ __attribute__((device))
  #define __device_builtin__ __attribute__((device_builtin))
-@@ -39,59 +40,59 @@
+@@ -39,59 +48,59 @@
  // Basic typedefs
  typedef __device_builtin__ unsigned long long cudaTextureObject_t;
  
@@ -116,7 +125,7 @@ Index: FFmpeg/compat/cuda/cuda_runtime.h
      uint3 ret; \
      unsigned tmp; \
      GETCOMP(reg, x) \
-@@ -109,18 +110,8 @@ GET(getThreadIdx, tid)
+@@ -109,18 +118,8 @@ GET(getThreadIdx, tid)
  #define blockDim (getBlockDim())
  #define threadIdx (getThreadIdx())
  
@@ -136,7 +145,7 @@ Index: FFmpeg/compat/cuda/cuda_runtime.h
  
  TEX2D(unsigned char, a & 0xFF)
  TEX2D(unsigned short, a & 0xFFFF)
-@@ -134,19 +125,19 @@ TEX2D(float4, make_float4(a, b, c, d))
+@@ -134,19 +133,19 @@ TEX2D(float4, make_float4(a, b, c, d))
  
  // Template calling tex instruction and converting the output to the selected type
  template<typename T>
@@ -165,7 +174,7 @@ Index: FFmpeg/compat/cuda/cuda_runtime.h
  {
      float4 ret;
      asm("tex.2d.v4.f32.f32 {%0, %1, %2, %3}, [%4, {%5, %6}];" :
-@@ -156,39 +147,43 @@ inline __device__ float4 tex2D<float4>(c
+@@ -156,39 +155,43 @@ inline __device__ float4 tex2D<float4>(c
  }
  
  template<>
