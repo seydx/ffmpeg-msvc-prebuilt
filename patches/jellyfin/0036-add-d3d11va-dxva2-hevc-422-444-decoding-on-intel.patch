@@ -337,7 +337,7 @@ Index: FFmpeg/libavcodec/hevc/hevcdec.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/hevc/hevcdec.c
 +++ FFmpeg/libavcodec/hevc/hevcdec.c
-@@ -648,6 +648,13 @@ static enum AVPixelFormat get_format(HEV
+@@ -649,6 +649,13 @@ static enum AVPixelFormat get_format(HEV
  #endif
          break;
      case AV_PIX_FMT_YUV444P:
@@ -351,7 +351,7 @@ Index: FFmpeg/libavcodec/hevc/hevcdec.c
  #if CONFIG_HEVC_VAAPI_HWACCEL
          *fmt++ = AV_PIX_FMT_VAAPI;
  #endif
-@@ -666,6 +673,13 @@ static enum AVPixelFormat get_format(HEV
+@@ -667,6 +674,13 @@ static enum AVPixelFormat get_format(HEV
          break;
      case AV_PIX_FMT_YUV422P:
      case AV_PIX_FMT_YUV422P10LE:
@@ -365,7 +365,7 @@ Index: FFmpeg/libavcodec/hevc/hevcdec.c
  #if CONFIG_HEVC_VAAPI_HWACCEL
         *fmt++ = AV_PIX_FMT_VAAPI;
  #endif
-@@ -686,6 +700,13 @@ static enum AVPixelFormat get_format(HEV
+@@ -687,6 +701,13 @@ static enum AVPixelFormat get_format(HEV
          av_fallthrough;
      case AV_PIX_FMT_YUV420P12:
      case AV_PIX_FMT_YUV444P12:
@@ -379,7 +379,7 @@ Index: FFmpeg/libavcodec/hevc/hevcdec.c
  #if CONFIG_HEVC_VAAPI_HWACCEL
         *fmt++ = AV_PIX_FMT_VAAPI;
  #endif
-@@ -700,6 +721,13 @@ static enum AVPixelFormat get_format(HEV
+@@ -701,6 +722,13 @@ static enum AVPixelFormat get_format(HEV
  #endif
          break;
      case AV_PIX_FMT_YUV422P12:

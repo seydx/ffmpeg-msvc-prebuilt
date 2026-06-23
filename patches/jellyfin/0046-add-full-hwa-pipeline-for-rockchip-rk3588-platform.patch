@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -366,6 +366,7 @@ External library support:
+@@ -368,6 +368,7 @@ External library support:
    --enable-omx             enable OpenMAX IL code [no]
    --enable-omx-rpi         enable OpenMAX IL code for Raspberry Pi [no]
    --enable-rkmpp           enable Rockchip Media Process Platform code [no]
@@ -10,7 +10,7 @@ Index: FFmpeg/configure
    --disable-v4l2-m2m       disable V4L2 mem2mem code [autodetect]
    --disable-vaapi          disable Video Acceleration API (mainly Unix/Intel) code [autodetect]
    --disable-vdpau          disable Nvidia Video Decode and Presentation API for Unix code [autodetect]
-@@ -2059,6 +2060,7 @@ EXTERNAL_LIBRARY_VERSION3_LIST="
+@@ -2061,6 +2062,7 @@ EXTERNAL_LIBRARY_VERSION3_LIST="
      libvo_amrwbenc
      mbedtls
      rkmpp
@@ -18,7 +18,7 @@ Index: FFmpeg/configure
  "
  
  EXTERNAL_LIBRARY_GPLV3_LIST="
-@@ -2205,6 +2207,7 @@ HWACCEL_LIBRARY_LIST="
+@@ -2209,6 +2211,7 @@ HWACCEL_LIBRARY_LIST="
      mmal
      omx
      opencl
@@ -26,7 +26,7 @@ Index: FFmpeg/configure
  "
  
  DOCUMENT_LIST="
-@@ -3632,8 +3635,10 @@ av1_vaapi_encoder_deps="VAEncPicturePara
+@@ -3643,8 +3646,10 @@ av1_vaapi_encoder_deps="VAEncPicturePara
  av1_vaapi_encoder_select="cbs_av1 vaapi_encode"
  av1_vulkan_encoder_deps="vulkan_1_4"
  av1_vulkan_encoder_select="cbs_av1 vulkan_encode"
@@ -37,7 +37,7 @@ Index: FFmpeg/configure
  h264_amf_encoder_deps="amf"
  h264_amf_decoder_deps="amf"
  h264_cuvid_decoder_deps="cuvid"
-@@ -3654,7 +3659,7 @@ h264_omx_encoder_deps="omx"
+@@ -3665,7 +3670,7 @@ h264_omx_encoder_deps="omx"
  h264_qsv_decoder_select="h264_mp4toannexb_bsf qsvdec"
  h264_qsv_encoder_select="atsc_a53 qsvenc"
  h264_rkmpp_decoder_deps="rkmpp"
@@ -46,7 +46,7 @@ Index: FFmpeg/configure
  h264_rkmpp_encoder_deps="rkmpp"
  h264_vaapi_encoder_select="atsc_a53 cbs_h264 vaapi_encode"
  h264_vulkan_encoder_select="atsc_a53 cbs_h264 vulkan_encode"
-@@ -3679,7 +3684,7 @@ hevc_oh_encoder_deps="ohcodec"
+@@ -3690,7 +3695,7 @@ hevc_oh_encoder_deps="ohcodec"
  hevc_qsv_decoder_select="hevc_mp4toannexb_bsf qsvdec"
  hevc_qsv_encoder_select="hevcparse qsvenc"
  hevc_rkmpp_decoder_deps="rkmpp"
@@ -55,7 +55,7 @@ Index: FFmpeg/configure
  hevc_rkmpp_encoder_deps="rkmpp"
  hevc_vaapi_encoder_deps="VAEncPictureParameterBufferHEVC"
  hevc_vaapi_encoder_select="atsc_a53 cbs_h265 vaapi_encode"
-@@ -3693,11 +3698,14 @@ mjpeg_qsv_encoder_deps="libmfx"
+@@ -3704,11 +3709,14 @@ mjpeg_qsv_encoder_deps="libmfx"
  mjpeg_qsv_encoder_select="qsvenc"
  mjpeg_vaapi_encoder_deps="VAEncPictureParameterBufferJPEG"
  mjpeg_vaapi_encoder_select="cbs_jpeg jpegtables vaapi_encode"
@@ -70,7 +70,7 @@ Index: FFmpeg/configure
  mpeg2_cuvid_decoder_deps="cuvid"
  mpeg2_mmal_decoder_deps="mmal"
  mpeg2_mediacodec_decoder_deps="mediacodec"
-@@ -3705,6 +3713,7 @@ mpeg2_qsv_decoder_select="qsvdec"
+@@ -3716,6 +3724,7 @@ mpeg2_qsv_decoder_select="qsvdec"
  mpeg2_qsv_encoder_select="qsvenc"
  mpeg2_vaapi_encoder_select="cbs_mpeg2 vaapi_encode"
  mpeg2_v4l2m2m_decoder_deps="v4l2_m2m mpeg2_v4l2_m2m"
@@ -78,7 +78,7 @@ Index: FFmpeg/configure
  mpeg4_cuvid_decoder_deps="cuvid"
  mpeg4_mediacodec_decoder_deps="mediacodec"
  mpeg4_mediacodec_encoder_deps="mediacodec"
-@@ -3713,6 +3722,8 @@ mpeg4_mmal_decoder_deps="mmal"
+@@ -3724,6 +3733,8 @@ mpeg4_mmal_decoder_deps="mmal"
  mpeg4_omx_encoder_deps="omx"
  mpeg4_v4l2m2m_decoder_deps="v4l2_m2m mpeg4_v4l2_m2m"
  mpeg4_v4l2m2m_encoder_deps="v4l2_m2m mpeg4_v4l2_m2m"
@@ -87,7 +87,7 @@ Index: FFmpeg/configure
  vc1_cuvid_decoder_deps="cuvid"
  vc1_mmal_decoder_deps="mmal"
  vc1_qsv_decoder_select="qsvdec"
-@@ -4246,6 +4257,7 @@ overlay_qsv_filter_deps="libmfx"
+@@ -4258,6 +4269,7 @@ overlay_qsv_filter_deps="libmfx"
  overlay_qsv_filter_select="qsvvpp"
  overlay_vaapi_filter_deps="vaapi VAProcPipelineCaps_blend_flags"
  overlay_vulkan_filter_deps="vulkan spirv_compiler"
@@ -95,7 +95,7 @@ Index: FFmpeg/configure
  owdenoise_filter_deps="gpl"
  pad_opencl_filter_deps="opencl"
  pan_filter_deps="swresample"
-@@ -4270,6 +4282,7 @@ vpp_amf_filter_deps="amf"
+@@ -4282,6 +4294,7 @@ vpp_amf_filter_deps="amf"
  frc_amf_filter_deps="amf windows_h"
  scale_qsv_filter_deps="libmfx"
  scale_qsv_filter_select="qsvvpp"
@@ -103,7 +103,7 @@ Index: FFmpeg/configure
  scdet_filter_select="scene_sad"
  scdet_vulkan_filter_deps="vulkan spirv_compiler"
  select_filter_select="scene_sad"
-@@ -4315,6 +4328,7 @@ scale_vt_filter_deps="videotoolbox VTPix
+@@ -4327,6 +4340,7 @@ scale_vt_filter_deps="videotoolbox VTPix
  scale_vulkan_filter_deps="vulkan spirv_compiler spirv_library"
  vpp_qsv_filter_deps="libmfx"
  vpp_qsv_filter_select="qsvvpp"
@@ -111,7 +111,7 @@ Index: FFmpeg/configure
  xfade_opencl_filter_deps="opencl"
  xfade_vulkan_filter_deps="vulkan spirv_compiler"
  yadif_cuda_filter_deps="ffnvcodec"
-@@ -4365,14 +4379,14 @@ cws2fws_extralibs="zlib_extralibs"
+@@ -4378,14 +4392,14 @@ cws2fws_extralibs="zlib_extralibs"
  
  # libraries, in any order
  avcodec_deps="avutil"
@@ -123,12 +123,12 @@ Index: FFmpeg/configure
  avfilter_suggest="libm stdatomic zlib spirv_library"
  avformat_deps="avcodec avutil"
  avformat_suggest="libm network zlib stdatomic"
--avutil_suggest="clock_gettime ffnvcodec gcrypt libm zlib libdrm libmfx opencl openssl user32 vaapi vulkan videotoolbox corefoundation corevideo coremedia bcrypt stdatomic"
-+avutil_suggest="clock_gettime ffnvcodec gcrypt libm zlib libdrm libmfx opencl openssl rkmpp user32 vaapi vulkan videotoolbox corefoundation corevideo coremedia bcrypt stdatomic"
+-avutil_suggest="amf clock_gettime ffnvcodec gcrypt libm zlib libdrm libmfx opencl openssl user32 vaapi vulkan videotoolbox corefoundation corevideo coremedia bcrypt stdatomic"
++avutil_suggest="amf clock_gettime ffnvcodec gcrypt libm zlib libdrm libmfx opencl openssl rkmpp user32 vaapi vulkan videotoolbox corefoundation corevideo coremedia bcrypt stdatomic"
  swresample_deps="avutil"
  swresample_suggest="libm libsoxr stdatomic"
  swscale_deps="avutil"
-@@ -7585,10 +7599,15 @@ enabled openssl           && { { check_p
+@@ -7626,10 +7640,15 @@ enabled openssl           && { { check_p
                                 check_lib openssl openssl/ssl.h DTLS_get_data_mtu -lssl -lcrypto -lws2_32 -lgdi32 ||
                                 die "ERROR: openssl (>= 1.1.1) not found"; }
  enabled pocketsphinx      && require_pkg_config pocketsphinx pocketsphinx pocketsphinx/pocketsphinx.h ps_init
@@ -145,7 +145,7 @@ Index: FFmpeg/configure
  enabled vapoursynth       && require_headers "vapoursynth/VSScript4.h vapoursynth/VapourSynth4.h"
  
  if enabled gcrypt; then
-@@ -7792,7 +7811,7 @@ fi
+@@ -7833,7 +7852,7 @@ fi
  if enabled_all opencl libdrm ; then
      check_type "CL/cl_intel.h" "clCreateImageFromFdINTEL_fn" &&
          enable opencl_drm_beignet
@@ -211,7 +211,7 @@ Index: FFmpeg/libavcodec/allcodecs.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/allcodecs.c
 +++ FFmpeg/libavcodec/allcodecs.c
-@@ -151,6 +151,7 @@ extern const FFCodec ff_h263i_decoder;
+@@ -149,6 +149,7 @@ extern const FFCodec ff_h263i_decoder;
  extern const FFCodec ff_h263p_encoder;
  extern const FFCodec ff_h263p_decoder;
  extern const FFCodec ff_h263_v4l2m2m_decoder;
@@ -219,7 +219,7 @@ Index: FFmpeg/libavcodec/allcodecs.c
  extern const FFCodec ff_h264_decoder;
  extern const FFCodec ff_h264_v4l2m2m_decoder;
  extern const FFCodec ff_h264_mediacodec_decoder;
-@@ -214,12 +215,15 @@ extern const FFCodec ff_mpeg4_encoder;
+@@ -212,12 +213,15 @@ extern const FFCodec ff_mpeg4_encoder;
  extern const FFCodec ff_mpeg4_decoder;
  extern const FFCodec ff_mpeg4_v4l2m2m_decoder;
  extern const FFCodec ff_mpeg4_mmal_decoder;
@@ -235,7 +235,7 @@ Index: FFmpeg/libavcodec/allcodecs.c
  extern const FFCodec ff_msa1_decoder;
  extern const FFCodec ff_mscc_decoder;
  extern const FFCodec ff_msmpeg4v1_decoder;
-@@ -874,6 +878,7 @@ extern const FFCodec ff_av1_amf_decoder;
+@@ -872,6 +876,7 @@ extern const FFCodec ff_av1_amf_decoder;
  extern const FFCodec ff_av1_mf_encoder;
  extern const FFCodec ff_av1_vaapi_encoder;
  extern const FFCodec ff_av1_vulkan_encoder;
@@ -243,7 +243,7 @@ Index: FFmpeg/libavcodec/allcodecs.c
  extern const FFCodec ff_libopenh264_encoder;
  extern const FFCodec ff_libopenh264_decoder;
  extern const FFCodec ff_h264_amf_encoder;
-@@ -890,6 +895,7 @@ extern const FFCodec ff_h264_v4l2m2m_enc
+@@ -888,6 +893,7 @@ extern const FFCodec ff_h264_v4l2m2m_enc
  extern const FFCodec ff_h264_vaapi_encoder;
  extern const FFCodec ff_h264_videotoolbox_encoder;
  extern const FFCodec ff_h264_vulkan_encoder;
@@ -251,7 +251,7 @@ Index: FFmpeg/libavcodec/allcodecs.c
  extern const FFCodec ff_hevc_amf_encoder;
  extern const FFCodec ff_hevc_amf_decoder;
  extern const FFCodec ff_hevc_cuvid_decoder;
-@@ -905,11 +911,14 @@ extern const FFCodec ff_hevc_v4l2m2m_enc
+@@ -903,11 +909,14 @@ extern const FFCodec ff_hevc_v4l2m2m_enc
  extern const FFCodec ff_hevc_vaapi_encoder;
  extern const FFCodec ff_hevc_videotoolbox_encoder;
  extern const FFCodec ff_hevc_vulkan_encoder;
@@ -6773,7 +6773,7 @@ Index: FFmpeg/libavutil/Makefile
            iamf.h                                                        \
            imgutils.h                                                    \
            intfloat.h                                                    \
-@@ -218,6 +219,7 @@ OBJS-$(CONFIG_VAAPI)
+@@ -220,6 +221,7 @@ OBJS-$(CONFIG_VAAPI)
  OBJS-$(CONFIG_VIDEOTOOLBOX)             += hwcontext_videotoolbox.o
  OBJS-$(CONFIG_VDPAU)                    += hwcontext_vdpau.o
  OBJS-$(CONFIG_VULKAN)                   += hwcontext_vulkan.o vulkan.o
@@ -6781,7 +6781,7 @@ Index: FFmpeg/libavutil/Makefile
  
  OBJS-$(!CONFIG_VULKAN)                  += hwcontext_stub.o
  
-@@ -253,6 +255,7 @@ SKIPHEADERS-$(CONFIG_VULKAN)           +
+@@ -255,6 +257,7 @@ SKIPHEADERS-$(CONFIG_VULKAN)           +
                                            vulkan_loader.h
  SKIPHEADERS-$(CONFIG_LIBSHADERC)       += vulkan_spirv.h
  SKIPHEADERS-$(CONFIG_LIBGLSLANG)       += vulkan_spirv.h
@@ -7829,7 +7829,7 @@ Index: FFmpeg/libswscale/input.c
  #define p01x_uv_wrapper(fmt, shift) \
      static void fmt ## LEToUV ## _c(uint8_t *dstU,                       \
                                         uint8_t *dstV,                    \
-@@ -2042,6 +2075,10 @@ av_cold void ff_sws_init_input_funcs(Sws
+@@ -2073,6 +2106,10 @@ av_cold void ff_sws_init_input_funcs(Sws
      case AV_PIX_FMT_NV20LE:
          *chrToYV12 = nv20LEToUV_c;
          break;
@@ -7840,7 +7840,7 @@ Index: FFmpeg/libswscale/input.c
      case AV_PIX_FMT_P010LE:
      case AV_PIX_FMT_P210LE:
      case AV_PIX_FMT_P410LE:
-@@ -2643,6 +2680,10 @@ av_cold void ff_sws_init_input_funcs(Sws
+@@ -2680,6 +2717,10 @@ av_cold void ff_sws_init_input_funcs(Sws
      case AV_PIX_FMT_NV20LE:
          *lumToYV12 = nv20LEToY_c;
          break;

@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4256,6 +4256,7 @@ overlay_opencl_filter_deps="opencl"
+@@ -4268,6 +4268,7 @@ overlay_opencl_filter_deps="opencl"
  overlay_qsv_filter_deps="libmfx"
  overlay_qsv_filter_select="qsvvpp"
  overlay_vaapi_filter_deps="vaapi VAProcPipelineCaps_blend_flags"
@@ -14,7 +14,7 @@ Index: FFmpeg/doc/filters.texi
 ===================================================================
 --- FFmpeg.orig/doc/filters.texi
 +++ FFmpeg/doc/filters.texi
-@@ -19484,6 +19484,58 @@ testsrc=s=100x100, split=4 [in0][in1][in
+@@ -19522,6 +19522,58 @@ testsrc=s=100x100, split=4 [in0][in1][in
  
  @end itemize
  

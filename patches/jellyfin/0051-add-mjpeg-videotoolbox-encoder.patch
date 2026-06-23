@@ -2,7 +2,7 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -3832,6 +3832,8 @@ h264_videotoolbox_encoder_deps="pthreads
+@@ -3843,6 +3843,8 @@ h264_videotoolbox_encoder_deps="pthreads
  h264_videotoolbox_encoder_select="atsc_a53 videotoolbox_encoder"
  hevc_videotoolbox_encoder_deps="pthreads"
  hevc_videotoolbox_encoder_select="atsc_a53 videotoolbox_encoder"
@@ -27,7 +27,7 @@ Index: FFmpeg/libavcodec/allcodecs.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/allcodecs.c
 +++ FFmpeg/libavcodec/allcodecs.c
-@@ -917,6 +917,7 @@ extern const FFCodec ff_mjpeg_cuvid_deco
+@@ -915,6 +915,7 @@ extern const FFCodec ff_mjpeg_cuvid_deco
  extern const FFCodec ff_mjpeg_qsv_encoder;
  extern const FFCodec ff_mjpeg_qsv_decoder;
  extern const FFCodec ff_mjpeg_vaapi_encoder;

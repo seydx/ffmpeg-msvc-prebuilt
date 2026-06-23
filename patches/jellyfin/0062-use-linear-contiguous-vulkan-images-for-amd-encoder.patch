@@ -152,7 +152,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
              .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED, /* specs say so */
              .usage                 = 0x0, /* filled in below */
              .samples               = VK_SAMPLE_COUNT_1_BIT,
-@@ -3455,7 +3484,7 @@ static int vulkan_map_from_drm_frame_des
+@@ -3467,7 +3496,7 @@ static int vulkan_map_from_drm_frame_des
  
          fmt_props = (VkPhysicalDeviceImageFormatInfo2) {
              .sType  = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,
@@ -161,7 +161,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
              .format = create_info.format,
              .type   = create_info.imageType,
              .tiling = create_info.tiling,
-@@ -3628,7 +3657,7 @@ static int vulkan_map_from_drm_frame_syn
+@@ -3640,7 +3669,7 @@ static int vulkan_map_from_drm_frame_syn
      AVVulkanDeviceContext *hwctx = &p->p;
      FFVulkanFunctions *vk = &p->vkctx.vkfn;
  
@@ -170,7 +170,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
      if (p->vkctx.extensions & FF_VK_EXT_EXTERNAL_FD_SEM) {
          VkCommandBuffer cmd_buf;
          FFVkExecContext *exec;
-@@ -3654,8 +3683,10 @@ static int vulkan_map_from_drm_frame_syn
+@@ -3666,8 +3695,10 @@ static int vulkan_map_from_drm_frame_syn
              if (ioctl(desc->objects[i].fd, DMA_BUF_IOCTL_EXPORT_SYNC_FILE,
                        &implicit_fd_info)) {
                  err = AVERROR(errno);
@@ -182,7 +182,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
                  for (; i >= 0; i--)
                      vk->DestroySemaphore(hwctx->act_dev, drm_sync_sem[i], hwctx->alloc);
                  return err;
-@@ -3731,10 +3762,12 @@ static int vulkan_map_from_drm_frame_syn
+@@ -3743,10 +3774,12 @@ static int vulkan_map_from_drm_frame_syn
      } else
  #endif
      {
@@ -199,7 +199,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
          if (err)
              return err;
      }
-@@ -4135,22 +4168,14 @@ fail:
+@@ -4147,22 +4180,14 @@ fail:
  static int vulkan_map_to(AVHWFramesContext *hwfc, AVFrame *dst,
                           const AVFrame *src, int flags)
  {
@@ -224,7 +224,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
  #endif
      default:
          return AVERROR(ENOSYS);
-@@ -4274,6 +4299,7 @@ static int vulkan_map_to_drm(AVHWFramesC
+@@ -4286,6 +4311,7 @@ static int vulkan_map_to_drm(AVHWFramesC
      VulkanFramesPriv *fp = hwfc->hwctx;
      const int planes = av_pix_fmt_count_planes(hwfc->sw_format);
      const int nb_images = ff_vk_count_images(f);
@@ -232,7 +232,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
      VkImageDrmFormatModifierPropertiesEXT drm_mod = {
          .sType = VK_STRUCTURE_TYPE_IMAGE_DRM_FORMAT_MODIFIER_PROPERTIES_EXT,
      };
-@@ -4305,7 +4331,7 @@ static int vulkan_map_to_drm(AVHWFramesC
+@@ -4317,7 +4343,7 @@ static int vulkan_map_to_drm(AVHWFramesC
          VkSemaphoreWaitInfo wait_info = {
              .sType          = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO,
              .flags          = 0x0,
@@ -241,7 +241,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
              .pSemaphores    = f->sem,
              .pValues        = f->sem_value,
          };
-@@ -4319,10 +4345,16 @@ static int vulkan_map_to_drm(AVHWFramesC
+@@ -4331,10 +4357,16 @@ static int vulkan_map_to_drm(AVHWFramesC
      /* It will be freed in ff_hwframe_map_create callback */
      free_drm_desc_on_err = 0;
  
@@ -262,7 +262,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
          err = AVERROR_EXTERNAL;
          goto end;
      }
-@@ -4361,7 +4393,7 @@ static int vulkan_map_to_drm(AVHWFramesC
+@@ -4373,7 +4405,7 @@ static int vulkan_map_to_drm(AVHWFramesC
  
          drm_desc->nb_objects++;
          drm_desc->objects[i].size = f->size[i];
@@ -271,7 +271,7 @@ Index: FFmpeg/libavutil/hwcontext_vulkan.c
      }
  
      /* NV12 has 2 planes but 1 image/semaphore */
-@@ -4457,21 +4489,13 @@ fail:
+@@ -4469,21 +4501,13 @@ fail:
  static int vulkan_map_from(AVHWFramesContext *hwfc, AVFrame *dst,
                             const AVFrame *src, int flags)
  {

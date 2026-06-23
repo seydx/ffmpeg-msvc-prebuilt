@@ -261,7 +261,7 @@ Index: FFmpeg/libavutil/hwcontext_d3d11va.c
 ===================================================================
 --- FFmpeg.orig/libavutil/hwcontext_d3d11va.c
 +++ FFmpeg/libavutil/hwcontext_d3d11va.c
-@@ -329,7 +329,8 @@ static int d3d11va_frames_init(AVHWFrame
+@@ -330,7 +330,8 @@ static int d3d11va_frames_init(AVHWFrame
          ctx->initial_pool_size = texDesc2.ArraySize;
          hwctx->BindFlags = texDesc2.BindFlags;
          hwctx->MiscFlags = texDesc2.MiscFlags;

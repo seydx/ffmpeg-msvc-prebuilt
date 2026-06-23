@@ -7613,7 +7613,7 @@ Index: FFmpeg/libavcodec/allcodecs.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/allcodecs.c
 +++ FFmpeg/libavcodec/allcodecs.c
-@@ -444,6 +444,7 @@ extern const FFCodec ff_ac3_encoder;
+@@ -442,6 +442,7 @@ extern const FFCodec ff_ac3_encoder;
  extern const FFCodec ff_ac3_decoder;
  extern const FFCodec ff_ac3_fixed_encoder;
  extern const FFCodec ff_ac3_fixed_decoder;
@@ -7638,7 +7638,7 @@ Index: FFmpeg/libavcodec/utils.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/utils.c
 +++ FFmpeg/libavcodec/utils.c
-@@ -602,7 +602,8 @@ static int get_audio_frame_duration(enum
+@@ -594,7 +594,8 @@ static int get_audio_frame_duration(enum
      case AV_CODEC_ID_ATRAC3P:      return 2048;
      case AV_CODEC_ID_MP2:
      case AV_CODEC_ID_MUSEPACK7:    return 1152;
@@ -7652,7 +7652,7 @@ Index: FFmpeg/libavformat/isom_tags.c
 ===================================================================
 --- FFmpeg.orig/libavformat/isom_tags.c
 +++ FFmpeg/libavformat/isom_tags.c
-@@ -323,6 +323,7 @@ const AVCodecTag ff_codec_movaudio_tags[
+@@ -324,6 +324,7 @@ const AVCodecTag ff_codec_movaudio_tags[
      { AV_CODEC_ID_DTS,             MKTAG('d', 't', 's', 'e') }, /* DTS Express */
      { AV_CODEC_ID_DTS,             MKTAG('D', 'T', 'S', ' ') }, /* non-standard */
      { AV_CODEC_ID_EAC3,            MKTAG('e', 'c', '-', '3') }, /* ETSI TS 102 366 Annex F (only valid in ISOBMFF) */

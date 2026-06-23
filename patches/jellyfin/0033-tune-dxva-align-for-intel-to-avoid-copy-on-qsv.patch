@@ -35,7 +35,7 @@ Index: FFmpeg/libavutil/hwcontext_d3d11va.c
 ===================================================================
 --- FFmpeg.orig/libavutil/hwcontext_d3d11va.c
 +++ FFmpeg/libavutil/hwcontext_d3d11va.c
-@@ -622,6 +622,35 @@ static int d3d11va_device_find_adapter_b
+@@ -623,6 +623,35 @@ static int d3d11va_device_find_adapter_b
      return -1;
  }
  
@@ -71,7 +71,7 @@ Index: FFmpeg/libavutil/hwcontext_d3d11va.c
  static int d3d11va_device_create(AVHWDeviceContext *ctx, const char *device,
                                   AVDictionary *opts, int flags)
  {
-@@ -699,6 +728,9 @@ static int d3d11va_device_create(AVHWDev
+@@ -700,6 +729,9 @@ static int d3d11va_device_create(AVHWDev
          ID3D10Multithread_Release(pMultithread);
      }
  
