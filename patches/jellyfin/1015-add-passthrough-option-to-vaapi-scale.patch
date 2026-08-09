@@ -1,0 +1,30 @@
+Index: jellyfin-ffmpeg/libavfilter/vf_scale_vaapi.c
+===================================================================
+--- jellyfin-ffmpeg.orig/libavfilter/vf_scale_vaapi.c
++++ jellyfin-ffmpeg/libavfilter/vf_scale_vaapi.c
+@@ -40,6 +40,7 @@ typedef struct ScaleVAAPIContext {
+     int force_original_aspect_ratio;
+     int force_divisible_by;
+     int reset_sar;
++    int passthrough;
+ 
+     char *colour_primaries_string;
+     char *colour_transfer_string;
+@@ -93,7 +94,8 @@ static int scale_vaapi_config_output(AVF
+     if (err < 0)
+         return err;
+ 
+-    if (inlink->w == vpp_ctx->output_width && inlink->h == vpp_ctx->output_height &&
++    if (ctx->passthrough &&
++        inlink->w == vpp_ctx->output_width && inlink->h == vpp_ctx->output_height &&
+         (vpp_ctx->input_frames->sw_format == vpp_ctx->output_format ||
+          vpp_ctx->output_format == AV_PIX_FMT_NONE) &&
+         ctx->colour_primaries == AVCOL_PRI_UNSPECIFIED &&
+@@ -286,6 +288,7 @@ static const AVOption scale_vaapi_option
+     { "increase", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = SCALE_FORCE_OAR_INCREASE }, 0, 0, FLAGS, .unit = "force_oar" },
+     { "force_divisible_by", "enforce that the output resolution is divisible by a defined integer when force_original_aspect_ratio is used", OFFSET(force_divisible_by), AV_OPT_TYPE_INT, { .i64 = 1}, 1, 256, FLAGS },
+     { "reset_sar", "reset SAR to 1 and scale to square pixels if scaling proportionally", OFFSET(reset_sar), AV_OPT_TYPE_BOOL, { .i64 = 0}, 0, 1, FLAGS },
++    { "passthrough", "Do not process frames at all if parameters match", OFFSET(passthrough), AV_OPT_TYPE_BOOL, { .i64 = 1 }, 0, 1, FLAGS },
+ 
+     { NULL },
+ };

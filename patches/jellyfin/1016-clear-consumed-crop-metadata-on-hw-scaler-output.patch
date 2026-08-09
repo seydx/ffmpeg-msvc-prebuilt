@@ -1,0 +1,50 @@
+Index: jellyfin-ffmpeg/libavfilter/qsvvpp.c
+===================================================================
+--- jellyfin-ffmpeg.orig/libavfilter/qsvvpp.c
++++ jellyfin-ffmpeg/libavfilter/qsvvpp.c
+@@ -571,6 +571,11 @@ static QSVFrame *query_frame(QSVVPPConte
+             av_log(ctx, AV_LOG_ERROR, "Failed to copy metadata fields from src to dst.\n");
+             return NULL;
+         }
++        // the crop carried on the input frame has been applied by the VPP
++        out_frame->frame->crop_top    = 0;
++        out_frame->frame->crop_bottom = 0;
++        out_frame->frame->crop_left   = 0;
++        out_frame->frame->crop_right  = 0;
+     }
+ 
+     if (l->frame_rate.num && l->frame_rate.den)
+Index: jellyfin-ffmpeg/libavfilter/rkrga_common.c
+===================================================================
+--- jellyfin-ffmpeg.orig/libavfilter/rkrga_common.c
++++ jellyfin-ffmpeg/libavfilter/rkrga_common.c
+@@ -581,7 +581,11 @@ static RGAFrame *query_frame(RKRGAContex
+         av_log(ctx, AV_LOG_ERROR, "Failed to copy metadata fields from in to out: %d\n", ret);
+         goto fail;
+     }
+-    out_frame->frame->crop_top = 0;
++    // the crop carried on the input frame has been applied by the RGA
++    out_frame->frame->crop_top    = 0;
++    out_frame->frame->crop_bottom = 0;
++    out_frame->frame->crop_left   = 0;
++    out_frame->frame->crop_right  = 0;
+ 
+     if ((ret = av_hwframe_get_buffer(hw_frame_ctx, out_frame->frame, 0)) < 0) {
+         av_log(ctx, AV_LOG_ERROR, "Cannot allocate an internal frame: %d\n", ret);
+Index: jellyfin-ffmpeg/libavfilter/vf_scale_cuda.c
+===================================================================
+--- jellyfin-ffmpeg.orig/libavfilter/vf_scale_cuda.c
++++ jellyfin-ffmpeg/libavfilter/vf_scale_cuda.c
+@@ -663,6 +663,12 @@ static int cudascale_scale(AVFilterConte
+     if (ret < 0)
+         return ret;
+ 
++    // the crop carried on the input frame has been applied by the scaler
++    out->crop_top    = 0;
++    out->crop_bottom = 0;
++    out->crop_left   = 0;
++    out->crop_right  = 0;
++
+     if (out->width != in->width || out->height != in->height) {
+         av_frame_side_data_remove_by_props(&out->side_data, &out->nb_side_data,
+                                            AV_SIDE_DATA_PROP_SIZE_DEPENDENT);
