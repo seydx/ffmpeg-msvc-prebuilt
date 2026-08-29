@@ -86,3 +86,4 @@
 1013-fix-whisper-skip-gpu-backends-when-disabled.patch
 1015-add-passthrough-option-to-vaapi-scale.patch
 1016-clear-consumed-crop-metadata-on-hw-scaler-output.patch
+1017-export-rtp-timestamp-side-data.patch

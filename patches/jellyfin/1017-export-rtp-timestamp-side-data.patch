@@ -1,0 +1,50 @@
+Index: FFmpeg/libavcodec/packet.c
+===================================================================
+--- FFmpeg.orig/libavcodec/packet.c
++++ FFmpeg/libavcodec/packet.c
+@@ -312,6 +312,7 @@ const char *av_packet_side_data_name(enu
+     case AV_PKT_DATA_RTCP_SR:                    return "RTCP Sender Report";
+     case AV_PKT_DATA_EXIF:                       return "EXIF metadata";
+     case AV_PKT_DATA_HEVC_CONF:                  return "HEVC enhancement-layer decoder configuration";
++    case AV_PKT_DATA_RTP_TIMESTAMP:              return "RTP Timestamp";
+     }
+     return NULL;
+ }
+Index: FFmpeg/libavcodec/packet.h
+===================================================================
+--- FFmpeg.orig/libavcodec/packet.h
++++ FFmpeg/libavcodec/packet.h
+@@ -384,6 +384,14 @@ enum AVPacketSideDataType {
+     AV_PKT_DATA_HEVC_CONF,
+ 
+     /**
++     * The raw 32-bit RTP timestamp of the packet as carried in the RTP
++     * header, as a little-endian uint32_t. Set by the RTP demuxer on every
++     * packet it emits; the packet's pts is this value rebased to the
++     * session start, which the demuxer does not expose.
++     */
++    AV_PKT_DATA_RTP_TIMESTAMP,
++
++    /**
+      * The number of side data types.
+      * This is not part of the public API/ABI in the sense that it may
+      * change when new side data types are added.
+Index: FFmpeg/libavformat/rtpdec.c
+===================================================================
+--- FFmpeg.orig/libavformat/rtpdec.c
++++ FFmpeg/libavformat/rtpdec.c
+@@ -635,6 +635,14 @@ static void finalize_packet(RTPDemuxCont
+             av_log(s->ic, AV_LOG_WARNING, "rtpdec: failed to add SR sidedata\n");
+     }
+ 
++    if (timestamp != RTP_NOTS_VALUE) {
++        uint8_t *sd = av_packet_new_side_data(pkt, AV_PKT_DATA_RTP_TIMESTAMP, 4);
++        if (sd)
++            AV_WL32(sd, timestamp);
++        else
++            av_log(s->ic, AV_LOG_WARNING, "rtpdec: failed to add RTP timestamp sidedata\n");
++    }
++
+     if (pkt->pts != AV_NOPTS_VALUE || pkt->dts != AV_NOPTS_VALUE)
+         return; /* Timestamp already set by depacketizer */
+     if (timestamp == RTP_NOTS_VALUE)
