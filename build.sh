@@ -53,7 +53,8 @@ apply-patch() {
 # Apply all Jellyfin patches
 export QUILT_PATCHES="../patches/jellyfin"
 cd FFmpeg
-quilt push -a -v || echo "Note: Some patches could not be applied"
+# A patch that does not apply fails the build; 2 means the series is already applied
+quilt push -a -v || [ $? -eq 2 ]
 cd ..
 
 # Apply patches
