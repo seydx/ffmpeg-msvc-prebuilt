@@ -42,7 +42,7 @@ fetch() {
 # Value of VAR="..." in a jellyfin builder script.
 script_var() {
     local value
-    value=$(sed -n "s/^$2=\"\(.*\)\"$/\1/p" "$SCRIPTS/$1")
+    value=$(sed -n "s/^$2=\"\([^\"]*\)\".*/\1/p" "$SCRIPTS/$1")
     [ -n "$value" ] || { echo "$2 not found in $SCRIPTS/$1" >&2; return 1; }
     echo "$value"
 }
@@ -51,7 +51,8 @@ script_var() {
 # 'third_party/x': Var('base') + '/x.git@' + Var('x_revision'), with both vars in vars.
 shaderc_dep() {
     local deps base path rev
-    deps=$(tr -d ' \n' < shaderc/DEPS)
+    # Git for Windows checks the file out with CRLF line endings
+    deps=$(tr -d ' \r\n' < shaderc/DEPS)
     read -r base path rev <<< "$(sed -n "s|.*'third_party/$1':Var('\([a-z_]*\)')+'\([^@']*\)@'+Var('\([a-z_]*\)').*|\1 \2 \3|p" <<< "$deps")"
     [ -n "$rev" ] || { echo "third_party/$1 not found in shaderc/DEPS" >&2; return 1; }
     echo "$(sed -n "s|.*'$base':'\([^']*\)'.*|\1|p" <<< "$deps")$path $(sed -n "s|.*'$rev':'\([^']*\)'.*|\1|p" <<< "$deps")"
