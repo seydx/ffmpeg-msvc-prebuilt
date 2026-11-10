@@ -102,6 +102,10 @@ The files are packaged into **.zip** archives for each configuration, making it 
 - **DXVA2, D3D11VA, D3D12VA** - DirectX hardware acceleration
 - **Schannel** - Windows native TLS/SSL
 
+## Sources
+
+FFmpeg comes from the [jellyfin-ffmpeg fork](https://github.com/seydx/jellyfin-ffmpeg) with its patch series, and every dependency is built at the revision that fork's builder scripts pin. `sources.sh` pins the fork's commit (plus the few dependencies jellyfin does not build for Windows), and `fetch-sources.sh` checks everything out before the build, so moving to a new jellyfin release means changing one commit.
+
 ## License
 
 - The scripts in this repository are licensed under the **MIT License**.

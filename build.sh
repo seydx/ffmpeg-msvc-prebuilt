@@ -50,23 +50,21 @@ apply-patch() {
     fi
 }
 
-# Apply all Jellyfin patches
-export QUILT_PATCHES="../patches/jellyfin"
+# Apply the jellyfin patch series of the FFmpeg checkout without the patches MSVC cannot build
+source ./sources.sh
+for patch in $PATCH_EXCLUDE; do
+    grep -qxF "$patch" FFmpeg/debian/patches/series || { echo "Excluded patch $patch is not in the series" >&2; exit 1; }
+done
+grep -vxF "$(printf '%s\n' $PATCH_EXCLUDE)" FFmpeg/debian/patches/series > FFmpeg/debian/patches/series.msvc
 cd FFmpeg
 # A patch that does not apply fails the build; 2 means the series is already applied
-quilt push -a -v || [ $? -eq 2 ]
+QUILT_PATCHES=debian/patches QUILT_SERIES=series.msvc quilt push -a -v || [ $? -eq 2 ]
 cd ..
 
 # Apply patches
 echo "Applying patches..."
 apply-patch harfbuzz harfbuzz.patch
 apply-patch FFmpeg ffmpeg-revert-lnk4044-check.patch
-
-# Copy FFMPEG_VERSION file to FFmpeg directory (used by patches)
-if [ -f "FFMPEG_VERSION" ]; then
-    echo "Copying FFMPEG_VERSION to FFmpeg directory..."
-    cp FFMPEG_VERSION FFmpeg/
-fi
 
 # ========================================
 # Others
