@@ -75,7 +75,9 @@ cd ..
 # Apply patches
 echo "Applying patches..."
 dep apply-patch harfbuzz harfbuzz.patch
-apply-patch FFmpeg ffmpeg-revert-lnk4044-check.patch
+for patch in patches/ffmpeg-*.patch; do
+    apply-patch FFmpeg "${patch#patches/}"
+done
 
 # ========================================
 # Others

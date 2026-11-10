@@ -1,0 +1,13 @@
+diff --git a/libavfilter/vf_transpose_d3d11.c b/libavfilter/vf_transpose_d3d11.c
+index ffd48a5..a339750 100644
+--- a/libavfilter/vf_transpose_d3d11.c
++++ b/libavfilter/vf_transpose_d3d11.c
+@@ -20,6 +20,8 @@
+  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+  */
+ 
++/* Define the D3D11 IIDs here, as nothing in the MSVC link provides IID_ID3D11VideoContext1 */
++#include <initguid.h>
+ #include <d3d11_1.h>
+ 
+ #include "libavutil/hwcontext.h"
