@@ -149,13 +149,14 @@ jobs:
           rm -rf /usr/local
 
       # The dependencies installed in /usr/local are cached by their pins and build
-      # scripts, so a run that changes neither only builds FFmpeg
+      # scripts, so a run that changes neither only builds FFmpeg. The scripts and
+      # patches that only touch FFmpeg are left out of the key.
       - name: Restore dependencies
         id: deps
         uses: actions/cache/restore@v4
         with:
           path: D:/a/_temp/msys64/usr/local
-          key: deps-${{ matrix.arch }}-${{ hashFiles('deps.lock', '*.sh', '!sources.sh', 'patches/*.patch', 'toolchain/**', '.github/workflows/build.yml') }}
+          key: deps-${{ matrix.arch }}-${{ hashFiles('deps.lock', '*.sh', '!sources.sh', '!build-ffmpeg.sh', '!reprefix.sh', 'patches/*.patch', '!patches/ffmpeg-*.patch', 'toolchain/**', '.github/workflows/build.yml') }}
 
       - name: Fetch dependency sources
         if: steps.deps.outputs.cache-hit != 'true'
