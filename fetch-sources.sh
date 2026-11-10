@@ -6,13 +6,20 @@
 
 # Fetches FFmpeg and every dependency at the revisions sources.sh pins, as shallow
 # clones (with their submodules) into the directories the build scripts use. A
-# directory already holding its pinned revision is kept.
+# directory already holding its pinned revision is kept. The resolved dependency
+# pins go to deps.lock, the key of the workflow's dependency cache.
+#
+# Usage: fetch-sources.sh [--lock]
+#   --lock  only write deps.lock, fetching just what resolving the pins reads
+#           (FFmpeg for the builder scripts, shaderc for its DEPS file)
 
 set -e
 cd "$(dirname "$0")"
 source ./sources.sh
 
 SCRIPTS=FFmpeg/builder/scripts.d
+LOCK_ONLY=
+[ "$1" != --lock ] || LOCK_ONLY=1
 
 # Clone <repository> at <revision> (commit or tag) into <directory>.
 fetch() {
@@ -60,6 +67,7 @@ shaderc_dep() {
 
 fetch FFmpeg "$JELLYFIN_REPO" "$JELLYFIN_COMMIT"
 
+: > deps.lock
 while read -r dir source rev; do
     [ -n "$dir" ] || continue
     case $source in
@@ -77,6 +85,9 @@ while read -r dir source rev; do
         repo=$source
         ;;
     esac
+    echo "$dir $repo $rev" >> deps.lock
     # stdin is the source list
-    fetch "$dir" "$repo" "$rev" < /dev/null
+    if [ -z "$LOCK_ONLY" ] || [ "$dir" = shaderc ]; then
+        fetch "$dir" "$repo" "$rev" < /dev/null
+    fi
 done <<< "$SOURCES"

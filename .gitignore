@@ -42,3 +42,4 @@ build
 /lame
 /openexr
 /win-iconv
+/deps.lock

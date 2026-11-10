@@ -50,6 +50,17 @@ apply-patch() {
     fi
 }
 
+# Runs a dependency build step. The workflow runs this script twice: with DEPS_ONLY
+# to build the dependencies into $INSTALL_PREFIX, which it caches, and with DEPS_READY
+# once they are there (built or restored), to only collect their configure flags.
+dep() {
+    if [ -n "$DEPS_READY" ]; then
+        echo "Skip $1 $2 (dependencies ready)"
+    else
+        "$@"
+    fi
+}
+
 # Apply the jellyfin patch series of the FFmpeg checkout without the patches MSVC cannot build
 source ./sources.sh
 for patch in $PATCH_EXCLUDE; do
@@ -63,7 +74,7 @@ cd ..
 
 # Apply patches
 echo "Applying patches..."
-apply-patch harfbuzz harfbuzz.patch
+dep apply-patch harfbuzz harfbuzz.patch
 apply-patch FFmpeg ffmpeg-revert-lnk4044-check.patch
 
 # ========================================
@@ -71,7 +82,7 @@ apply-patch FFmpeg ffmpeg-revert-lnk4044-check.patch
 # ========================================
 
 # zlib
-./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_STATIC=ON
+dep ./build-cmake-dep.sh zlib -DZLIB_BUILD_EXAMPLES=OFF -DZLIB_BUILD_SHARED=OFF -DZLIB_BUILD_STATIC=ON
 # New zlib names static lib "zs.lib" on Windows, FFmpeg expects "z.lib"
 if [ -f "$INSTALL_PREFIX/lib/zs.lib" ] && [ ! -f "$INSTALL_PREFIX/lib/z.lib" ]; then
     cp "$INSTALL_PREFIX/lib/zs.lib" "$INSTALL_PREFIX/lib/z.lib"
@@ -80,24 +91,24 @@ fi
 add_ffargs "--enable-zlib"
 
 # XZ/LZMA
-./build-cmake-dep.sh xz -DENABLE_NLS=OFF -DBUILD_TESTING=OFF
+dep ./build-cmake-dep.sh xz -DENABLE_NLS=OFF -DBUILD_TESTING=OFF
 if [ -f "$INSTALL_PREFIX/lib/lzma.lib" ]; then
     cp "$INSTALL_PREFIX/lib/lzma.lib" "$INSTALL_PREFIX/lib/liblzma.lib"
 fi
 add_ffargs "--enable-lzma"
 
 # win-iconv
-./build-cmake-dep.sh win-iconv
+dep ./build-cmake-dep.sh win-iconv
 # For static linking, we need to ensure FFmpeg uses libiconv.lib (static) not iconv.lib (DLL import)
 # Remove the DLL import library to force static linking
-if [ -f "$INSTALL_PREFIX/lib/iconv.lib" ] && [ -f "$INSTALL_PREFIX/lib/libiconv.lib" ]; then
+if [ -z "$DEPS_READY" ] && [ -f "$INSTALL_PREFIX/lib/iconv.lib" ] && [ -f "$INSTALL_PREFIX/lib/libiconv.lib" ]; then
     mv "$INSTALL_PREFIX/lib/iconv.lib" "$INSTALL_PREFIX/lib/iconv_dll.lib"
     cp "$INSTALL_PREFIX/lib/libiconv.lib" "$INSTALL_PREFIX/lib/iconv.lib"
 fi
 add_ffargs "--enable-iconv"
 
 # libxml2
-./build-cmake-dep.sh libxml2 -DLIBXML2_WITH_ICONV=ON -DLIBXML2_WITH_LZMA=ON -DLIBXML2_WITH_ZLIB=ON -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
+dep ./build-cmake-dep.sh libxml2 -DLIBXML2_WITH_ICONV=ON -DLIBXML2_WITH_LZMA=ON -DLIBXML2_WITH_ZLIB=ON -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF -DLIBXML2_WITH_PROGRAMS=OFF
 # FFmpeg's pkg-config file says "-lxml2" which means it looks for xml2.lib
 # But CMake builds libxml2s.lib (s for static)
 if [ -f "$INSTALL_PREFIX/lib/libxml2s.lib" ]; then
@@ -121,7 +132,7 @@ fi
 
 # NVIDIA
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
-    ./build-nvcodec.sh
+    dep ./build-nvcodec.sh
     add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc"
 
     # Check if CUDA SDK is available (installed via GitHub Action)
@@ -139,17 +150,19 @@ add_ffargs "--enable-opencl"
 
 # AMD AMF
 if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
-    echo -e "\n[Build AMF headers]"
-    if [ -d "AMF/amf/public/include" ]; then
+    if [ -z "$DEPS_READY" ] && [ -d "AMF/amf/public/include" ]; then
+        echo -e "\n[Build AMF headers]"
         mkdir -p "$INSTALL_PREFIX/include/AMF"
         cp -r AMF/amf/public/include/* "$INSTALL_PREFIX/include/AMF/"
+    fi
+    if [ -d "$INSTALL_PREFIX/include/AMF" ]; then
         add_ffargs "--enable-amf"
     fi
 fi
 
 # Intel QuickSync
 if [ -n "$ENABLE_LIBVPL" ] && [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
-    ./build-vpl.sh
+    dep ./build-vpl.sh
     add_ffargs "--enable-libvpl"
 fi
 
@@ -189,7 +202,7 @@ if [ -n "$ENABLE_LIBSVTAV1" ]; then
         SVT_ASM_FLAGS="-DENABLE_NASM=ON"
     fi
 
-    ./build-cmake-dep.sh svt-av1 \
+    dep ./build-cmake-dep.sh svt-av1 \
         -DBUILD_APPS=OFF \
         -DBUILD_DEC=OFF \
         -DBUILD_TESTING=OFF \
@@ -199,13 +212,13 @@ fi
 
 # x265 - HEVC encoder
 if [ -n "$ENABLE_LIBX265" ]; then
-    apply-patch x265_git x265_git-static.patch
+    dep apply-patch x265_git x265_git-static.patch
 
     X265_ARGS="-DSTATIC_LINK_CRT=ON"
     ENABLE_SHARED=OFF
 
-    git -C x265_git fetch --tags
-    ./build-cmake-dep.sh x265_git/source -DCMAKE_SYSTEM_NAME=Windows -DENABLE_SHARED=OFF -DENABLE_CLI=OFF $X265_ARGS
+    dep git -C x265_git fetch --tags
+    dep ./build-cmake-dep.sh x265_git/source -DCMAKE_SYSTEM_NAME=Windows -DENABLE_SHARED=OFF -DENABLE_CLI=OFF $X265_ARGS
     add_ffargs "--enable-libx265"
 fi
 
@@ -215,7 +228,7 @@ if [ -n "$ENABLE_LIBX264" ]; then
         X264_ARGS="--disable-asm"
     fi
 
-    INSTALL_TARGET=install-lib-static ./build-make-dep.sh x264 --enable-static $X264_ARGS
+    dep env INSTALL_TARGET=install-lib-static ./build-make-dep.sh x264 --enable-static $X264_ARGS
     add_ffargs "--enable-libx264"
 fi
 
@@ -231,7 +244,7 @@ fi
 
 # FDK-AAC - AAC encoder
 if [ -n "$ENABLE_LIBFDK_AAC" ]; then
-    ./build-cmake-dep.sh fdk-aac -DBUILD_PROGRAMS=OFF
+    dep ./build-cmake-dep.sh fdk-aac -DBUILD_PROGRAMS=OFF
     add_ffargs "--enable-libfdk-aac"
 fi
 
@@ -247,8 +260,8 @@ if [ -n "$ENABLE_LIBVPX" ]; then
     esac
 
     LIBVPX_ARGS="--enable-static-msvcrt"
-    apply-patch libvpx libvpx.patch
-    CFLAGS="" AS=yasm AR=lib ARFLAGS= CC=cl CXX=cl LD=link STRIP=false target= ./build-make-dep.sh libvpx --target=$libvpx_target --as=yasm --disable-optimizations --disable-dependency-tracking --disable-runtime-cpu-detect --disable-thumb --disable-neon --enable-external-build --disable-unit-tests --disable-decode-perf-tests --disable-encode-perf-tests --disable-tools --disable-examples $LIBVPX_ARGS
+    dep apply-patch libvpx libvpx.patch
+    dep env CFLAGS="" AS=yasm AR=lib ARFLAGS= CC=cl CXX=cl LD=link STRIP=false target= ./build-make-dep.sh libvpx --target=$libvpx_target --as=yasm --disable-optimizations --disable-dependency-tracking --disable-runtime-cpu-detect --disable-thumb --disable-neon --enable-external-build --disable-unit-tests --disable-decode-perf-tests --disable-encode-perf-tests --disable-tools --disable-examples $LIBVPX_ARGS
     add_ffargs "--enable-libvpx"
 fi
 
@@ -258,16 +271,16 @@ fi
 
 # Opus audio codec
 if [ -n "$ENABLE_LIBOPUS" ]; then
-    ./build-cmake-dep.sh opus -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF -DOPUS_STATIC_RUNTIME=ON
+    dep ./build-cmake-dep.sh opus -DOPUS_BUILD_PROGRAMS=OFF -DOPUS_BUILD_TESTING=OFF -DOPUS_STATIC_RUNTIME=ON
     add_ffargs "--enable-libopus"
 fi
 
 # Vorbis audio codec
 if [ -n "$ENABLE_LIBVORBIS" ]; then
     # Build libogg first (dependency for libvorbis)
-    ./build-cmake-dep.sh libogg -DBUILD_TESTING=OFF
+    dep ./build-cmake-dep.sh libogg -DBUILD_TESTING=OFF
     # Build libvorbis with libogg
-    ./build-cmake-dep.sh libvorbis -DBUILD_TESTING=OFF
+    dep ./build-cmake-dep.sh libvorbis -DBUILD_TESTING=OFF
     add_ffargs "--enable-libvorbis"
 fi
 
@@ -277,15 +290,15 @@ fi
 
 # JPEG XL
 if [ -n "$ENABLE_LIBJXL" ]; then
-    apply-patch libjxl libjxl.patch
-    ./build-cmake-dep.sh openexr -DOPENEXR_INSTALL_TOOLS=OFF -DOPENEXR_BUILD_TOOLS=OFF -DBUILD_TESTING=OFF -DOPENEXR_IS_SUBPROJECT=ON
-    ./build-cmake-dep.sh libjxl -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_BUNDLE_LIBPNG=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_STATIC=ON
+    dep apply-patch libjxl libjxl.patch
+    dep ./build-cmake-dep.sh openexr -DOPENEXR_INSTALL_TOOLS=OFF -DOPENEXR_BUILD_TOOLS=OFF -DBUILD_TESTING=OFF -DOPENEXR_IS_SUBPROJECT=ON
+    dep ./build-cmake-dep.sh libjxl -DBUILD_TESTING=OFF -DJPEGXL_ENABLE_BENCHMARK=OFF -DJPEGXL_ENABLE_JNI=OFF -DJPEGXL_BUNDLE_LIBPNG=OFF -DJPEGXL_ENABLE_TOOLS=OFF -DJPEGXL_ENABLE_EXAMPLES=OFF -DJPEGXL_STATIC=ON
     add_ffargs "--enable-libjxl"
 fi
 
 # WebP image format
 if [ -n "$ENABLE_LIBWEBP" ]; then
-    ./build-cmake-dep.sh libwebp -DWEBP_BUILD_EXTRAS=OFF -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF
+    dep ./build-cmake-dep.sh libwebp -DWEBP_BUILD_EXTRAS=OFF -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF
     add_ffargs "--enable-libwebp"
 fi
 
@@ -301,20 +314,20 @@ fi
 
 # FreeType - Font rendering
 if [ -n "$ENABLE_LIBFREETYPE" ]; then
-    ./build-cmake-dep.sh freetype
+    dep ./build-cmake-dep.sh freetype
     add_ffargs "--enable-libfreetype"
 fi
 
 # HarfBuzz - Text shaping
 if [ -n "$ENABLE_LIBHARFBUZZ" ]; then
-    ./build-cmake-dep.sh harfbuzz -DHB_HAVE_FREETYPE=ON
+    dep ./build-cmake-dep.sh harfbuzz -DHB_HAVE_FREETYPE=ON
     add_ffargs "--enable-libharfbuzz"
 fi
 
 # libass - ASS/SSA subtitle rendering
 if [ -n "$ENABLE_LIBASS" ]; then
     # apply-patch fribidi fribidi.patch
-    ./build-libass.sh
+    dep ./build-libass.sh
     add_ffargs "--enable-libass"
 fi
 
@@ -333,6 +346,11 @@ add_ffargs "--enable-indev=dshow --enable-indev=gdigrab"
 # ========================================
 # Build FFmpeg
 # ========================================
+
+# The workflow caches the dependencies before FFmpeg is installed next to them
+if [ -n "$DEPS_ONLY" ]; then
+    exit 0
+fi
 
 ./build-ffmpeg.sh FFmpeg $FF_ARGS
 ./reprefix.sh

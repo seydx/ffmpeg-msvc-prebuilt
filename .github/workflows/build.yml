@@ -47,9 +47,9 @@ jobs:
         run: |
           echo "installationPath=$(vswhere -all -legacy -property installationPath)">>$GITHUB_OUTPUT
 
-      - name: Fetch sources
+      - name: Fetch FFmpeg and resolve the dependency pins
         shell: bash
-        run: ./fetch-sources.sh
+        run: ./fetch-sources.sh --lock
 
       - uses: msys2/setup-msys2@v2
         with:
@@ -148,8 +148,22 @@ jobs:
           rm $(which link)
           rm -rf /usr/local
 
+      # The dependencies installed in /usr/local are cached by their pins and build
+      # scripts, so a run that changes neither only builds FFmpeg
+      - name: Restore dependencies
+        id: deps
+        uses: actions/cache/restore@v4
+        with:
+          path: D:/a/_temp/msys64/usr/local
+          key: deps-${{ matrix.arch }}-${{ hashFiles('deps.lock', '*.sh', '!sources.sh', 'patches/*.patch', 'toolchain/**', '.github/workflows/build.yml') }}
+
+      - name: Fetch dependency sources
+        if: steps.deps.outputs.cache-hit != 'true'
+        shell: bash
+        run: ./fetch-sources.sh
+
       - name: Build OpenCL
-        if: ${{ success() }}
+        if: steps.deps.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
@@ -211,7 +225,7 @@ jobs:
           ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\OpenCL.pc
 
       - name: Build shaderc
-        if: ${{ success() }}
+        if: steps.deps.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
@@ -317,7 +331,7 @@ jobs:
           cd ..\..
 
       - name: Build Vulkan-Shim-Loader
-        if: ${{ success() }}
+        if: steps.deps.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
@@ -381,7 +395,7 @@ jobs:
           cd %GITHUB_WORKSPACE%
 
       - name: Build whisper.cpp
-        if: ${{ success() }}
+        if: steps.deps.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
@@ -521,7 +535,7 @@ jobs:
           ) > D:\a\_temp\msys64\usr\local\lib\pkgconfig\whisper.pc
 
       - name: Build dav1d
-        if: ${{ success() }}
+        if: steps.deps.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
@@ -569,7 +583,7 @@ jobs:
           cd ..
 
       - name: Build zimg
-        if: ${{ success() }}
+        if: steps.deps.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
@@ -632,7 +646,7 @@ jobs:
           cd ..\..
 
       - name: Build LAME
-        if: ${{ success() }}
+        if: steps.deps.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
@@ -696,11 +710,25 @@ jobs:
 
           cd ..
 
+      - name: Build dependencies
+        if: steps.deps.outputs.cache-hit != 'true'
+        shell: cmd
+        run: |
+          CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
+          msys2 -c "export CUDA_PATH=\"$CUDA_PATH\" DEPS_ONLY=1; ./build.sh ${{matrix.arch}}"
+
+      - name: Save dependencies
+        if: steps.deps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: D:/a/_temp/msys64/usr/local
+          key: ${{ steps.deps.outputs.cache-primary-key }}
+
       - name: Build
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-          msys2 -c "export CUDA_PATH=\"$CUDA_PATH\"; ./build.sh ${{matrix.arch}}"
+          msys2 -c "export CUDA_PATH=\"$CUDA_PATH\" DEPS_READY=1; ./build.sh ${{matrix.arch}}"
 
       - name: Debug log
         if: ${{ failure() }}
