@@ -7,6 +7,7 @@ index 0bf99e938..051470536 100644
  Description: H.265/HEVC video encoder
  Version: @X265_LATEST_TAG@
 -Libs: -L${libdir} -lx265
+-Libs.private: @PRIVATE_LIBS@
 +Libs: -L${libdir} -lx265-static
- Libs.private: @PRIVATE_LIBS@
++Libs.private: @PRIVATE_LIBS@ -ladvapi32
  Cflags: -I${includedir}
