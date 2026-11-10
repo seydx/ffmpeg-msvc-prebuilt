@@ -592,7 +592,8 @@ jobs:
             set PLATFORM=x64
           )
 
-          MSBuild zimg\zimg.vcxproj -p:Configuration=Release -p:Platform=%PLATFORM%
+          REM The project targets the VS 2026 toolset (v145); the runner has VS 2022 (v143)
+          MSBuild zimg\zimg.vcxproj -p:Configuration=Release -p:Platform=%PLATFORM% -p:PlatformToolset=v143
           if %errorlevel% neq 0 exit /b %errorlevel%
 
           REM Install headers
