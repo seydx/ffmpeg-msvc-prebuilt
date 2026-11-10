@@ -2,10 +2,10 @@ Index: FFmpeg/libavcodec/packet.c
 ===================================================================
 --- FFmpeg.orig/libavcodec/packet.c
 +++ FFmpeg/libavcodec/packet.c
-@@ -312,6 +312,7 @@ const char *av_packet_side_data_name(enu
+@@ -310,6 +310,7 @@ const char *av_packet_side_data_name(enu
+     case AV_PKT_DATA_3D_REFERENCE_DISPLAYS:      return "3D Reference Displays Info";
      case AV_PKT_DATA_RTCP_SR:                    return "RTCP Sender Report";
      case AV_PKT_DATA_EXIF:                       return "EXIF metadata";
-     case AV_PKT_DATA_HEVC_CONF:                  return "HEVC enhancement-layer decoder configuration";
 +    case AV_PKT_DATA_RTP_TIMESTAMP:              return "RTP Timestamp";
      }
      return NULL;
@@ -14,8 +14,8 @@ Index: FFmpeg/libavcodec/packet.h
 ===================================================================
 --- FFmpeg.orig/libavcodec/packet.h
 +++ FFmpeg/libavcodec/packet.h
-@@ -384,6 +384,14 @@ enum AVPacketSideDataType {
-     AV_PKT_DATA_HEVC_CONF,
+@@ -369,6 +369,14 @@ enum AVPacketSideDataType {
+      AV_PKT_DATA_EXIF,
  
      /**
 +     * The raw 32-bit RTP timestamp of the packet as carried in the RTP
@@ -33,7 +33,7 @@ Index: FFmpeg/libavformat/rtpdec.c
 ===================================================================
 --- FFmpeg.orig/libavformat/rtpdec.c
 +++ FFmpeg/libavformat/rtpdec.c
-@@ -635,6 +635,14 @@ static void finalize_packet(RTPDemuxCont
+@@ -636,6 +636,14 @@ static void finalize_packet(RTPDemuxCont
              av_log(s->ic, AV_LOG_WARNING, "rtpdec: failed to add SR sidedata\n");
      }
  

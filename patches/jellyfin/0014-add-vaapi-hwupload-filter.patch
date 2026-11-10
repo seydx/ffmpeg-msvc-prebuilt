@@ -2,8 +2,8 @@ Index: FFmpeg/configure
 ===================================================================
 --- FFmpeg.orig/configure
 +++ FFmpeg/configure
-@@ -4221,6 +4221,7 @@ gblur_vulkan_filter_deps="vulkan spirv_c
- hflip_vulkan_filter_deps="vulkan spirv_compiler"
+@@ -4143,6 +4143,7 @@ gblur_vulkan_filter_deps="vulkan spirv_l
+ hflip_vulkan_filter_deps="vulkan spirv_library"
  histeq_filter_deps="gpl"
  hqdn3d_filter_deps="gpl"
 +hwupload_vaapi_filter_deps="vaapi"
@@ -38,7 +38,7 @@ Index: FFmpeg/libavfilter/vf_hwupload_vaapi.c
 ===================================================================
 --- /dev/null
 +++ FFmpeg/libavfilter/vf_hwupload_vaapi.c
-@@ -0,0 +1,191 @@
+@@ -0,0 +1,197 @@
 +/*
 + * This file is part of FFmpeg.
 + *
@@ -89,7 +89,9 @@ Index: FFmpeg/libavfilter/vf_hwupload_vaapi.c
 +    av_buffer_unref(&s->hwdevice);
 +}
 +
-+static int vaapiupload_query_formats(AVFilterContext *ctx)
++static int vaapiupload_query_formats(const AVFilterContext *ctx,
++                                     AVFilterFormatsConfig **cfg_in,
++                                     AVFilterFormatsConfig **cfg_out)
 +{
 +    int ret;
 +
@@ -105,16 +107,16 @@ Index: FFmpeg/libavfilter/vf_hwupload_vaapi.c
 +    static const enum AVPixelFormat output_pix_fmts[] = {
 +        AV_PIX_FMT_VAAPI, AV_PIX_FMT_NONE,
 +    };
-+    AVFilterFormats *in_fmts  = ff_make_format_list(input_pix_fmts);
++    AVFilterFormats *in_fmts  = ff_make_pixel_format_list(input_pix_fmts);
 +    AVFilterFormats *out_fmts;
 +
-+    ret = ff_formats_ref(in_fmts, &ctx->inputs[0]->outcfg.formats);
++    ret = ff_formats_ref(in_fmts, &cfg_in[0]->formats);
 +    if (ret < 0)
 +        return ret;
 +
-+    out_fmts = ff_make_format_list(output_pix_fmts);
++    out_fmts = ff_make_pixel_format_list(output_pix_fmts);
 +
-+    ret = ff_formats_ref(out_fmts, &ctx->outputs[0]->incfg.formats);
++    ret = ff_formats_ref(out_fmts, &cfg_out[0]->formats);
 +    if (ret < 0)
 +        return ret;
 +
@@ -221,12 +223,16 @@ Index: FFmpeg/libavfilter/vf_hwupload_vaapi.c
 +const FFFilter ff_vf_hwupload_vaapi = {
 +    .p.name         = "hwupload_vaapi",
 +    .p.description  = NULL_IF_CONFIG_SMALL("Upload a system memory frame to a VAAPI device."),
-+    .p.priv_class   = &vaapiupload_class,
++
 +    .init           = vaapiupload_init,
 +    .uninit         = vaapiupload_uninit,
++
 +    .priv_size      = sizeof(VaapiUploadContext),
++    .p.priv_class   = &vaapiupload_class,
++
 +    FILTER_INPUTS(vaapiupload_inputs),
 +    FILTER_OUTPUTS(vaapiupload_outputs),
-+    FILTER_QUERY_FUNC(vaapiupload_query_formats),
++    FILTER_QUERY_FUNC2(vaapiupload_query_formats),
++
 +    .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 +};
