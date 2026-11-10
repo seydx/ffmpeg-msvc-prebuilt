@@ -52,7 +52,7 @@ The files are packaged into **.zip** archives for each configuration, making it 
 #### Video Codecs
 
 - [x264](https://code.videolan.org/videolan/x264.git) - H.264 encoder
-- [x265](https://bitbucket.org/multicoreware/x265_git.git) - HEVC/H.265 encoder
+- [x265](https://github.com/Multicorewareinc/x265) - HEVC/H.265 encoder
 - [libvpx](https://github.com/webmproject/libvpx.git) - VP8/VP9 encoder/decoder
 - [libdav1d](https://code.videolan.org/videolan/dav1d.git) - AV1 decoder
 - [libsvtav1](https://gitlab.com/AOMediaCodec/SVT-AV1.git) - AV1 encoder
