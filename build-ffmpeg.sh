@@ -25,6 +25,10 @@ CFLAGS="$CFLAGS -I${SRC_DIR}/compat/stdbit"
 # Add LZMA_API_STATIC for static linking with liblzma
 CFLAGS="$CFLAGS -DLZMA_API_STATIC"
 
+# The jellyfin HEVC Rext DXVA struct marks its anonymous union and struct with
+# MinGW's __C89_NAMELESS, which MSVC lacks but needs no keyword for
+CFLAGS="$CFLAGS -D__C89_NAMELESS="
+
 # Add library paths for MSVC
 EXTRA_CFLAGS=""
 EXTRA_LDFLAGS="-LIBPATH:D:/a/_temp/msys64/usr/local/lib /NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcrtd.lib /NODEFAULTLIB:msvcprt.lib /NODEFAULTLIB:msvcprtd.lib /NODEFAULTLIB:vcruntime.lib /NODEFAULTLIB:vcruntimed.lib /NODEFAULTLIB:ucrt.lib /NODEFAULTLIB:ucrtd.lib"
