@@ -9,7 +9,7 @@
 # and the dependencies together. Read by fetch-sources.sh and build.sh.
 
 JELLYFIN_REPO=https://github.com/seydx/jellyfin-ffmpeg.git
-JELLYFIN_COMMIT=dafc7283907987b6c6b2ef770c4e32a14e7172ea
+JELLYFIN_COMMIT=133f85c5f3192f7b472f9bd8a6e1306fe4d76814
 
 # Jellyfin patches MSVC cannot build (GCC vectorization flags, GCC-only SIMD code)
 PATCH_EXCLUDE="
