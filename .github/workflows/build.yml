@@ -401,6 +401,16 @@ jobs:
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
 
+          REM Same fixes as jellyfin-ffmpeg's 60-whisper.sh: skip the Vulkan backend when no loader
+          REM is installed and skip OpenCL devices whose kernels fail to compile, instead of crashing
+          REM or exiting the process
+          echo Applying whisper.cpp patch...
+          git -C whisper.cpp apply -R --check --ignore-whitespace "%CD%\patches\whisper.cpp.patch" 2>nul
+          if errorlevel 1 (
+            git -C whisper.cpp apply --ignore-whitespace "%CD%\patches\whisper.cpp.patch"
+            if errorlevel 1 exit /b 1
+          )
+
           REM Add MSYS2 tools to PATH
           set PATH=D:\a\_temp\msys64\usr\bin;%PATH%
 
