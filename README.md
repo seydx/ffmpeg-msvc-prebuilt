@@ -66,7 +66,7 @@ The gpl and light variants include **fdk-aac**, which is licensed under the Frau
 #### Audio Codecs
 
 - [libmp3lame](https://github.com/lame-mirror/lame.git) - MP3 encoder
-- [libfdk-aac](https://github.com/mstorsjo/fdk-aac.git) - AAC encoder
+- [fdk-aac-stripped](https://gitlab.freedesktop.org/wtaymans/fdk-aac-stripped) - AAC encoder and decoder (fdk-aac without the patent-encumbered parts)
 - [libopus](https://github.com/xiph/opus.git) - Opus encoder/decoder
 - [libvorbis](https://github.com/xiph/vorbis.git) - Vorbis encoder/decoder
   - [libogg](https://github.com/xiph/ogg.git)
