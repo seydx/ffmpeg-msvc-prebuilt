@@ -16,7 +16,39 @@ if [ "$BUILD_ARCH" == "arm64" ]; then
     CROSS_ARGS="--enable-cross-compile --disable-asm"
 fi
 
-LICENSE_ARGS="--enable-gpl --enable-version3"
+# The variant (FF_VARIANT) only changes FFmpeg's configuration: the dependencies are shared
+# by all variants and cached once, a library the variant leaves out is just not enabled.
+# gpl is node-av, lgpl node-av-lgpl and light node-av-light.
+case "${FF_VARIANT:-gpl}" in
+gpl)
+    LICENSE_ARGS="--enable-gpl --enable-version3"
+    VARIANT_DROP=""
+    ;;
+lgpl)
+    # No GPL encoders, and no libfdk_aac: it has its own license, lgpl stays plain LGPL
+    LICENSE_ARGS="--enable-version3"
+    VARIANT_DROP="--enable-libx264 --enable-libx265 --enable-libfdk-aac"
+    ;;
+light)
+    # Without the less common external libraries, as in jellyfin-ffmpeg's builder/variants/defaults-light.sh
+    LICENSE_ARGS="--enable-gpl --enable-version3"
+    VARIANT_DROP="--enable-whisper --enable-libjxl --enable-libsvtav1 --enable-libvpx --enable-libwebp --enable-libvorbis --enable-libass --enable-libzimg"
+    ;;
+*)
+    echo "Unknown FF_VARIANT ${FF_VARIANT}, expected gpl, lgpl or light" >&2
+    exit 1
+    ;;
+esac
+
+VARIANT_ARGS=()
+for arg in "$@"; do
+    if [[ " $VARIANT_DROP " == *" $arg "* ]]; then
+        echo "Variant ${FF_VARIANT:-gpl} leaves out $arg"
+    else
+        VARIANT_ARGS+=("$arg")
+    fi
+done
+set -- "${VARIANT_ARGS[@]}"
 
 # Disable programs and features we don't need (same as Jellyfin)
 DISABLE_ARGS="--disable-ffplay --disable-debug --disable-doc --disable-sdl2"

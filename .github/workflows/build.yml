@@ -29,12 +29,15 @@ jobs:
   build:
     strategy:
       matrix:
+        # gpl is node-av, lgpl node-av-lgpl and light node-av-light. They share the
+        # dependencies (and their cache), build-ffmpeg.sh configures FFmpeg per variant.
+        variant: [gpl, lgpl, light]
         arch: [amd64, arm64]
       fail-fast: false
     runs-on: windows-2022
     env:
-      name: ffmpeg-${{ inputs.ref_name||github.ref_name }}-gpl-${{matrix.arch}}-static
-      release_name: ffmpeg-gpl-${{matrix.arch}}-static
+      name: ffmpeg-${{ inputs.ref_name||github.ref_name }}-${{matrix.variant}}-${{matrix.arch}}-static
+      release_name: ffmpeg-${{matrix.variant}}-${{matrix.arch}}-static
       target: ${{contains(matrix.arch,'arm')&&format('amd64_{0}',matrix.arch)||matrix.arch}}
     steps:
       - uses: actions/checkout@v4
@@ -674,7 +677,7 @@ jobs:
         shell: cmd
         run: |
           CALL "${{steps.setup.outputs.installationPath}}\VC\Auxiliary\Build\vcvarsall.bat" ${{env.target}} ${{env.SDK_VER}}
-          msys2 -c "export DEPS_READY=1; ./build.sh ${{matrix.arch}}"
+          msys2 -c "export DEPS_READY=1 FF_VARIANT=${{matrix.variant}}; ./build.sh ${{matrix.arch}}"
 
       - name: Debug log
         if: ${{ failure() }}

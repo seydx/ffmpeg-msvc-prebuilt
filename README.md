@@ -43,9 +43,15 @@ The files are packaged into **.zip** archives for each configuration, making it 
 - **amd64** (x86_64)
 - **arm64** (aarch64)
 
-### License
+### License Variants
 
-- **GPL Build**: Includes all components including **x264**, **x265**, and **fdk-aac** encoders.
+Each architecture is built in three variants, one per node-av package. They share the dependencies and differ only in how FFmpeg is configured:
+
+- **gpl** (`ffmpeg-gpl-<arch>-static.zip`, node-av): all components, including the **x264** and **x265** encoders.
+- **lgpl** (`ffmpeg-lgpl-<arch>-static.zip`, node-av-lgpl): without the GPL encoders and without fdk-aac, so it is plain LGPL.
+- **light** (`ffmpeg-light-<arch>-static.zip`, node-av-light): the gpl build without the less common libraries (whisper, libvpx, SVT-AV1, JPEG XL, WebP, Vorbis, libass, zimg).
+
+The gpl and light variants include **fdk-aac**, which is licensed under the Fraunhofer FDK AAC license.
 
 ### Included Dependencies
 
@@ -109,5 +115,5 @@ FFmpeg comes from the [jellyfin-ffmpeg fork](https://github.com/seydx/jellyfin-f
 ## License
 
 - The scripts in this repository are licensed under the **MIT License**.
-- The binaries are **GPL-licensed** due to included components like x264, x265, and fdk-aac.
-- No build needs `--enable-nonfree`: the CUDA filters (amd64) are compiled with clang (`--enable-cuda-llvm`), not nvcc.
+- The gpl and light binaries are **GPL-licensed** due to x264 and x265, the lgpl binaries are **LGPL-licensed**. None of them needs `--enable-nonfree`: the CUDA filters (amd64) are compiled with clang (`--enable-cuda-llvm`), not nvcc.
+- fdk-aac (gpl and light) is licensed under the Fraunhofer FDK AAC license.
