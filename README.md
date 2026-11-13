@@ -110,3 +110,4 @@ FFmpeg comes from the [jellyfin-ffmpeg fork](https://github.com/seydx/jellyfin-f
 
 - The scripts in this repository are licensed under the **MIT License**.
 - The binaries are **GPL-licensed** due to included components like x264, x265, and fdk-aac.
+- No build needs `--enable-nonfree`: the CUDA filters (amd64) are compiled with clang (`--enable-cuda-llvm`), not nvcc.

@@ -40,6 +40,27 @@ add_ffargs() {
     FF_ARGS="$FF_ARGS $@"
 }
 
+# Prints the first clang that can target NVPTX, in the short form FFmpeg's makefiles
+# take (no spaces): LLVM's own Windows build (preinstalled on the GitHub runners),
+# Visual Studio's bundled clang, then the one in PATH.
+find_nvptx_clang() {
+    local candidates=("C:/Program Files/LLVM/bin/clang.exe")
+    [ -n "$VCINSTALLDIR" ] && candidates+=("$(cygpath -m "$VCINSTALLDIR")/Tools/Llvm/x64/bin/clang.exe")
+    command -v clang >/dev/null 2>&1 && candidates+=("$(command -v clang)")
+    local clang short
+    for clang in "${candidates[@]}"; do
+        clang=$(cygpath -u "$clang")
+        [ -x "$clang" ] || continue
+        "$clang" --print-targets 2>/dev/null | grep -q nvptx64 || continue
+        # Without 8.3 names on the drive the path keeps its spaces
+        short=$(cygpath -sm "$clang")
+        [[ $short == *" "* ]] && continue
+        echo "$short"
+        return 0
+    done
+    return 1
+}
+
 apply-patch() {
     GIT_CMD="git -C $1 apply $(pwd)/patches/$2 --ignore-whitespace"
     if ! $GIT_CMD -R --check 2>/dev/null; then
@@ -137,13 +158,16 @@ if [ "$BUILD_ARCH" != "arm64" ] && [ "$BUILD_ARCH" != "arm" ]; then
     dep ./build-nvcodec.sh
     add_ffargs "--enable-ffnvcodec --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc"
 
-    # Check if CUDA SDK is available (installed via GitHub Action)
-    if [ -n "$CUDA_PATH" ] && [ -f "$CUDA_PATH/bin/nvcc.exe" ]; then
-        echo "CUDA SDK found, enabling CUDA NVCC support in FFmpeg"
-        add_ffargs "--enable-cuda-nvcc --enable-nonfree"
-
-        # Enable libnpp for CUDA-accelerated filters (not static?)
-        # add_ffargs "--enable-libnpp"
+    # The CUDA filters (scale_cuda and others) are compiled to PTX with clang (cuda-llvm),
+    # as in the Jellyfin builds: nvcc would need --enable-nonfree, which makes the
+    # binaries non-redistributable. configure fails if this clang can't build them.
+    if [ -z "$DEPS_ONLY" ]; then
+        NVPTX_CLANG=$(find_nvptx_clang) || {
+            echo "No clang with the NVPTX target found for the CUDA filters" >&2
+            exit 1
+        }
+        echo "Compiling the CUDA filters with $NVPTX_CLANG"
+        add_ffargs "--enable-cuda-llvm --nvcc=$NVPTX_CLANG"
     fi
 fi
 
